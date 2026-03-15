@@ -42,69 +42,141 @@ const categories = [
 
 const OurPets = () => {
   return (
-    <section id="pets" className="relative py-20 md:py-32 bg-brand-bg">
+    <section id="pets" className="relative py-24 lg:py-48 bg-brand-bg-secondary overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-12 md:mb-20">
-          <motion.h2 
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+          <div className="max-w-xl">
+            <div className="micro-label mb-4">Our Collection</div>
+            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-none text-brand-primary">
+              Find Your <br />
+              <span className="text-brand-accent">Perfect Match</span>
+            </h2>
+          </div>
+          <p className="hidden lg:block text-brand-text text-lg max-w-xs md:text-right">
+            From loyal dogs to playful cats, we curate the healthiest companions for your home.
+          </p>
+        </div>
+
+        {/* Mobile/Tablet Snap Carousel (hidden on lg) */}
+        <div className="lg:hidden -mx-6 px-6 overflow-x-auto snap-x snap-mandatory no-scrollbar flex gap-6 pb-8">
+          {categories.map((category) => (
+            <motion.div
+              key={category.title}
+              className="snap-center shrink-0 w-[85vw] md:w-[60vw] relative group"
+            >
+              <div className="aspect-[4/5] rounded-[40px] overflow-hidden relative shadow-sm border border-brand-accent-secondary/10">
+                <img 
+                  src={category.image} 
+                  alt={category.title}
+                  className="w-full h-full object-cover transition-all duration-700"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-primary via-transparent to-transparent opacity-60" />
+                
+                <div className="absolute bottom-10 left-10 right-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center text-brand-bg-secondary">
+                      <category.icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-brand-bg-secondary font-bold uppercase tracking-widest text-sm">{category.title}</span>
+                  </div>
+                  <h3 className="text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-none mb-6">
+                    {category.title}
+                  </h3>
+                  <button className="w-full py-4 bg-brand-bg-secondary/20 backdrop-blur-md border border-brand-bg-secondary/30 rounded-2xl text-brand-bg-secondary font-bold uppercase text-xs tracking-widest hover:bg-brand-accent transition-all">
+                    View Breeds
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Desktop Bento Grid (hidden on mobile/tablet) */}
+        <div className="hidden lg:grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[800px]">
+          {/* Main Feature: Dogs */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tighter"
+            className="md:col-span-2 md:row-span-2 bento-card group"
           >
-            Our <span className="text-brand-accent">Pets</span>
-          </motion.h2>
-          <motion.p 
+            <img 
+              src={categories[0].image} 
+              alt="Dogs" 
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/80 via-brand-primary/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-10">
+              <div className="w-12 h-12 rounded-full bg-brand-accent flex items-center justify-center mb-6">
+                <Dog className="text-brand-bg-secondary w-6 h-6" />
+              </div>
+              <h3 className="text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter mb-4">Dogs</h3>
+              <p className="text-brand-bg-secondary/80 text-lg max-w-sm">Labrador, German Shepherd, Golden Retriever, Shih Tzu, and more.</p>
+            </div>
+          </motion.div>
+
+          {/* Cats */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-lg md:text-xl text-text-body max-w-2xl mx-auto"
+            className="md:col-span-2 bento-card group"
           >
-            Find the perfect companion for your home.
-          </motion.p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
-              whileHover={{ y: -10 }}
-              className="group relative rounded-3xl overflow-hidden bg-brand-bg-secondary border border-white/5 hover:border-brand-accent/30 transition-all duration-500"
-            >
-              <div className="aspect-[4/3] sm:aspect-square lg:aspect-[4/3] overflow-hidden">
-                <img 
-                  src={category.image} 
-                  alt={category.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  referrerPolicy="no-referrer"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-t from-brand-bg-secondary via-brand-bg-secondary/20 to-transparent opacity-60`} />
-              </div>
-
-              <div className="p-6 md:p-8 relative">
-                <div className="flex items-center gap-4 mb-3 md:mb-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center group-hover:bg-brand-accent transition-colors duration-500">
-                    <category.icon className="w-5 h-5 md:w-6 md:h-6 text-brand-accent group-hover:text-white transition-colors duration-500" />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-white">{category.title}</h3>
+            <img 
+              src={categories[1].image} 
+              alt="Cats" 
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/80 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-8">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-brand-bg-secondary/20 backdrop-blur-md flex items-center justify-center">
+                  <Cat className="text-brand-bg-secondary w-5 h-5" />
                 </div>
-                <p className="text-sm md:text-base text-text-body leading-relaxed">
-                  {category.description}
-                </p>
-                
-                <div className="mt-4 md:mt-6 flex items-center gap-2 text-brand-accent font-semibold text-sm opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  View Breeds <span className="translate-x-0 group-hover:translate-x-1 transition-transform">→</span>
-                </div>
+                <h3 className="text-2xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter">Cats</h3>
               </div>
+            </div>
+          </motion.div>
 
-              {/* Soft Glow Effect */}
-              <div className="absolute -inset-px bg-gradient-to-br from-brand-accent/0 via-brand-accent/0 to-brand-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            </motion.div>
-          ))}
+          {/* Birds */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bento-card group"
+          >
+            <img 
+              src={categories[2].image} 
+              alt="Birds" 
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/80 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-6">
+              <h3 className="text-xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter">Birds</h3>
+            </div>
+          </motion.div>
+
+          {/* Aquatic */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="bento-card group"
+          >
+            <img 
+              src={categories[3].image} 
+              alt="Aquatic" 
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/80 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-6">
+              <h3 className="text-xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter">Aquatic</h3>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -4,94 +4,101 @@ import { Dog, Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-r
 
 const Footer = () => {
   return (
-    <footer className="bg-brand-bg py-16 md:py-24 border-t border-white/5">
+    <footer className="bg-brand-bg border-t border-brand-accent-secondary/10 py-16 lg:py-24">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-16 mb-16 md:mb-20">
-          <div className="space-y-6 md:space-y-8 text-center sm:text-left">
-            <div className="flex items-center gap-3 justify-center sm:justify-start">
-              <div className="w-10 h-10 bg-brand-accent rounded-full flex items-center justify-center">
-                <Dog className="text-white w-6 h-6" />
-              </div>
-              <span className="text-white font-bold tracking-tighter text-2xl uppercase">K9 SNIPERS</span>
+        {/* Mobile/Tablet Unique Layout (hidden on lg) */}
+        <div className="lg:hidden flex flex-col items-center text-center">
+          <h2 className="text-5xl font-display font-bold uppercase tracking-tighter text-brand-primary mb-6">
+            K9 <span className="text-brand-accent">Snipers</span>
+          </h2>
+          <p className="text-brand-text text-lg max-w-sm leading-relaxed mb-12">
+            Redefining the pet ownership experience in New Delhi with premium care and global standards.
+          </p>
+          
+          <div className="grid grid-cols-2 gap-x-12 gap-y-6 mb-16 w-full max-w-xs">
+            {['Home', 'About', 'Pets', 'Services', 'Contact'].map((item) => (
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                className="text-brand-primary hover:text-brand-accent transition-colors text-sm font-bold uppercase tracking-widest"
+              >
+                {item}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex gap-4 mb-16">
+            {[Instagram, Facebook, Twitter].map((Icon, i) => (
+              <a 
+                key={i}
+                href="#" 
+                className="w-14 h-14 rounded-2xl bg-brand-bg-secondary border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all shadow-sm"
+              >
+                <Icon className="w-6 h-6" />
+              </a>
+            ))}
+          </div>
+
+          <div className="w-full pt-12 border-t border-brand-accent-secondary/10 space-y-6">
+            <div className="text-brand-text text-[10px] font-bold tracking-[0.2em] uppercase">
+              © 2024 K9 SNIPERS. ALL RIGHTS RESERVED.
             </div>
-            <p className="text-text-body leading-relaxed max-w-xs mx-auto sm:mx-0">
-              Premium pet shop dedicated to providing healthy companions and high-quality pet care products.
-            </p>
-            <div className="flex gap-4 justify-center sm:justify-start">
-              {[Instagram, Facebook, Twitter].map((Icon, i) => (
-                <motion.a 
-                  key={i} 
-                  href="#" 
-                  whileHover={{ y: -5, scale: 1.1 }}
-                  className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center hover:bg-brand-accent transition-colors group"
-                >
-                  <Icon className="w-5 h-5 text-text-body group-hover:text-white" />
-                </motion.a>
-              ))}
-            </div>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <h4 className="text-white font-bold mb-6 md:mb-8 uppercase text-xs tracking-[0.3em]">Quick Links</h4>
-            <ul className="space-y-4">
-              {['Overview', 'Pets', 'Accessories', 'Services', 'Contact'].map((link) => (
-                <li key={link}>
-                  <a href={`#${link.toLowerCase()}`} className="text-text-body hover:text-brand-accent transition-colors duration-300 flex items-center gap-2 group justify-center sm:justify-start">
-                    <span className="hidden sm:block w-1.5 h-1.5 rounded-full bg-brand-accent scale-0 group-hover:scale-100 transition-transform duration-300" />
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <h4 className="text-white font-bold mb-6 md:mb-8 uppercase text-xs tracking-[0.3em]">Contact Info</h4>
-            <ul className="space-y-4 md:space-y-6">
-              <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 group">
-                <Phone className="w-5 h-5 text-brand-accent shrink-0" />
-                <span className="text-text-body group-hover:text-white transition-colors">+91 96437 97801</span>
-              </li>
-              <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 group">
-                <MapPin className="w-5 h-5 text-brand-accent shrink-0" />
-                <span className="text-text-body group-hover:text-white transition-colors text-center sm:text-left">
-                  Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096
-                </span>
-              </li>
-              <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 group">
-                <Mail className="w-5 h-5 text-brand-accent shrink-0" />
-                <span className="text-text-body group-hover:text-white transition-colors">info@k9snipers.in</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <h4 className="text-white font-bold mb-6 md:mb-8 uppercase text-xs tracking-[0.3em]">Newsletter</h4>
-            <p className="text-text-body text-sm mb-6">Join our community for pet care tips and exclusive offers.</p>
-            <div className="relative max-w-sm mx-auto sm:mx-0">
-              <input 
-                type="email" 
-                placeholder="Email address" 
-                className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 text-sm focus:outline-none focus:border-brand-accent transition-colors"
-              />
-              <button className="absolute right-2 top-2 bottom-2 bg-brand-accent hover:bg-brand-accent-light text-white px-6 rounded-full text-xs font-bold transition-colors">
-                Join
-              </button>
+            <div className="flex justify-center gap-8 text-brand-text text-[10px] font-bold uppercase tracking-widest">
+              <a href="#" className="hover:text-brand-primary transition-colors">Privacy</a>
+              <a href="#" className="hover:text-brand-primary transition-colors">Terms</a>
             </div>
           </div>
         </div>
 
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <p className="text-brand-accent font-bold tracking-widest text-sm uppercase">Healthy Pets. Happy Homes.</p>
-            <p className="text-text-body text-xs">
-              © {new Date().getFullYear()} K9 Snipers Dog Shop. All rights reserved.
-            </p>
+        {/* Desktop Layout (hidden on mobile/tablet) */}
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+            <div className="lg:col-span-2">
+              <h2 className="text-4xl font-display font-bold uppercase tracking-tighter text-brand-primary mb-8">
+                K9 <span className="text-brand-accent">Snipers</span>
+              </h2>
+              <p className="text-brand-text text-xl max-w-md leading-relaxed">
+                Redefining the pet ownership experience in New Delhi with premium care, global standards, and a passion for animals.
+              </p>
+            </div>
+            
+            <div>
+              <div className="micro-label mb-8">Navigation</div>
+              <ul className="space-y-4">
+                {['Home', 'About', 'Pets', 'Services', 'Contact'].map((item) => (
+                  <li key={item}>
+                    <a href={`#${item.toLowerCase()}`} className="text-brand-primary hover:text-brand-accent transition-colors text-lg font-medium">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <div className="micro-label mb-8">Social</div>
+              <div className="flex gap-6">
+                {[Instagram, Facebook, Twitter].map((Icon, i) => (
+                  <a 
+                    key={i}
+                    href="#" 
+                    className="w-12 h-12 rounded-full border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary hover:border-brand-accent transition-all shadow-sm"
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-xs font-medium">
-            <a href="#" className="text-text-body hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="text-text-body hover:text-white transition-colors">Terms of Service</a>
-            <a href="#" className="text-text-body hover:text-white transition-colors">Cookie Policy</a>
+
+          <div className="pt-12 border-t border-brand-accent-secondary/10 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="text-brand-text text-sm font-bold">
+              © 2024 K9 SNIPERS. ALL RIGHTS RESERVED.
+            </div>
+            <div className="flex gap-12 text-brand-text text-sm font-bold uppercase tracking-widest">
+              <a href="#" className="hover:text-brand-primary transition-colors">Privacy</a>
+              <a href="#" className="hover:text-brand-primary transition-colors">Terms</a>
+            </div>
           </div>
         </div>
       </div>

@@ -50,10 +50,10 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-accent rounded-full flex items-center justify-center">
-              <Dog className="text-white w-5 h-5" />
+            <div className="w-8 h-8 bg-brand-primary rounded-full flex items-center justify-center">
+              <Dog className="text-brand-bg-secondary w-5 h-5" />
             </div>
-            <span className="text-white font-bold tracking-tighter text-xl">K9 SNIPERS</span>
+            <span className="text-brand-primary font-bold tracking-tighter text-xl">K9 SNIPERS</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -61,7 +61,7 @@ const Navbar = () => {
               <a
                 key={item.name}
                 href={`#${item.id}`}
-                className="text-sm font-medium text-text-body hover:text-white transition-colors"
+                className="text-sm font-medium text-brand-text hover:text-brand-primary transition-colors"
               >
                 {item.name}
               </a>
@@ -69,13 +69,13 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="hidden sm:flex btn-premium px-6 py-2 rounded-full text-sm font-semibold text-white items-center gap-2 group">
+            <button className="hidden sm:flex btn-premium px-6 py-2 rounded-full text-sm font-semibold text-brand-bg-secondary items-center gap-2 group">
               Visit Store
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
             
             <button 
-              className="md:hidden text-white p-2"
+              className="md:hidden text-brand-primary p-2"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X /> : <Menu />}
@@ -99,12 +99,12 @@ const Navbar = () => {
                   key={item.name}
                   href={`#${item.id}`}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-3xl font-bold text-white hover:text-brand-accent transition-colors"
+                  className="text-3xl font-bold text-brand-primary hover:text-brand-accent transition-colors"
                 >
                   {item.name}
                 </a>
               ))}
-              <button className="mt-8 bg-brand-accent text-white px-8 py-4 rounded-full font-bold text-lg">
+              <button className="mt-8 btn-premium text-brand-bg-secondary px-8 py-4 rounded-full font-bold text-lg">
                 Visit Store
               </button>
             </div>

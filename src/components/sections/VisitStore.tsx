@@ -4,108 +4,171 @@ import { MapPin, Phone, Clock, Navigation, PhoneCall } from 'lucide-react';
 
 const VisitStore = () => {
   return (
-    <section id="contact" className="relative py-20 md:py-32 bg-brand-bg-secondary overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-12 md:mb-20">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tighter"
-          >
-            Visit Our <span className="text-brand-accent">Store</span>
-          </motion.h2>
-        </div>
+    <section id="contact" className="relative bg-brand-bg overflow-hidden">
+      {/* Mobile/Tablet Unique Layout (hidden on lg) */}
+      <div className="lg:hidden flex flex-col">
+        {/* Map Header */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="h-[40vh] relative grayscale hover:grayscale-0 transition-all duration-1000"
+        >
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.562306721665!2d77.3243!3d28.6129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDM2JzQ2LjQiTiA3N8KwMTknMjcuNSJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
+            width="100%" 
+            height="100%" 
+            style={{ border: 0, filter: 'sepia(30%) hue-rotate(-15deg) contrast(90%)' }} 
+            allowFullScreen={true} 
+            loading="lazy"
+            title="K9 Snipers Location Mobile"
+          ></iframe>
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-brand-bg to-transparent" />
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-start">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="space-y-8 md:space-y-12"
-          >
-            <div className="bg-brand-bg p-6 md:p-10 rounded-[32px] md:rounded-[40px] border border-white/5 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
-              
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">K9 Snipers Dog Shop</h3>
-              
-              <div className="space-y-6 md:space-y-8">
-                <div className="flex items-start gap-4 md:gap-6">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center shrink-0">
-                    <MapPin className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold mb-1 md:mb-2 text-sm md:text-base">Address</h4>
-                    <p className="text-text-body leading-relaxed text-sm md:text-base">
-                      Opposite Punjabi Dhaba, New Kondli Market<br />
-                      Mayur Vihar Phase 3, New Delhi – 110096
-                    </p>
-                  </div>
-                </div>
+        {/* Content Body */}
+        <div className="px-6 pb-24 -mt-12 relative z-10">
+          <div className="micro-label mb-4">Connect With Us</div>
+          <h2 className="text-5xl font-display font-bold tracking-tighter uppercase leading-[0.85] mb-12 text-brand-primary">
+            Visit Our <br />
+            <span className="text-brand-accent">Flagship</span> <br />
+            Store
+          </h2>
 
-                <div className="flex items-start gap-4 md:gap-6">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center shrink-0">
-                    <Phone className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold mb-1 md:mb-2 text-sm md:text-base">Phone</h4>
-                    <p className="text-text-body text-sm md:text-base">+91 96437 97801</p>
-                  </div>
-                </div>
+          <div className="space-y-12 mb-16">
+            <div className="p-8 bg-brand-bg-secondary rounded-[32px] border border-brand-accent-secondary/10 shadow-sm">
+              <div className="micro-label mb-4 text-brand-accent">Address</div>
+              <p className="text-brand-primary text-lg font-bold leading-relaxed">
+                Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096
+              </p>
+            </div>
 
-                <div className="flex items-start gap-4 md:gap-6">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center shrink-0">
-                    <Clock className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold mb-1 md:mb-2 text-sm md:text-base">Opening Hours</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 md:gap-y-2 text-text-body text-sm md:text-base">
-                      <div className="flex justify-between sm:block">
-                        <span>Mon – Sat</span>
-                        <span className="text-white sm:ml-4">10:00 AM – 10:00 PM</span>
-                      </div>
-                      <div className="flex justify-between sm:block">
-                        <span>Sunday</span>
-                        <span className="text-white sm:ml-4">1:00 PM – 5:00 PM</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-6 bg-brand-bg-secondary rounded-[32px] border border-brand-accent-secondary/10 shadow-sm">
+                <div className="micro-label mb-2 text-brand-accent">Contact</div>
+                <p className="text-brand-primary font-bold text-sm">+91 96437 97801</p>
               </div>
-
-              <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-4">
-                <a 
-                  href="tel:+919643797801"
-                  className="bg-brand-accent hover:bg-brand-accent-light text-white px-8 py-4 rounded-full font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-105 text-sm md:text-base"
-                >
-                  <PhoneCall className="w-5 h-5" />
-                  Call Now
-                </a>
-                <button className="btn-premium px-8 py-4 rounded-full text-white font-bold flex items-center justify-center gap-3 transition-all text-sm md:text-base">
-                  <Navigation className="w-5 h-5" />
-                  Get Directions
-                </button>
+              <div className="p-6 bg-brand-bg-secondary rounded-[32px] border border-brand-accent-secondary/10 shadow-sm">
+                <div className="micro-label mb-2 text-brand-accent">Email</div>
+                <p className="text-brand-primary font-bold text-[10px] truncate">info@k9snipers.in</p>
               </div>
             </div>
-          </motion.div>
 
+            <div className="p-8 bg-brand-bg-secondary rounded-[32px] border border-brand-accent-secondary/10 shadow-sm">
+              <div className="micro-label mb-4 text-brand-accent">Opening Hours</div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-brand-text text-sm">Mon – Sat</span>
+                  <span className="text-brand-primary font-bold text-sm">10 AM – 10 PM</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-brand-text text-sm">Sunday</span>
+                  <span className="text-brand-primary font-bold text-sm">1 PM – 5 PM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <a 
+              href="tel:+919643797801"
+              className="btn-premium py-6 rounded-full text-brand-bg-secondary font-bold uppercase tracking-tighter flex items-center justify-center gap-3"
+            >
+              <PhoneCall className="w-5 h-5" />
+              Call Now
+            </a>
+            <button className="bg-brand-bg-secondary text-brand-primary py-6 rounded-full font-bold uppercase tracking-tighter flex items-center justify-center gap-3 border border-brand-accent-secondary/20 shadow-sm">
+              <Navigation className="w-5 h-5" />
+              Directions
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Layout (hidden on mobile/tablet) */}
+      <div className="hidden lg:flex flex-row min-h-screen">
+        {/* Contact Info Pane */}
+        <div className="lg:w-1/2 p-10 md:p-24 flex flex-col justify-center bg-brand-bg relative z-10">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="relative rounded-[32px] md:rounded-[40px] overflow-hidden border border-white/10 h-[300px] sm:h-[400px] lg:h-full min-h-[300px] md:min-h-[500px]"
+            transition={{ duration: 1 }}
           >
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.562306721665!2d77.3243!3d28.6129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDM2JzQ2LjQiTiA3N8KwMTknMjcuNSJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
-              width="100%" 
-              height="100%" 
-              style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(90%)' }} 
-              allowFullScreen={true} 
-              loading="lazy"
-              title="K9 Snipers Location"
-            ></iframe>
+            <div className="micro-label mb-8">Connect With Us</div>
+            <h2 className="editorial-title mb-16">
+              Visit Our <br />
+              <span className="text-brand-accent">Flagship</span> <br />
+              Store
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+              <div className="space-y-4">
+                <div className="micro-label text-brand-accent">Address</div>
+                <p className="text-brand-primary text-xl font-bold leading-relaxed">
+                  Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="micro-label text-brand-accent">Contact</div>
+                <p className="text-brand-primary text-xl font-bold">+91 96437 97801</p>
+                <p className="text-brand-text text-lg">info@k9snipers.in</p>
+              </div>
+              <div className="space-y-4 md:col-span-2">
+                <div className="micro-label text-brand-accent">Opening Hours</div>
+                <div className="flex flex-wrap gap-12">
+                  <div>
+                    <div className="text-brand-text text-sm mb-1">Mon – Sat</div>
+                    <div className="text-brand-primary font-bold">10:00 AM – 10:00 PM</div>
+                  </div>
+                  <div>
+                    <div className="text-brand-text text-sm mb-1">Sunday</div>
+                    <div className="text-brand-primary font-bold">1:00 PM – 5:00 PM</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-6">
+              <a 
+                href="tel:+919643797801"
+                className="btn-premium px-10 py-5 rounded-full text-brand-bg-secondary font-bold uppercase tracking-tighter flex items-center gap-3 transition-all transform hover:scale-105"
+              >
+                <PhoneCall className="w-5 h-5" />
+                Call Now
+              </a>
+              <button className="bg-brand-bg-secondary text-brand-primary px-10 py-5 rounded-full font-bold uppercase tracking-tighter flex items-center gap-3 border border-brand-accent-secondary/20 shadow-sm transition-all hover:bg-brand-bg">
+                <Navigation className="w-5 h-5" />
+                Directions
+              </button>
+            </div>
           </motion.div>
         </div>
+
+        {/* Map Pane */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.5 }}
+          className="lg:w-1/2 h-[500px] lg:h-auto relative grayscale hover:grayscale-0 transition-all duration-1000"
+        >
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.562306721665!2d77.3243!3d28.6129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDM2JzQ2LjQiTiA3N8KwMTknMjcuNSJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
+            width="100%" 
+            height="100%" 
+            style={{ border: 0, filter: 'sepia(30%) hue-rotate(-15deg) contrast(90%)' }} 
+            allowFullScreen={true} 
+            loading="lazy"
+            title="K9 Snipers Location"
+          ></iframe>
+          
+          {/* Map Overlay Label */}
+          <div className="absolute top-10 right-10 bg-brand-bg p-4 border border-brand-accent-secondary/20 rounded-xl hidden md:block shadow-sm">
+            <div className="micro-label text-brand-accent">Live Map View</div>
+            <div className="text-brand-primary font-bold text-xs">Mayur Vihar Phase 3</div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

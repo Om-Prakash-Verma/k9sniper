@@ -1,26 +1,26 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-display: "Libre Baskerville", serif;
   
-  --color-brand-bg: #050505;
-  --color-brand-bg-secondary: #0A0A0C;
-  --color-brand-accent: #C47A2C;
-  --color-brand-accent-light: #FFB347;
-  --color-brand-accent-highlight: #FFD89B;
-  
-  --color-text-heading: rgba(255, 255, 255, 0.9);
-  --color-text-body: rgba(255, 255, 255, 0.6);
+  --color-brand-bg: #E8DFC8;
+  --color-brand-bg-secondary: #F3EBD6;
+  --color-brand-primary: #8B4F2E;
+  --color-brand-accent: #A7663F;
+  --color-brand-accent-secondary: #C49A6C;
+  --color-brand-text: #5A341E;
 }
 
 @layer base {
   body {
-    @apply bg-brand-bg text-text-body font-sans antialiased selection:bg-brand-accent/30 selection:text-white;
+    @apply bg-brand-bg text-brand-text font-sans antialiased selection:bg-brand-accent/30 selection:text-brand-primary;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply text-text-heading tracking-tight font-semibold;
+    @apply text-brand-primary tracking-tight font-display;
   }
 }
 
@@ -30,39 +30,80 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: #E8DFC8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #222;
+  background: #C49A6C;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #333;
+  background: #A7663F;
 }
 
 .glass-nav {
-  background: rgba(5, 5, 5, 0.75);
+  background: rgba(232, 223, 200, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(90, 52, 30, 0.1);
 }
 
 .text-gradient {
-  background: linear-gradient(to right, #C47A2C, #FFB347);
+  background: linear-gradient(to right, #8B4F2E, #A7663F);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .btn-premium {
   position: relative;
-  background: transparent;
-  border: 1px solid rgba(196, 122, 44, 0.5);
+  background: #A7663F;
+  color: #F3EBD6;
+  border: none;
+  border-radius: 1rem;
+  padding: 1rem 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   transition: all 0.3s ease;
 }
 
 .btn-premium:hover {
-  border-color: #FFB347;
-  box-shadow: 0 0 20px rgba(196, 122, 44, 0.2);
+  background: #8B4F2E;
+  box-shadow: 0 10px 20px rgba(139, 79, 46, 0.2);
+  transform: translateY(-2px);
+}
+
+/* New Layout Utilities */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(200px, auto);
+  gap: 1.5rem;
+}
+
+.bento-card {
+  @apply bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[2rem] overflow-hidden relative transition-all duration-500 hover:shadow-lg;
+}
+
+.editorial-title {
+  @apply text-[clamp(2.5rem,8vw,8rem)] leading-[0.85] font-display font-bold tracking-tighter uppercase text-brand-primary;
+}
+
+.micro-label {
+  @apply text-[10px] font-bold tracking-[0.2em] uppercase text-brand-accent;
+}
+
+.hardware-border {
+  @apply border border-brand-accent-secondary/20 relative;
+}
+
+.hardware-border::before {
+  content: '';
+  @apply absolute -top-1 -left-1 w-2 h-2 bg-brand-accent;
+}
+
+.hardware-border::after {
+  content: '';
+  @apply absolute -bottom-1 -right-1 w-2 h-2 bg-brand-accent;
 }

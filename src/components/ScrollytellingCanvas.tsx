@@ -102,13 +102,13 @@ const ScrollytellingCanvas: React.FC = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         
-        // Add a subtle vignette/overlay to make text readable
+        // Add a subtle warm vignette/overlay to make text readable
         const gradient = context.createRadialGradient(
           canvas.width / 2, canvas.height / 2, 0,
           canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 1.2
         );
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 0.1)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.6)');
+        gradient.addColorStop(0, 'rgba(232, 223, 200, 0.1)'); // Primary BG color with alpha
+        gradient.addColorStop(1, 'rgba(90, 52, 30, 0.4)'); // Brand text color with alpha
         context.fillStyle = gradient;
         context.fillRect(0, 0, canvas.width, canvas.height);
       }
@@ -174,18 +174,18 @@ const ScrollytellingCanvas: React.FC = () => {
   ];
 
   return (
-    <div ref={containerRef} className="relative h-[600vh] bg-black">
+    <div ref={containerRef} className="relative h-[600vh] bg-brand-bg">
       <div className="sticky top-0 w-full h-screen overflow-hidden relative">
         {!isLoaded && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-50">
-            <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-brand-bg z-50">
+            <div className="w-64 h-1 bg-brand-primary/10 rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-brand-accent"
                 initial={{ width: 0 }}
                 animate={{ width: `${loadProgress}%` }}
               />
             </div>
-            <p className="mt-4 text-white/50 text-xs uppercase tracking-widest">Loading Experience {loadProgress}%</p>
+            <p className="mt-4 text-brand-primary/50 text-xs uppercase tracking-widest font-bold">Loading Experience {loadProgress}%</p>
           </div>
         )}
         
@@ -247,8 +247,8 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
         >
           <div className="max-w-4xl">
             <motion.h2 
-              className="text-3xl sm:text-5xl md:text-8xl font-black mb-3 md:mb-6 tracking-tighter text-white uppercase leading-[0.9]"
-              style={{ textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
+              className="text-3xl sm:text-5xl md:text-8xl font-display font-bold mb-3 md:mb-6 tracking-tighter text-brand-primary uppercase leading-[0.9]"
+              style={{ textShadow: '0 4px 20px rgba(232, 223, 200, 0.8)' }}
             >
               {section.title}
             </motion.h2>
@@ -267,7 +267,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-sm sm:text-lg md:text-2xl text-white/80 max-w-2xl mx-auto font-medium px-4"
+                className="text-sm sm:text-lg md:text-2xl text-brand-text max-w-2xl mx-auto font-bold px-4"
               >
                 {section.content}
               </motion.p>
@@ -279,10 +279,10 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 transition={{ delay: 0.5 }}
                 className="mt-6 md:mt-12 flex flex-col sm:flex-row gap-3 md:gap-6 justify-center pointer-events-auto"
               >
-                <button className="bg-brand-accent hover:bg-brand-accent-light text-white px-8 md:px-10 py-3.5 md:py-5 rounded-full font-black transition-all transform hover:scale-105 shadow-2xl shadow-brand-accent/40 uppercase tracking-tighter text-xs md:text-base">
+                <button className="btn-premium px-8 md:px-10 py-3.5 md:py-5 rounded-full text-brand-bg-secondary font-bold transition-all transform hover:scale-105 shadow-xl uppercase tracking-tighter text-xs md:text-base">
                   Explore Shop
                 </button>
-                <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 md:px-10 py-3.5 md:py-5 rounded-full font-black transition-all border border-white/20 uppercase tracking-tighter text-xs md:text-base">
+                <button className="bg-brand-bg-secondary/80 hover:bg-brand-bg-secondary backdrop-blur-md text-brand-primary px-8 md:px-10 py-3.5 md:py-5 rounded-full font-bold transition-all border border-brand-accent-secondary/20 uppercase tracking-tighter text-xs md:text-base shadow-sm">
                   Contact Us
                 </button>
               </motion.div>
@@ -307,7 +307,7 @@ const ProgressDot: React.FC<{ index: number; total: number; progress: any }> = (
 
   return (
     <div 
-      className={`w-1 transition-all duration-700 ease-out ${isActive ? 'h-12 bg-brand-accent' : 'h-4 bg-white/20'}`} 
+      className={`w-1 transition-all duration-700 ease-out ${isActive ? 'h-12 bg-brand-accent' : 'h-4 bg-brand-primary/20'}`} 
     />
   );
 };
