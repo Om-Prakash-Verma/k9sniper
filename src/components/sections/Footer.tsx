@@ -4,18 +4,18 @@ import { Dog, Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-r
 
 const Footer = () => {
   return (
-    <footer className="bg-brand-bg border-t border-brand-accent-secondary/10 py-16 lg:py-24">
+    <footer className="bg-brand-bg border-t border-brand-accent-secondary/10 py-12 lg:py-16">
       <div className="max-w-7xl mx-auto px-6">
         {/* Mobile/Tablet Unique Layout (hidden on lg) */}
         <div className="lg:hidden flex flex-col items-center text-center">
           <h2 className="text-5xl font-display font-bold uppercase tracking-tighter text-brand-primary mb-6">
             K9 <span className="text-brand-accent">Snipers</span>
           </h2>
-          <p className="text-brand-text text-lg max-w-sm leading-relaxed mb-12">
+          <p className="text-brand-text text-lg max-w-sm leading-relaxed mb-8">
             Redefining the pet ownership experience in New Delhi with premium care and global standards.
           </p>
           
-          <div className="grid grid-cols-2 gap-x-12 gap-y-6 mb-16 w-full max-w-xs">
+          <div className="grid grid-cols-2 gap-x-12 gap-y-6 mb-8 w-full max-w-xs">
             {['Home', 'About', 'Pets', 'Services', 'Contact'].map((item) => (
               <a 
                 key={item} 
@@ -27,7 +27,7 @@ const Footer = () => {
             ))}
           </div>
 
-          <div className="flex gap-4 mb-16">
+          <div className="flex gap-4 mb-8">
             {[Instagram, Facebook, Twitter].map((Icon, i) => (
               <a 
                 key={i}
@@ -52,9 +52,9 @@ const Footer = () => {
 
         {/* Desktop Layout (hidden on mobile/tablet) */}
         <div className="hidden lg:block">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-12">
             <div className="lg:col-span-2">
-              <h2 className="text-4xl font-display font-bold uppercase tracking-tighter text-brand-primary mb-8">
+              <h2 className="text-4xl font-display font-bold uppercase tracking-tighter text-brand-primary mb-4">
                 K9 <span className="text-brand-accent">Snipers</span>
               </h2>
               <p className="text-brand-text text-xl max-w-md leading-relaxed">
@@ -63,7 +63,7 @@ const Footer = () => {
             </div>
             
             <div>
-              <div className="micro-label mb-8">Navigation</div>
+              <div className="micro-label mb-4">Navigation</div>
               <ul className="space-y-4">
                 {['Home', 'About', 'Pets', 'Services', 'Contact'].map((item) => (
                   <li key={item}>
@@ -76,7 +76,7 @@ const Footer = () => {
             </div>
 
             <div>
-              <div className="micro-label mb-8">Social</div>
+              <div className="micro-label mb-4">Social</div>
               <div className="flex gap-6">
                 {[Instagram, Facebook, Twitter].map((Icon, i) => (
                   <a 
