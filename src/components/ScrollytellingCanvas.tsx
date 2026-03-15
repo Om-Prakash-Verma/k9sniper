@@ -196,21 +196,15 @@ const ScrollytellingCanvas: React.FC = () => {
         
         {/* Content Overlay */}
         <div className="absolute inset-0 pointer-events-none">
-          <AnimatePresence mode="wait">
-            {sections.map((section, index) => {
-              // We use a custom hook-like logic inside the map which is not ideal for React state
-              // but since we are using smoothProgress.get() inside the render loop, 
-              // we need a way to trigger re-renders for the text.
-              // Actually, using scrollYProgress directly in motion components is better.
-              return (
-                <SectionContent 
-                  key={index} 
-                  section={section} 
-                  progress={scrollYProgress} 
-                />
-              );
-            })}
-          </AnimatePresence>
+          {sections.map((section, index) => {
+            return (
+              <SectionContent 
+                key={index} 
+                section={section} 
+                progress={scrollYProgress} 
+              />
+            );
+          })}
         </div>
 
         {/* Progress Indicator */}
@@ -253,7 +247,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
         >
           <div className="max-w-4xl">
             <motion.h2 
-              className="text-5xl md:text-8xl font-black mb-6 tracking-tighter text-white uppercase"
+              className="text-3xl sm:text-5xl md:text-8xl font-black mb-3 md:mb-6 tracking-tighter text-white uppercase leading-[0.9]"
               style={{ textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
             >
               {section.title}
@@ -263,7 +257,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-xl md:text-3xl text-brand-accent font-bold mb-4 uppercase tracking-widest"
+                className="text-base sm:text-xl md:text-3xl text-brand-accent font-bold mb-2 md:mb-4 uppercase tracking-widest"
               >
                 {section.subtitle}
               </motion.p>
@@ -273,7 +267,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-lg md:text-2xl text-white/80 max-w-2xl mx-auto font-medium"
+                className="text-sm sm:text-lg md:text-2xl text-white/80 max-w-2xl mx-auto font-medium px-4"
               >
                 {section.content}
               </motion.p>
@@ -283,12 +277,12 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
-                className="mt-12 flex gap-6 justify-center pointer-events-auto"
+                className="mt-6 md:mt-12 flex flex-col sm:flex-row gap-3 md:gap-6 justify-center pointer-events-auto"
               >
-                <button className="bg-brand-accent hover:bg-brand-accent-light text-white px-10 py-5 rounded-full font-black transition-all transform hover:scale-105 shadow-2xl shadow-brand-accent/40 uppercase tracking-tighter">
+                <button className="bg-brand-accent hover:bg-brand-accent-light text-white px-8 md:px-10 py-3.5 md:py-5 rounded-full font-black transition-all transform hover:scale-105 shadow-2xl shadow-brand-accent/40 uppercase tracking-tighter text-xs md:text-base">
                   Explore Shop
                 </button>
-                <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-10 py-5 rounded-full font-black transition-all border border-white/20 uppercase tracking-tighter">
+                <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 md:px-10 py-3.5 md:py-5 rounded-full font-black transition-all border border-white/20 uppercase tracking-tighter text-xs md:text-base">
                   Contact Us
                 </button>
               </motion.div>

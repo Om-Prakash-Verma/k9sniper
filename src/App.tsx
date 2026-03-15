@@ -4,8 +4,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
-import { Dog, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Dog, ChevronRight, Menu, X } from 'lucide-react';
 
 import ScrollytellingCanvas from './components/ScrollytellingCanvas';
 import About from './components/sections/About';
@@ -21,6 +21,7 @@ import Footer from './components/sections/Footer';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,46 +31,87 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navLinks = [
+    { name: 'Overview', id: 'overview' },
+    { name: 'Pets', id: 'pets' },
+    { name: 'Accessories', id: 'accessories' },
+    { name: 'Services', id: 'services' },
+    { name: 'Contact', id: 'contact' }
+  ];
+
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-        isScrolled ? 'glass-nav py-3' : 'bg-transparent py-6'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-brand-accent rounded-full flex items-center justify-center">
-            <Dog className="text-white w-5 h-5" />
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+          isScrolled || isMobileMenuOpen ? 'glass-nav py-4' : 'bg-transparent py-8'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-brand-accent rounded-full flex items-center justify-center">
+              <Dog className="text-white w-5 h-5" />
+            </div>
+            <span className="text-white font-bold tracking-tighter text-xl">K9 SNIPERS</span>
           </div>
-          <span className="text-white font-bold tracking-tighter text-xl">K9 SNIPERS</span>
-        </div>
 
-        <div className="hidden md:flex items-center gap-8">
-          {[
-            { name: 'Overview', id: 'overview' },
-            { name: 'Pets', id: 'pets' },
-            { name: 'Accessories', id: 'accessories' },
-            { name: 'Services', id: 'services' },
-            { name: 'Contact', id: 'contact' }
-          ].map((item) => (
-            <a
-              key={item.name}
-              href={`#${item.id}`}
-              className="text-sm font-medium text-text-body hover:text-white transition-colors"
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks.map((item) => (
+              <a
+                key={item.name}
+                href={`#${item.id}`}
+                className="text-sm font-medium text-text-body hover:text-white transition-colors"
+              >
+                {item.name}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button className="hidden sm:flex btn-premium px-6 py-2 rounded-full text-sm font-semibold text-white items-center gap-2 group">
+              Visit Store
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+            
+            <button 
+              className="md:hidden text-white p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {item.name}
-            </a>
-          ))}
+              {isMobileMenuOpen ? <X /> : <Menu />}
+            </button>
+          </div>
         </div>
+      </motion.nav>
 
-        <button className="btn-premium px-6 py-2 rounded-full text-sm font-semibold text-white flex items-center gap-2 group">
-          Visit Store
-          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
-    </motion.nav>
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 md:hidden bg-brand-bg pt-24 px-6"
+          >
+            <div className="flex flex-col gap-6">
+              {navLinks.map((item) => (
+                <a
+                  key={item.name}
+                  href={`#${item.id}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-3xl font-bold text-white hover:text-brand-accent transition-colors"
+                >
+                  {item.name}
+                </a>
+              ))}
+              <button className="mt-8 bg-brand-accent text-white px-8 py-4 rounded-full font-bold text-lg">
+                Visit Store
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
@@ -77,9 +119,9 @@ const Navbar = () => {
 
 export default function App() {
   return (
-    <div className="bg-brand-bg min-h-screen selection:bg-brand-accent/30">
+    <div className="bg-brand-bg min-h-screen selection:bg-brand-accent/30 relative">
       <Navbar />
-      <main>
+      <main className="relative">
         <ScrollytellingCanvas />
         <About />
         <OurPets />

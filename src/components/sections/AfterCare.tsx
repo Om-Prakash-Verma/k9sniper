@@ -18,15 +18,15 @@ const features = [
 
 const AfterCare = () => {
   return (
-    <section className="py-24 md:py-32 bg-brand-bg-secondary overflow-hidden">
+    <section className="py-20 md:py-32 bg-brand-bg-secondary overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="order-2 lg:order-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
+          <div className="order-2 lg:order-1 text-center lg:text-left">
             <motion.h2 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="text-4xl md:text-6xl font-bold mb-8 tracking-tighter"
+              className="text-4xl md:text-6xl font-bold mb-6 md:mb-8 tracking-tighter"
             >
               Care Beyond <span className="text-brand-accent">Adoption</span>
             </motion.h2>
@@ -35,12 +35,12 @@ const AfterCare = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-xl text-text-body mb-12 leading-relaxed"
+              className="text-lg md:text-xl text-text-body mb-10 md:mb-12 leading-relaxed max-w-xl mx-auto lg:mx-0"
             >
               Our responsibility does not end after the sale. We guide every pet owner to ensure proper care and long-term health.
             </motion.p>
 
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.title}
@@ -48,12 +48,12 @@ const AfterCare = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
-                  className="flex items-center gap-6 group"
+                  className="flex items-center gap-4 md:gap-6 group justify-center lg:justify-start"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center group-hover:bg-brand-accent transition-colors duration-500">
-                    <feature.icon className="w-6 h-6 text-brand-accent group-hover:text-white transition-colors duration-500" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center group-hover:bg-brand-accent transition-colors duration-500">
+                    <feature.icon className="w-5 h-5 md:w-6 md:h-6 text-brand-accent group-hover:text-white transition-colors duration-500" />
                   </div>
-                  <span className="text-lg font-medium text-white/80 group-hover:text-white transition-colors duration-500">
+                  <span className="text-base md:text-lg font-medium text-white/80 group-hover:text-white transition-colors duration-500">
                     {feature.title}
                   </span>
                 </motion.div>
@@ -69,7 +69,7 @@ const AfterCare = () => {
             className="order-1 lg:order-2 relative"
           >
             <div className="absolute -inset-4 bg-brand-accent/10 blur-3xl rounded-full" />
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 aspect-square">
+            <div className="relative rounded-3xl overflow-hidden border border-white/10 aspect-square sm:aspect-[4/3] lg:aspect-square">
               <img 
                 src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&q=80&w=1000" 
                 alt="Pet Owner with Dog"

@@ -4,20 +4,20 @@ import { Dog, Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-r
 
 const Footer = () => {
   return (
-    <footer className="bg-brand-bg py-24 border-t border-white/5">
+    <footer className="bg-brand-bg py-16 md:py-24 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
-          <div className="space-y-8">
-            <div className="flex items-center gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-16 mb-16 md:mb-20">
+          <div className="space-y-6 md:space-y-8 text-center sm:text-left">
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
               <div className="w-10 h-10 bg-brand-accent rounded-full flex items-center justify-center">
                 <Dog className="text-white w-6 h-6" />
               </div>
               <span className="text-white font-bold tracking-tighter text-2xl uppercase">K9 SNIPERS</span>
             </div>
-            <p className="text-text-body leading-relaxed max-w-xs">
+            <p className="text-text-body leading-relaxed max-w-xs mx-auto sm:mx-0">
               Premium pet shop dedicated to providing healthy companions and high-quality pet care products.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 justify-center sm:justify-start">
               {[Instagram, Facebook, Twitter].map((Icon, i) => (
                 <motion.a 
                   key={i} 
@@ -31,13 +31,13 @@ const Footer = () => {
             </div>
           </div>
 
-          <div>
-            <h4 className="text-white font-bold mb-8 uppercase text-xs tracking-[0.3em]">Quick Links</h4>
+          <div className="text-center sm:text-left">
+            <h4 className="text-white font-bold mb-6 md:mb-8 uppercase text-xs tracking-[0.3em]">Quick Links</h4>
             <ul className="space-y-4">
               {['Overview', 'Pets', 'Accessories', 'Services', 'Contact'].map((link) => (
                 <li key={link}>
-                  <a href={`#${link.toLowerCase()}`} className="text-text-body hover:text-brand-accent transition-colors duration-300 flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-accent scale-0 group-hover:scale-100 transition-transform duration-300" />
+                  <a href={`#${link.toLowerCase()}`} className="text-text-body hover:text-brand-accent transition-colors duration-300 flex items-center gap-2 group justify-center sm:justify-start">
+                    <span className="hidden sm:block w-1.5 h-1.5 rounded-full bg-brand-accent scale-0 group-hover:scale-100 transition-transform duration-300" />
                     {link}
                   </a>
                 </li>
@@ -45,30 +45,30 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-white font-bold mb-8 uppercase text-xs tracking-[0.3em]">Contact Info</h4>
-            <ul className="space-y-6">
-              <li className="flex items-start gap-4 group">
+          <div className="text-center sm:text-left">
+            <h4 className="text-white font-bold mb-6 md:mb-8 uppercase text-xs tracking-[0.3em]">Contact Info</h4>
+            <ul className="space-y-4 md:space-y-6">
+              <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 group">
                 <Phone className="w-5 h-5 text-brand-accent shrink-0" />
                 <span className="text-text-body group-hover:text-white transition-colors">+91 96437 97801</span>
               </li>
-              <li className="flex items-start gap-4 group">
+              <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 group">
                 <MapPin className="w-5 h-5 text-brand-accent shrink-0" />
-                <span className="text-text-body group-hover:text-white transition-colors">
+                <span className="text-text-body group-hover:text-white transition-colors text-center sm:text-left">
                   Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096
                 </span>
               </li>
-              <li className="flex items-start gap-4 group">
+              <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 group">
                 <Mail className="w-5 h-5 text-brand-accent shrink-0" />
                 <span className="text-text-body group-hover:text-white transition-colors">info@k9snipers.in</span>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-white font-bold mb-8 uppercase text-xs tracking-[0.3em]">Newsletter</h4>
+          <div className="text-center sm:text-left">
+            <h4 className="text-white font-bold mb-6 md:mb-8 uppercase text-xs tracking-[0.3em]">Newsletter</h4>
             <p className="text-text-body text-sm mb-6">Join our community for pet care tips and exclusive offers.</p>
-            <div className="relative">
+            <div className="relative max-w-sm mx-auto sm:mx-0">
               <input 
                 type="email" 
                 placeholder="Email address" 
@@ -88,7 +88,7 @@ const Footer = () => {
               © {new Date().getFullYear()} K9 Snipers Dog Shop. All rights reserved.
             </p>
           </div>
-          <div className="flex gap-8 text-xs font-medium">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-xs font-medium">
             <a href="#" className="text-text-body hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="text-text-body hover:text-white transition-colors">Terms of Service</a>
             <a href="#" className="text-text-body hover:text-white transition-colors">Cookie Policy</a>
