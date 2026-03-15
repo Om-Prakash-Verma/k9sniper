@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 
 const About = () => {
   return (
-    <section id="overview" className="py-20 md:py-32 bg-brand-bg-secondary overflow-hidden">
+    <section id="overview" className="relative py-20 md:py-32 bg-brand-bg-secondary overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 items-center">
           <motion.div

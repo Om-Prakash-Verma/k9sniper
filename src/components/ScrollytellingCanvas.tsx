@@ -175,7 +175,7 @@ const ScrollytellingCanvas: React.FC = () => {
 
   return (
     <div ref={containerRef} className="relative h-[600vh] bg-black">
-      <div className="sticky top-0 w-full h-screen overflow-hidden">
+      <div className="sticky top-0 w-full h-screen overflow-hidden relative">
         {!isLoaded && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-50">
             <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">

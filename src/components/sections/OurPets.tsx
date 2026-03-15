@@ -42,7 +42,7 @@ const categories = [
 
 const OurPets = () => {
   return (
-    <section id="pets" className="py-20 md:py-32 bg-brand-bg">
+    <section id="pets" className="relative py-20 md:py-32 bg-brand-bg">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12 md:mb-20">
           <motion.h2 

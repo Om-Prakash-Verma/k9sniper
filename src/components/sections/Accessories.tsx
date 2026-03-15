@@ -28,7 +28,7 @@ const products = [
 
 const Accessories = () => {
   return (
-    <section id="accessories" className="py-20 md:py-32 bg-brand-bg-secondary">
+    <section id="accessories" className="relative py-20 md:py-32 bg-brand-bg-secondary">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 md:mb-16 gap-8 text-center lg:text-left">
           <div className="max-w-2xl mx-auto lg:mx-0">
