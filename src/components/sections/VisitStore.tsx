@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { MapPin, Phone, Clock, Navigation, Instagram, Facebook, Twitter, Mail, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Clock, Navigation, Instagram, Mail, MessageSquare } from 'lucide-react';
 
 const VisitStore = () => {
   return (
@@ -62,6 +62,23 @@ const VisitStore = () => {
               </motion.a>
             </div>
 
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[2rem]"
+            >
+              <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-4">Store Management</div>
+              <div className="mb-6">
+                <div className="text-brand-primary font-bold text-xl">Ankit Singh Chauhan</div>
+                <div className="text-[10px] font-medium uppercase tracking-widest text-brand-text/60">Proprietor</div>
+              </div>
+              <div className="p-4 bg-brand-accent/10 rounded-xl border border-brand-accent/20">
+                <div className="text-brand-accent font-bold text-sm uppercase tracking-tighter">Home Delivery Available</div>
+                <div className="text-[10px] text-brand-text/80">Across Delhi NCR & Major Cities</div>
+              </div>
+            </motion.div>
+
             {/* Social Links */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -71,11 +88,17 @@ const VisitStore = () => {
             >
               <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-4">Follow Our Journey</div>
               <div className="flex gap-4">
-                {[Instagram, Facebook, Twitter, MessageSquare].map((Icon, i) => (
-                  <a key={i} href="#" className="w-12 h-12 rounded-xl bg-brand-bg border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-300">
-                    <Icon className="w-5 h-5" />
-                  </a>
-                ))}
+                <a 
+                  href="https://www.instagram.com/k9_snipers_petshop/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-brand-bg border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-300"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a href="#" className="w-12 h-12 rounded-xl bg-brand-bg border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-300">
+                  <MessageSquare className="w-5 h-5" />
+                </a>
               </div>
             </motion.div>
 
@@ -132,10 +155,15 @@ const VisitStore = () => {
                     <div className="text-brand-primary font-bold text-lg leading-tight">Mayur Vihar Phase 3, New Delhi</div>
                   </div>
                 </div>
-                <button className="w-full md:w-auto px-10 py-5 bg-brand-primary text-brand-bg-secondary rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-brand-accent transition-all duration-300">
+                <a 
+                  href="https://maps.app.goo.gl/YourActualMapLink" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full md:w-auto px-10 py-5 bg-brand-primary text-brand-bg-secondary rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-brand-accent transition-all duration-300"
+                >
                   <Navigation className="w-4 h-4" />
                   Get Directions
-                </button>
+                </a>
               </div>
             </motion.div>
 
@@ -146,14 +174,22 @@ const VisitStore = () => {
               viewport={{ once: true }}
               className="p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[3rem] flex flex-col md:flex-row justify-between items-center gap-8"
             >
-              <div className="max-w-md">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-2">Full Address</div>
-                <p className="text-brand-primary text-xl font-medium leading-relaxed">
+              <a 
+                href="https://maps.app.goo.gl/YourActualMapLink" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="max-w-md group"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-4">Full Address (Click to View Map)</div>
+                <p className="text-brand-primary text-xl font-medium leading-relaxed group-hover:text-brand-accent transition-colors">
                   Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096
                 </p>
-              </div>
+              </a>
               <div className="flex gap-4 w-full md:w-auto">
-                <button className="flex-1 md:flex-none px-10 py-5 bg-brand-bg border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase tracking-widest text-[10px] hover:bg-brand-primary hover:text-brand-bg-secondary transition-all">
+                <button 
+                  onClick={() => navigator.clipboard.writeText("Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096")}
+                  className="flex-1 md:flex-none px-10 py-5 bg-brand-bg border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase tracking-widest text-[10px] hover:bg-brand-primary hover:text-brand-bg-secondary transition-all"
+                >
                   Copy Address
                 </button>
               </div>

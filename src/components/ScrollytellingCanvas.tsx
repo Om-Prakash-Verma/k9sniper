@@ -17,7 +17,7 @@ const ScrollytellingCanvas: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
 
-  const frameCount = 240; // Updated to 240 frames
+  const frameCount = 181; // Updated to 240 frames
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]

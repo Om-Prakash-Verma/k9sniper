@@ -3,24 +3,53 @@ import { motion } from 'motion/react';
 import { 
   ShoppingBag, 
   Utensils, 
-  Bone, 
-  Waves, 
   Bed, 
-  ShieldCheck, 
-  Gamepad2, 
   Scissors, 
-  Box, 
-  Settings 
+  Box,
+  ShoppingCart,
+  ChevronRight
 } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
+import { Link } from 'react-router-dom';
 
 const products = [
-  { title: "Premium Nutrition", icon: Utensils, desc: "High-performance meals for all breeds and life stages." },
-  { title: "Comfort Living", icon: Bed, desc: "Orthopedic and plush bedding for restorative rest." },
-  { title: "Active Lifestyle", icon: Gamepad2, desc: "Interactive gear designed for physical and mental agility." },
-  { title: "Professional Care", icon: Scissors, desc: "Specialized hygiene and grooming solutions for a healthy coat." }
+  { 
+    id: "prod_food_01",
+    title: "Premium Food", 
+    icon: Utensils, 
+    desc: "Complete range of Premium Dog Food, Cat Food, Bird Feed, and Fish Feed.",
+    price: 1200,
+    image: "premium-food.jpg"
+  },
+  { 
+    id: "prod_comfort_01",
+    title: "Comfort & Style", 
+    icon: Bed, 
+    desc: "High-quality Pet Beds, Collars, and Leashes for your pet's comfort and safety.",
+    price: 2500,
+    image: "comfort-style.jpg"
+  },
+  { 
+    id: "prod_groom_01",
+    title: "Care & Grooming", 
+    icon: Scissors, 
+    desc: "Professional Grooming Products and Aquarium Equipment for maintenance.",
+    price: 850,
+    image: "care-grooming.jpg"
+  },
+  { 
+    id: "prod_living_01",
+    title: "Living Solutions", 
+    icon: Box, 
+    desc: "Durable Toys, Cages, and Carriers for all types of pets.",
+    price: 3200,
+    image: "living-solutions.jpg"
+  }
 ];
 
 const Accessories = () => {
+  const { addToCart } = useCart();
+
   return (
     <section id="accessories" className="relative py-16 lg:py-32 bg-brand-bg overflow-hidden border-b border-brand-accent-secondary/10">
       <div className="max-w-7xl mx-auto px-6">
@@ -67,15 +96,21 @@ const Accessories = () => {
 
               <div className="relative z-10 mt-12">
                 <div className="flex items-center justify-between mb-8">
-                  <span className="font-mono text-[10px] text-brand-accent tracking-widest uppercase">Stock Status</span>
+                  <div className="text-brand-accent font-bold text-2xl group-hover:text-brand-bg-secondary transition-colors duration-500">
+                    ₹{item.price.toLocaleString()}
+                  </div>
                   <span className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     In Stock
                   </span>
                 </div>
-                <button className="w-full py-5 border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase text-[10px] tracking-widest group-hover:bg-brand-accent group-hover:border-brand-accent group-hover:text-brand-bg-secondary transition-all duration-500">
-                  View Catalog
-                </button>
+                <Link 
+                  to="/products"
+                  className="w-full py-5 border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase text-[10px] tracking-widest group-hover:bg-brand-accent group-hover:border-brand-accent group-hover:text-brand-bg-secondary transition-all duration-500 flex items-center justify-center gap-2"
+                >
+                  Browse Products
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
               </div>
 
               {/* Background Decorative Number */}

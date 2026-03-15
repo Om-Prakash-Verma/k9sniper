@@ -12,13 +12,13 @@ import {
 
 const reasons = [
   { 
-    title: "Wide Variety of Pets", 
-    description: "From premium dog breeds to exotic birds and aquatic life, we offer the most diverse selection in Delhi NCR.",
+    title: "Wide Variety", 
+    description: "A comprehensive selection of dogs, cats, birds, and aquatic pets all under one roof.",
     icon: CheckCircle2,
     code: "VAR_01"
   },
   { 
-    title: "Health-Focused", 
+    title: "Health Focused", 
     description: "Every pet undergoes rigorous health checks and vaccinations before finding their forever home.",
     icon: HeartPulse,
     code: "HLT_02"
@@ -31,12 +31,12 @@ const reasons = [
   },
   { 
     title: "After-Care Support", 
-    description: "Our relationship doesn't end at the sale. We provide lifelong guidance for your pet's well-being.",
+    description: "Lifelong guidance for your pet's well-being, from nutrition to behavioral advice.",
     icon: LifeBuoy,
     code: "SUP_04"
   },
   { 
-    title: "Global Exports", 
+    title: "Export Assistance", 
     description: "Professional assistance for international pet transport and documentation compliance.",
     icon: Plane,
     code: "EXP_05"

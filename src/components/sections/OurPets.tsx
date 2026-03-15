@@ -1,46 +1,67 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Dog, Cat, Bird, Fish, Rabbit } from 'lucide-react';
+import { Dog, Cat, Bird, Fish, Rabbit, ShoppingCart, ChevronRight } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
+import { Link } from 'react-router-dom';
+
+import { getImageUrl } from '../../utils/imageHelper';
 
 const categories = [
   {
-    title: "Dogs",
+    id: "pet_dog_01",
+    title: "Dogs Collection",
     icon: Dog,
-    description: "Loyal companions including Labrador Retriever, German Shepherd, Golden Retriever, Shih Tzu, Pomeranian and more.",
-    image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800",
-    color: "from-orange-500/20 to-brand-accent/20"
+    description: "We deal in all popular and premium dog breeds including Labrador Retriever, German Shepherd, Golden Retriever, Shih Tzu, Pomeranian, Chihuahua, Rottweiler, Doberman, Siberian Husky, Beagle, and many more.",
+    image: "dog-collection.jpg",
+    color: "from-orange-500/20 to-brand-accent/20",
+    price: 15000,
+    type: 'pet' as const
   },
   {
-    title: "Cats",
+    id: "pet_cat_01",
+    title: "Luxury & Exotic Cats",
     icon: Cat,
-    description: "Elegant breeds including Persian, Himalayan, Siamese and British Shorthair.",
-    image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=800",
-    color: "from-blue-500/20 to-indigo-500/20"
+    description: "We offer a variety of cat breeds including Persian Cats, Himalayan Cats, Siamese Cats, British Shorthair, Maine Coon, and other exotic cats.",
+    image: "cat-collection.jpg",
+    color: "from-blue-500/20 to-indigo-500/20",
+    price: 12000,
+    type: 'pet' as const
   },
   {
-    title: "Birds",
+    id: "pet_bird_01",
+    title: "Birds Section",
     icon: Bird,
-    description: "Colorful birds including Budgies, Cockatiels, Lovebirds and Finches.",
-    image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=800",
-    color: "from-emerald-500/20 to-teal-500/20"
+    description: "Our Birds Section includes a variety of birds such as Budgies, Cockatiels, Lovebirds, Finches, Parrots, and other available exotic birds.",
+    image: "bird-collection.jpg",
+    color: "from-emerald-500/20 to-teal-500/20",
+    price: 2500,
+    type: 'pet' as const
   },
   {
-    title: "Aquatic Pets",
+    id: "pet_fish_01",
+    title: "Aquatic Collection",
     icon: Fish,
-    description: "Beautiful aquarium fish including Betta Fish, Goldfish, Guppies and Angelfish.",
-    image: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&q=80&w=800",
-    color: "from-cyan-500/20 to-blue-500/20"
+    description: "We deal in a wide range of aquatic pets including Goldfish, Koi Fish, Betta Fish, Guppies, Angelfish, and complete aquarium setup solutions.",
+    image: "fish-collection.jpg",
+    color: "from-cyan-500/20 to-blue-500/20",
+    price: 1500,
+    type: 'pet' as const
   },
   {
-    title: "Rabbits",
+    id: "pet_rabbit_01",
+    title: "Cute Rabbits",
     icon: Rabbit,
-    description: "Cute and friendly domestic rabbits perfect for families.",
-    image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&q=80&w=800",
-    color: "from-pink-500/20 to-rose-500/20"
+    description: "We deal in domestic rabbits and fancy rabbits (as per availability). We provide proper feeding guidance and cage setup assistance.",
+    image: "rabbit-collection.jpg",
+    color: "from-pink-500/20 to-rose-500/20",
+    price: 800,
+    type: 'pet' as const
   }
 ];
 
 const OurPets = () => {
+  const { addToCart } = useCart();
+
   return (
     <section id="pets" className="relative py-16 lg:py-32 bg-brand-bg-secondary overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
@@ -73,7 +94,7 @@ const OurPets = () => {
             >
               <div className="aspect-[3/4] rounded-[3rem] overflow-hidden relative shadow-2xl border border-brand-accent-secondary/10">
                 <img 
-                  src={category.image} 
+                  src={getImageUrl(category.image)} 
                   alt={category.title}
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                   referrerPolicy="no-referrer"
@@ -92,15 +113,22 @@ const OurPets = () => {
                     </div>
                     <span className="text-brand-bg-secondary font-bold uppercase tracking-widest text-xs">Category</span>
                   </div>
-                  <h3 className="text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-none mb-4">
-                    {category.title}
-                  </h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-none">
+                      {category.title}
+                    </h3>
+                    <div className="text-brand-accent font-bold text-xl">₹{category.price.toLocaleString()}</div>
+                  </div>
                   <p className="text-brand-bg-secondary/70 text-sm leading-relaxed mb-8 line-clamp-2 group-hover:line-clamp-none transition-all duration-500">
                     {category.description}
                   </p>
-                  <button className="w-full py-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-brand-bg-secondary font-bold uppercase text-[10px] tracking-widest hover:bg-brand-accent hover:border-brand-accent transition-all duration-500">
-                    Explore Breeds
-                  </button>
+                  <Link 
+                    to="/pets"
+                    className="w-full py-5 bg-brand-accent rounded-2xl text-brand-bg-secondary font-bold uppercase text-[10px] tracking-widest hover:bg-white hover:text-brand-primary transition-all duration-500 flex items-center justify-center gap-2"
+                  >
+                    Browse Pets
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -124,9 +152,13 @@ const OurPets = () => {
                 We can help you source specific breeds and exotic pets globally.
               </p>
             </div>
-            <button className="w-full py-5 bg-brand-accent rounded-2xl text-brand-bg-secondary font-bold uppercase text-[10px] tracking-widest hover:bg-white hover:text-brand-primary transition-all duration-500 shadow-xl">
-              Contact Specialist
-            </button>
+            <Link 
+              to="/pets"
+              className="w-full py-5 bg-brand-accent rounded-2xl text-brand-bg-secondary font-bold uppercase text-[10px] tracking-widest hover:bg-white hover:text-brand-primary transition-all duration-500 shadow-xl flex items-center justify-center gap-2"
+            >
+              Browse Collection
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </motion.div>
         </div>
       </div>

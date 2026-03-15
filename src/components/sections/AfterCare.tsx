@@ -10,11 +10,11 @@ import {
 } from 'lucide-react';
 
 const features = [
-  { title: "Feeding Guidelines", icon: Heart, desc: "Customized nutritional plans tailored to your pet's specific breed and age requirements." },
-  { title: "Vaccination Schedule", icon: Syringe, desc: "Timely reminders and professional guidance on essential immunizations for long-term health." },
-  { title: "Behavioral Training", icon: GraduationCap, desc: "Expert advice on basic commands and socialization to ensure a well-adjusted companion." },
-  { title: "Grooming Standards", icon: Sparkles, desc: "Professional recommendations on hygiene practices to maintain a healthy and vibrant coat." },
-  { title: "Owner Consultation", icon: Users, desc: "Dedicated support for first-time owners to navigate the rewarding journey of pet parenthood." }
+  { title: "Feeding Guidelines", icon: Heart, desc: "Customized nutritional plans focusing on proper nutrition and exercise for your pet's growth." },
+  { title: "Vaccination Guidance", icon: Syringe, desc: "Professional schedule guidance for essential immunizations and long-term health monitoring." },
+  { title: "Training & Social", icon: GraduationCap, desc: "Basic training advice and social behavior guidance for a well-adjusted companion." },
+  { title: "Grooming & Hygiene", icon: Sparkles, desc: "Breed-specific care instructions and grooming recommendations for optimal hygiene." },
+  { title: "Owner Consultation", icon: Users, desc: "Dedicated consultation for first-time pet owners to ensure a smooth transition and well-being." }
 ];
 
 const AfterCare = () => {
@@ -86,12 +86,12 @@ const AfterCare = () => {
                 <ShieldCheck className="w-8 h-8" />
               </div>
               <h3 className="text-5xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-[0.85] mb-6">
-                24/7 <br />
+                10AM - 7PM <br />
                 Priority <br />
                 <span className="text-brand-primary">Support</span>
               </h3>
               <p className="text-brand-bg-secondary/80 text-lg">
-                Direct access to our specialists for any urgent pet care needs.
+                Available on working days. Emergencies on non-working days are handled via our specialized protocol.
               </p>
             </div>
             <button className="relative z-10 w-full py-5 bg-brand-primary text-brand-bg-secondary rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-white hover:text-brand-primary transition-all duration-500 shadow-xl">

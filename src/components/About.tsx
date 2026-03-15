@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { getImageUrl } from '../utils/imageHelper';
 
 const About: React.FC = () => {
   return (
@@ -52,7 +53,7 @@ const About: React.FC = () => {
             <div className="absolute -inset-4 bg-[#C47A2C]/10 blur-3xl rounded-full" />
             <div className="relative rounded-3xl overflow-hidden border border-white/5 aspect-[4/5]">
               <img 
-                src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1000" 
+                src={getImageUrl("about-hero.jpg")} 
                 alt="Premium Pet Care"
                 className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
                 referrerPolicy="no-referrer"

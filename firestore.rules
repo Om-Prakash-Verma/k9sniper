@@ -1,0 +1,93 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {uid}
+// Fields:
+//   - email: string (required)
+//   - role: string (required, 'admin' or 'client')
+//
+// Collection: pets
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - category: string (required)
+//   - price: number (required)
+//   - status: string (required)
+//   - description: string
+//   - image: string
+//
+// Collection: products
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - price: number (required)
+//   - stock: number (required)
+//
+// Collection: orders
+// Document ID: auto-generated
+// Fields:
+//   - userId: string (required)
+//   - totalAmount: number (required)
+//   - status: string (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          request.auth.token.email == "flixwatch.pro@gmail.com" ||
+          request.auth.token.email == "webapp1.in@gmail.com");
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && (
+        (isOwner(userId) && request.resource.data.role == 'client') || 
+        isAdmin()
+      );
+      allow update: if isAuthenticated() && (
+        (isOwner(userId) && request.resource.data.role == resource.data.role) || 
+        isAdmin()
+      );
+    }
+
+    match /pets/{petId} {
+      allow read: if true; // Publicly viewable
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true; // Publicly viewable
+      allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "Pet": {
+      "title": "Pet",
+      "description": "A pet available for purchase",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["dog", "cat", "bird", "fish", "rabbit", "exotic"] },
+        "breed": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "image": { "type": "string" },
+        "status": { "type": "string", "enum": ["available", "sold"] },
+        "age": { "type": "string" },
+        "gender": { "type": "string", "enum": ["Male", "Female", "Unknown"] },
+        "color": { "type": "string" },
+        "weight": { "type": "string" },
+        "temperament": { "type": "string" },
+        "vaccinationStatus": { "type": "string" },
+        "healthStatus": { "type": "string" },
+        "origin": { "type": "string" },
+        "microchipId": { "type": "string" },
+        "lifeExpectancy": { "type": "string" },
+        "energyLevel": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "sheddingLevel": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "groomingNeeds": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "socialNeeds": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "price", "status"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Pet food or accessory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["Food", "Accessories", "Grooming", "Health", "Toys", "Beds", "Other"] },
+        "brand": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "image": { "type": "string" },
+        "stock": { "type": "number" },
+        "variations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "price": { "type": "number" },
+              "stock": { "type": "number" }
+            }
+          }
+        },
+        "specifications": { "type": "string" },
+        "ingredients": { "type": "string" },
+        "usageInstructions": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "price"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer purchase order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "paid", "shipped", "delivered"] },
+        "razorpayOrderId": { "type": "string" },
+        "razorpayPaymentId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "totalAmount", "status"]
+    }
+  },
+  "firestore": {
+    "/pets": {
+      "schema": "Pet",
+      "description": "Collection of available pets"
+    },
+    "/products": {
+      "schema": "Product",
+      "description": "Collection of pet accessories and food"
+    },
+    "/orders": {
+      "schema": "Order",
+      "description": "Collection of customer orders"
+    }
+  }
+}

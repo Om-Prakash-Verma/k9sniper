@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Dog } from 'lucide-react';
+import { getImageUrl } from '../../utils/imageHelper';
 
 const About = () => {
   return (
@@ -13,18 +14,18 @@ const About = () => {
           viewport={{ once: true }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="micro-label mb-4 text-brand-accent">Est. Professional Care</div>
+          <div className="micro-label mb-4 text-brand-accent">A World of Pets, Care & Comfort</div>
           <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary mb-8">
-            A World of <br />
-            <span className="text-brand-accent">Pets & Care</span>
+            Healthy Pets <br />
+            <span className="text-brand-accent">Happy Homes</span>
           </h2>
           
           <div className="space-y-4 text-xl md:text-2xl text-brand-text leading-relaxed max-w-xl mb-10">
             <p className="font-bold text-brand-primary">
-              K9 Snipers Dog Shop is a trusted and professionally managed pet store located in New Kondli Market, New Delhi.
+              K9 SNIPERS Dog Shop is a trusted and professionally managed pet store located at New Kondli Market, Mayur Vihar Phase 3, New Delhi.
             </p>
             <p className="font-serif italic">
-              "We provide a wide variety of pets including dogs, cats, birds, and aquatic life. Along with pets, we offer premium accessories, food, and professional guidance to ensure every pet enjoys a healthy and happy life."
+              "We specialize in all major dog breeds, various cat breeds, birds, freshwater fishes, premium pet accessories and food, along with pet export assistance services."
             </p>
           </div>
 
@@ -32,7 +33,7 @@ const About = () => {
             <div className="flex -space-x-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-14 h-14 rounded-full border-4 border-brand-bg bg-brand-bg-secondary overflow-hidden shadow-xl">
-                  <img src={`https://picsum.photos/seed/pet${i}/100/100`} alt="User" className="w-full h-full object-cover" />
+                  <img src={getImageUrl(`https://picsum.photos/seed/pet${i}/100/100`)} alt="User" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
@@ -54,7 +55,7 @@ const About = () => {
           className="absolute inset-0"
         >
           <img 
-            src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1200" 
+            src={getImageUrl("about-hero.jpg")} 
             alt="Happy Dog"
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             referrerPolicy="no-referrer"

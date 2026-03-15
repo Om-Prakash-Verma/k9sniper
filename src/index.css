@@ -1,5 +1,6 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+@import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -87,7 +88,10 @@
 }
 
 .editorial-title {
-  @apply text-[clamp(2.5rem,8vw,8rem)] leading-[0.85] font-display font-bold tracking-tighter uppercase text-brand-primary;
+  font-size: clamp(2.5rem, 8vw, 8rem);
+  line-height: 0.85;
+
+  @apply font-display font-bold tracking-tighter uppercase text-brand-primary;
 }
 
 .micro-label {
@@ -106,4 +110,32 @@
 .hardware-border::after {
   content: '';
   @apply absolute -bottom-1 -right-1 w-2 h-2 bg-brand-accent;
+}
+
+.admin-input {
+  @apply w-full bg-brand-bg border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-brand-text focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-brand-text/30;
+}
+
+.form-section-card {
+  @apply bg-brand-bg-secondary/30 rounded-3xl p-6 border border-brand-accent-secondary/10 space-y-6 transition-all;
+}
+
+.form-section-card:hover {
+  @apply border-brand-accent/20 bg-brand-bg-secondary/50;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-brand-accent/20 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-brand-accent/40;
 }

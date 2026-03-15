@@ -6,22 +6,22 @@ const services = [
   {
     title: "Health Certification",
     icon: ShieldCheck,
-    desc: "Expert navigation through international health clearances and mandatory immunization protocols."
+    desc: "Expert guidance on health certification requirements subject to government regulations."
   },
   {
-    title: "Global Documentation",
+    title: "Documentation Assistance",
     icon: FileText,
-    desc: "Comprehensive management of government regulations, permits, and cross-border paperwork."
+    desc: "Complete assistance with mandatory documentation and cross-border paperwork requirements."
   },
   {
-    title: "Breed Logistics",
+    title: "Breed Consultation",
     icon: Search,
-    desc: "Specialized consultation on breed-specific travel requirements and environmental adaptation."
+    desc: "Professional breed selection consultation tailored for international relocation and adaptation."
   },
   {
     title: "Transport Coordination",
     icon: Truck,
-    desc: "End-to-end logistics planning for seamless and safe relocation across global territories."
+    desc: "Seamless transport coordination ensuring safe and compliant pet mobility across borders."
   }
 ];
 
@@ -95,8 +95,8 @@ const ExportServices = () => {
               <Globe className="w-8 h-8" />
             </div>
             <div>
-              <div className="text-brand-primary font-bold text-2xl uppercase tracking-tighter">Global Network</div>
-              <div className="text-brand-accent text-[10px] font-bold uppercase tracking-widest">50+ Countries Supported</div>
+              <div className="text-brand-primary font-bold text-2xl uppercase tracking-tighter">Pan-India Network</div>
+              <div className="text-brand-accent text-[10px] font-bold uppercase tracking-widest">All Major Cities Supported</div>
             </div>
           </div>
           <div className="flex gap-12">
