@@ -29,39 +29,72 @@ const ScrollytellingCanvas: React.FC = () => {
     restDelta: 0.001
   });
 
-  // Preload images
+  // Preload images with improved strategy
   useEffect(() => {
-    const loadedImages: HTMLImageElement[] = [];
+    const loadedImages: HTMLImageElement[] = new Array(frameCount);
     let loadedCount = 0;
+    let isComponentMounted = true;
 
-    const preloadImages = () => {
-      for (let i = 1; i <= frameCount; i++) {
+    const loadFrame = (index: number): Promise<void> => {
+      return new Promise((resolve) => {
         const img = new Image();
-        const frameIndex = i.toString().padStart(3, '0');
+        const frameIndex = (index + 1).toString().padStart(3, '0');
         img.src = `/frames/ezgif-frame-${frameIndex}.jpg`;
-        
-        img.onload = () => {
+
+        img.onload = async () => {
+          if (!isComponentMounted) return resolve();
+
+          try {
+            // Ensure image is decoded before resolving to prevent flickering during draw
+            if ('decode' in img) {
+              await img.decode();
+            }
+          } catch (e) {
+            console.warn(`Decode failed for frame ${frameIndex}`, e);
+          }
+
+          loadedImages[index] = img;
           loadedCount++;
           setLoadProgress(Math.floor((loadedCount / frameCount) * 100));
+
           if (loadedCount === frameCount) {
+            setImages([...loadedImages]);
             setIsLoaded(true);
           }
+          resolve();
         };
-        
+
         img.onerror = () => {
           console.error(`Failed to load frame ${frameIndex}`);
-          loadedCount++; // Still increment to avoid getting stuck
+          loadedCount++;
           if (loadedCount === frameCount) {
+            setImages([...loadedImages]);
             setIsLoaded(true);
           }
+          resolve();
         };
-
-        loadedImages.push(img);
-      }
-      setImages(loadedImages);
+      });
     };
 
-    preloadImages();
+    const preloadAll = async () => {
+      // Load first 10 frames with high priority
+      const priorityFrames = Array.from({ length: 10 }, (_, i) => i);
+      await Promise.all(priorityFrames.map(loadFrame));
+
+      // Load the rest in batches to avoid network saturation
+      const batchSize = 5;
+      for (let i = 10; i < frameCount; i += batchSize) {
+        if (!isComponentMounted) break;
+        const batch = Array.from({ length: Math.min(batchSize, frameCount - i) }, (_, j) => i + j);
+        await Promise.all(batch.map(loadFrame));
+      }
+    };
+
+    preloadAll();
+
+    return () => {
+      isComponentMounted = false;
+    };
   }, []);
 
   // Canvas rendering
@@ -72,6 +105,8 @@ const ScrollytellingCanvas: React.FC = () => {
     const context = canvas.getContext('2d');
     if (!context) return;
 
+    const lastFrameIndex = { current: -1 };
+
     const render = () => {
       const currentProgress = smoothProgress.get();
       const frameIndex = Math.min(
@@ -79,9 +114,10 @@ const ScrollytellingCanvas: React.FC = () => {
         Math.floor(currentProgress * frameCount)
       );
 
-      if (images[frameIndex]) {
+      if (frameIndex !== lastFrameIndex.current && images[frameIndex]) {
+        lastFrameIndex.current = frameIndex;
         const img = images[frameIndex];
-        
+
         // Calculate aspect ratio to cover canvas (object-fit: cover equivalent)
         const canvasRatio = canvas.width / canvas.height;
         const imgRatio = img.width / img.height;
@@ -101,7 +137,7 @@ const ScrollytellingCanvas: React.FC = () => {
 
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-        
+
         // Add a subtle warm vignette/overlay to make text readable
         const gradient = context.createRadialGradient(
           canvas.width / 2, canvas.height / 2, 0,
@@ -179,7 +215,7 @@ const ScrollytellingCanvas: React.FC = () => {
         {!isLoaded && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-brand-bg z-50">
             <div className="w-64 h-1 bg-brand-primary/10 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="h-full bg-brand-accent"
                 initial={{ width: 0 }}
                 animate={{ width: `${loadProgress}%` }}
@@ -188,20 +224,20 @@ const ScrollytellingCanvas: React.FC = () => {
             <p className="mt-4 text-brand-primary/50 text-xs uppercase tracking-widest font-bold">Loading Experience {loadProgress}%</p>
           </div>
         )}
-        
-        <canvas 
-          ref={canvasRef} 
+
+        <canvas
+          ref={canvasRef}
           className="w-full h-full block"
         />
-        
+
         {/* Content Overlay */}
         <div className="absolute inset-0 pointer-events-none">
           {sections.map((section, index) => {
             return (
-              <SectionContent 
-                key={index} 
-                section={section} 
-                progress={scrollYProgress} 
+              <SectionContent
+                key={index}
+                section={section}
+                progress={scrollYProgress}
               />
             );
           })}
@@ -211,11 +247,11 @@ const ScrollytellingCanvas: React.FC = () => {
         <div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-20">
           {sections.map((_, i) => {
             return (
-              <ProgressDot 
-                key={i} 
-                index={i} 
-                total={sections.length} 
-                progress={scrollYProgress} 
+              <ProgressDot
+                key={i}
+                index={i}
+                total={sections.length}
+                progress={scrollYProgress}
               />
             );
           })}
@@ -246,14 +282,14 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
           className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
         >
           <div className="max-w-4xl">
-            <motion.h2 
+            <motion.h2
               className="text-3xl sm:text-5xl md:text-8xl font-display font-bold mb-3 md:mb-6 tracking-tighter text-brand-primary uppercase leading-[0.9]"
               style={{ textShadow: '0 4px 20px rgba(232, 223, 200, 0.8)' }}
             >
               {section.title}
             </motion.h2>
             {section.subtitle && (
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -263,7 +299,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
               </motion.p>
             )}
             {section.content && (
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -273,7 +309,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
               </motion.p>
             )}
             {section.isFinal && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
@@ -306,8 +342,8 @@ const ProgressDot: React.FC<{ index: number; total: number; progress: any }> = (
   }, [progress, index, total]);
 
   return (
-    <div 
-      className={`w-1 transition-all duration-700 ease-out ${isActive ? 'h-12 bg-brand-accent' : 'h-4 bg-brand-primary/20'}`} 
+    <div
+      className={`w-1 transition-all duration-700 ease-out ${isActive ? 'h-12 bg-brand-accent' : 'h-4 bg-brand-primary/20'}`}
     />
   );
 };
