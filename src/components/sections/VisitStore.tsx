@@ -135,13 +135,9 @@ const VisitStore = () => {
                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Store Hours</span>
               </div>
               <div className="space-y-4">
-                <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <span className="font-medium">Mon – Sat</span>
-                  <span className="font-bold">10 AM – 10 PM</span>
-                </div>
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Sunday</span>
-                  <span className="font-bold">1 PM – 5 PM</span>
+                  <span className="font-medium">Monday – Sunday</span>
+                  <span className="font-bold">10 AM – 7 PM</span>
                 </div>
               </div>
             </motion.div>
