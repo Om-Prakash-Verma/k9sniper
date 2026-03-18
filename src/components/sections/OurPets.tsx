@@ -63,7 +63,7 @@ const OurPets = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start mb-12 lg:mb-16 gap-8">
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">Our Collection</div>
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.9] text-brand-primary mb-4 break-words">
               Find Your <br />
               <span className="text-brand-accent">Perfect Match</span>
             </h2>
@@ -109,7 +109,7 @@ const OurPets = () => {
                     <span className="text-brand-bg-secondary font-bold uppercase tracking-widest text-xs">Category</span>
                   </div>
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-none">
+                    <h3 className="text-3xl sm:text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-tight break-words">
                       {category.title}
                     </h3>
                   </div>

@@ -7,6 +7,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
+import Notification, { NotificationType } from '../components/Notification';
+import { AnimatePresence } from 'motion/react';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -15,7 +17,8 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
   const [activeImage, setActiveImage] = useState(0);
-  const { addToCart } = useCart();
+  const { addToCart, setIsCartOpen } = useCart();
+  const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -52,8 +55,37 @@ const ProductDetailPage = () => {
   const currentPrice = selectedVariation ? selectedVariation.price : product.price;
   const images = [product.image, ...(product.images || [])].filter(Boolean);
 
+  const handleAddToCart = () => {
+    addToCart({ 
+      ...product, 
+      price: currentPrice,
+      name: selectedVariation ? `${product.name} (${selectedVariation.label})` : product.name,
+      type: 'product' 
+    });
+    setNotification({ message: 'Added to cart successfully!', type: 'success' });
+  };
+
+  const handleBuyNow = () => {
+    addToCart({ 
+      ...product, 
+      price: currentPrice,
+      name: selectedVariation ? `${product.name} (${selectedVariation.label})` : product.name,
+      type: 'product' 
+    });
+    setIsCartOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
+      <AnimatePresence>
+        {notification && (
+          <Notification 
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
+          />
+        )}
+      </AnimatePresence>
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => navigate(-1)}
@@ -105,7 +137,7 @@ const ProductDetailPage = () => {
             className="flex flex-col"
           >
             <div className="micro-label text-brand-accent mb-4">{product.brand || 'Premium Product'}</div>
-            <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-8">
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.9] text-brand-primary mb-8 break-words">
               {product.name}
             </h1>
             
@@ -149,7 +181,7 @@ const ProductDetailPage = () => {
             </div>
 
             <div className="prose prose-invert max-w-none mb-8 md:mb-12">
-              <p className="text-brand-text text-lg md:text-xl leading-relaxed">
+              <p className="text-brand-text text-lg md:text-xl leading-relaxed break-words whitespace-pre-wrap">
                 {product.description}
               </p>
             </div>
@@ -178,18 +210,16 @@ const ProductDetailPage = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
-                onClick={() => addToCart({ 
-                  ...product, 
-                  price: currentPrice,
-                  name: selectedVariation ? `${product.name} (${selectedVariation.label})` : product.name,
-                  type: 'product' 
-                })}
+                onClick={handleAddToCart}
                 className="flex-1 btn-premium py-5 md:py-6 rounded-[1.5rem] md:rounded-[2rem] text-brand-bg-secondary font-bold uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl"
               >
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
-              <button className="flex-1 py-5 md:py-6 bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[1.5rem] md:rounded-[2rem] text-brand-primary font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all">
+              <button 
+                onClick={handleBuyNow}
+                className="flex-1 py-5 md:py-6 bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[1.5rem] md:rounded-[2rem] text-brand-primary font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all"
+              >
                 Buy Now
               </button>
             </div>

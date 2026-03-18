@@ -130,7 +130,7 @@ const PetDetailPage = () => {
             className="flex flex-col"
           >
             <div className="micro-label text-brand-accent mb-4">Pet Details</div>
-            <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-8">
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.9] text-brand-primary mb-8 break-words">
               {pet.name}
             </h1>
             
@@ -150,7 +150,7 @@ const PetDetailPage = () => {
             </div>
 
             <div className="prose prose-invert max-w-none mb-8 md:mb-12">
-              <p className="text-brand-text text-lg md:text-xl leading-relaxed">
+              <p className="text-brand-text text-lg md:text-xl leading-relaxed break-words whitespace-pre-wrap">
                 {pet.description}
               </p>
             </div>

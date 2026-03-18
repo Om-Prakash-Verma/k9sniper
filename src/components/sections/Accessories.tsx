@@ -51,7 +51,7 @@ const Accessories = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-12 lg:mb-16">
           <div className="micro-label mb-4 text-brand-accent">Premium Catalog</div>
-          <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-8">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.9] text-brand-primary mb-8 break-words">
             The <span className="text-brand-accent italic">Essentials</span> <br />
             Collection
           </h2>
@@ -82,7 +82,7 @@ const Accessories = () => {
                 <div className="w-16 h-16 rounded-2xl bg-brand-bg-secondary flex items-center justify-center text-brand-accent mb-8 group-hover:bg-brand-accent group-hover:text-brand-bg-secondary transition-all duration-500 shadow-lg">
                   <item.icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-4xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-none mb-6 group-hover:text-brand-bg-secondary transition-colors duration-500">
+                <h3 className="text-3xl sm:text-4xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-tight mb-6 group-hover:text-brand-bg-secondary transition-colors duration-500 break-words">
                   {item.title}
                 </h3>
                 <p className="text-brand-text text-lg leading-relaxed group-hover:text-brand-bg-secondary/70 transition-colors duration-500">

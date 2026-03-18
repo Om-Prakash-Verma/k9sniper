@@ -15,10 +15,9 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
   const { user, isAdmin } = useAuth();
-  const { totalItems } = useCart();
+  const { totalItems, isCartOpen, setIsCartOpen } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 

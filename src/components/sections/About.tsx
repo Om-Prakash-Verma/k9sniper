@@ -5,9 +5,9 @@ import { getImageUrl } from '../../utils/imageHelper';
 
 const About = () => {
   return (
-    <section id="overview" className="relative min-h-screen bg-brand-bg overflow-hidden flex flex-col lg:flex-row border-b border-brand-accent-secondary/10">
+    <section id="overview" className="relative bg-brand-bg overflow-hidden flex flex-col lg:flex-row border-b border-brand-accent-secondary/10">
       {/* Left Pane: Content */}
-      <div className="lg:w-1/2 p-8 md:p-16 flex flex-col justify-center relative z-10">
+      <div className="lg:w-1/2 px-8 py-10 md:px-16 md:py-16 flex flex-col justify-center relative z-10">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}

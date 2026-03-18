@@ -129,11 +129,24 @@ const AdminPanel = () => {
         return;
       }
 
-      const dataToSave = {
+      if (formData.price <= 0) {
+        showNotification('Price must be greater than zero', 'error');
+        return;
+      }
+
+      if (formData.variations && formData.variations.some((v: any) => v.price <= 0)) {
+        showNotification('All variation prices must be greater than zero', 'error');
+        return;
+      }
+
+      const dataToSave: any = {
         ...formData,
-        slug: activeTab === 'pets' ? slugify(formData.name) : undefined,
         updatedAt: new Date().toISOString()
       };
+
+      if (activeTab === 'pets') {
+        dataToSave.slug = slugify(formData.name);
+      }
 
       if (isEditing && editingId) {
         await updateDoc(doc(db, collectionName, editingId), dataToSave);
@@ -663,11 +676,12 @@ const AdminPanel = () => {
                                   <label className="text-[8px] font-bold text-brand-text/40 uppercase tracking-widest">Price (₹)</label>
                                   <input 
                                     type="number" 
+                                    min="1"
                                     className="admin-input py-2 text-xs" 
                                     value={v.price}
                                     onChange={e => {
                                       const newVars = [...formData.variations];
-                                      newVars[i].price = Number(e.target.value);
+                                      newVars[i].price = Math.max(0, Number(e.target.value));
                                       setFormData({...formData, variations: newVars});
                                     }}
                                   />
@@ -873,9 +887,10 @@ const AdminPanel = () => {
                           <input 
                             required 
                             type="number" 
+                            min="1"
                             className="admin-input pl-10" 
                             value={formData.price || ''}
-                            onChange={e => setFormData({...formData, price: Number(e.target.value)})} 
+                            onChange={e => setFormData({...formData, price: Math.max(0, Number(e.target.value))})} 
                           />
                         </div>
                       </div>

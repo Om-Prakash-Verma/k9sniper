@@ -13,20 +13,22 @@ interface Section {
 const ScrollytellingCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [images, setImages] = useState<HTMLImageElement[]>([]);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const lastFrameIndex = useRef<number>(-1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
 
-  const frameCount = 181; // Updated to 240 frames
+  const frameCount = 181;
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
 
+  // Use a faster spring or direct scroll for better sync
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
+    stiffness: 200,
+    damping: 40,
+    restDelta: 0.0001
   });
 
   // Preload images with improved strategy
@@ -58,7 +60,7 @@ const ScrollytellingCanvas: React.FC = () => {
           setLoadProgress(Math.floor((loadedCount / frameCount) * 100));
           
           if (loadedCount === frameCount) {
-            setImages([...loadedImages]);
+            imagesRef.current = loadedImages;
             setIsLoaded(true);
           }
           resolve();
@@ -68,7 +70,7 @@ const ScrollytellingCanvas: React.FC = () => {
           console.error(`Failed to load frame ${frameIndex}`);
           loadedCount++;
           if (loadedCount === frameCount) {
-            setImages([...loadedImages]);
+            imagesRef.current = loadedImages;
             setIsLoaded(true);
           }
           resolve();
@@ -99,24 +101,23 @@ const ScrollytellingCanvas: React.FC = () => {
 
   // Canvas rendering
   useEffect(() => {
-    if (!isLoaded || !canvasRef.current) return;
+    if (!isLoaded || !canvasRef.current || imagesRef.current.length === 0) return;
 
     const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { alpha: false });
     if (!context) return;
 
-    const lastFrameIndex = { current: -1 };
-
     const render = () => {
-      const currentProgress = smoothProgress.get();
-      const frameIndex = Math.min(
+      // Use raw scrollYProgress for frame calculation to ensure it's perfectly synced
+      // and doesn't lag behind the scroll position.
+      const progress = scrollYProgress.get();
+      const frameIndex = Math.max(0, Math.min(
         frameCount - 1,
-        Math.floor(currentProgress * frameCount)
-      );
+        Math.floor(progress * frameCount)
+      ));
 
-      if (frameIndex !== lastFrameIndex.current && images[frameIndex]) {
-        lastFrameIndex.current = frameIndex;
-        const img = images[frameIndex];
+      if (frameIndex !== lastFrameIndex.current && imagesRef.current[frameIndex]) {
+        const img = imagesRef.current[frameIndex];
         
         // Calculate aspect ratio to cover canvas (object-fit: cover equivalent)
         const canvasRatio = canvas.width / canvas.height;
@@ -135,7 +136,9 @@ const ScrollytellingCanvas: React.FC = () => {
           offsetY = 0;
         }
 
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        // Fill background first to avoid flickering
+        context.fillStyle = '#E8DFC8';
+        context.fillRect(0, 0, canvas.width, canvas.height);
         context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         
         // Add a subtle warm vignette/overlay to make text readable
@@ -143,10 +146,12 @@ const ScrollytellingCanvas: React.FC = () => {
           canvas.width / 2, canvas.height / 2, 0,
           canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 1.2
         );
-        gradient.addColorStop(0, 'rgba(232, 223, 200, 0.1)'); // Primary BG color with alpha
-        gradient.addColorStop(1, 'rgba(90, 52, 30, 0.4)'); // Brand text color with alpha
+        gradient.addColorStop(0, 'rgba(232, 223, 200, 0.1)');
+        gradient.addColorStop(1, 'rgba(90, 52, 30, 0.4)');
         context.fillStyle = gradient;
         context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        lastFrameIndex.current = frameIndex;
       }
 
       requestAnimationFrame(render);
@@ -155,6 +160,8 @@ const ScrollytellingCanvas: React.FC = () => {
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      // Force redraw on resize
+      lastFrameIndex.current = -1;
     };
 
     window.addEventListener('resize', handleResize);
@@ -165,7 +172,7 @@ const ScrollytellingCanvas: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
     };
-  }, [isLoaded, images, smoothProgress]);
+  }, [isLoaded]);
 
   // Content sections data
   const sections: Section[] = [
@@ -210,10 +217,10 @@ const ScrollytellingCanvas: React.FC = () => {
   ];
 
   return (
-    <div ref={containerRef} className="relative h-[600vh] bg-brand-bg">
-      <div className="sticky top-0 w-full h-screen overflow-hidden relative">
+    <div ref={containerRef} className="relative h-[800vh] bg-brand-bg z-0">
+      <div className="sticky top-0 w-full h-[100dvh] overflow-hidden z-10">
         {!isLoaded && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-brand-bg z-50">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-brand-bg z-[60]">
             <div className="w-64 h-1 bg-brand-primary/10 rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-brand-accent"
