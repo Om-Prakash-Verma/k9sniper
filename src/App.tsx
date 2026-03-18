@@ -23,7 +23,7 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   return (
-    <div className="bg-brand-bg min-h-screen selection:bg-brand-accent/30 relative">
+    <div className="bg-brand-bg min-h-screen selection:bg-brand-accent/30 relative overflow-x-hidden">
       <Navbar onLogin={() => setShowLoginModal(true)} />
       
       <AuthModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />

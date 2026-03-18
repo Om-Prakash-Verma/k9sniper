@@ -1,5 +1,5 @@
 import React from 'react';
-import ScrollytellingCanvas from '../components/ScrollytellingCanvas';
+import Hero from '../components/sections/Hero';
 import About from '../components/sections/About';
 import OurPets from '../components/sections/OurPets';
 import Accessories from '../components/sections/Accessories';
@@ -12,7 +12,7 @@ import VisitStore from '../components/sections/VisitStore';
 const HomePage = () => {
   return (
     <>
-      <ScrollytellingCanvas />
+      <Hero />
       <About />
       <OurPets />
       <Accessories />
