@@ -117,13 +117,15 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
 
             {user ? (
               <div className="flex items-center gap-3">
-                {user.photoURL ? (
-                  <img src={getImageUrl(user.photoURL)} alt="Profile" className="w-8 h-8 rounded-full border border-brand-accent" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center text-brand-bg-secondary font-bold text-xs">
-                    {user.email?.[0].toUpperCase()}
-                  </div>
-                )}
+                <Link to="/user" className="transition-transform hover:scale-110">
+                  {user.photoURL ? (
+                    <img src={getImageUrl(user.photoURL)} alt="Profile" className="w-8 h-8 rounded-full border border-brand-accent" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center text-brand-bg-secondary font-bold text-xs">
+                      {user.email?.[0].toUpperCase()}
+                    </div>
+                  )}
+                </Link>
                 <button onClick={onLogout} className="p-2 text-brand-text hover:text-red-500 transition-colors">
                   <LogOut className="w-5 h-5" />
                 </button>
@@ -167,6 +169,14 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
                   {item.name}
                 </button>
               ))}
+              {user && (
+                <button
+                  onClick={() => handleNavClick('/user')}
+                  className="text-left text-3xl font-bold text-brand-primary hover:text-brand-accent transition-colors"
+                >
+                  My Account
+                </button>
+              )}
               {!user && (
                 <button 
                   onClick={onLogin}

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShoppingBag, Plus, Minus, Trash2, CreditCard } from 'lucide-react';
+import { X, ShoppingBag, Plus, Minus, Trash2, CreditCard, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/imageHelper';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface CartOverlayProps {
   isOpen: boolean;
@@ -13,11 +16,52 @@ import Notification, { NotificationType } from './Notification';
 
 const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart, updateQuantity, totalPrice, totalItems, clearCart } = useCart();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
+  const [showDeliveryForm, setShowDeliveryForm] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    pincode: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setDeliveryInfo(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    const { name, email, phone, address, city, pincode } = deliveryInfo;
+    if (!name || !email || !phone || !address || !city || !pincode) {
+      setNotification({ message: 'Please fill in all delivery details.', type: 'error' });
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setNotification({ message: 'Please enter a valid email address.', type: 'error' });
+      return false;
+    }
+    if (phone.length < 10) {
+      setNotification({ message: 'Please enter a valid phone number.', type: 'error' });
+      return false;
+    }
+    return true;
+  };
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
+    
+    if (!showDeliveryForm) {
+      setShowDeliveryForm(true);
+      return;
+    }
+
+    if (!validateForm()) return;
+
     setIsProcessing(true);
 
     try {
@@ -28,9 +72,17 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
         body: JSON.stringify({
           amount: totalPrice,
           currency: 'INR',
-          receipt: `receipt_${Date.now()}`
+          receipt: `receipt_${Date.now()}`,
+          notes: {
+            ...deliveryInfo
+          }
         })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+        throw new Error(errorData.error || `Server responded with ${response.status}`);
+      }
 
       const order = await response.json();
 
@@ -52,29 +104,55 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
         name: "K9 SNIPERS",
         description: "Pet & Accessories Purchase",
         order_id: order.id,
-        handler: async (response: any) => {
+        handler: async (rzpResponse: any) => {
           // 3. Verify Payment on Backend
           const verifyRes = await fetch('/api/payments/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(response)
+            body: JSON.stringify({
+              ...rzpResponse,
+              deliveryInfo
+            })
           });
 
           const result = await verifyRes.json();
           if (result.status === 'success') {
+            // 4. Save Order to Firestore
+            try {
+              await addDoc(collection(db, 'orders'), {
+                userId: user?.uid || 'anonymous',
+                items: cart.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity,
+                  type: item.type
+                })),
+                amount: totalPrice,
+                deliveryInfo,
+                razorpay_order_id: rzpResponse.razorpay_order_id,
+                razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                status: 'paid',
+                createdAt: serverTimestamp()
+              });
+            } catch (err) {
+              console.error('Error saving order to Firestore:', err);
+            }
+
             setNotification({ message: 'Payment Successful! Thank you for your purchase.', type: 'success' });
             setTimeout(() => {
               clearCart();
               onClose();
+              setShowDeliveryForm(false);
             }, 2000);
           } else {
             setNotification({ message: 'Payment Verification Failed.', type: 'error' });
           }
         },
         prefill: {
-          name: "Customer Name",
-          email: "customer@example.com",
-          contact: "9999999999"
+          name: deliveryInfo.name,
+          email: deliveryInfo.email,
+          contact: deliveryInfo.phone
         },
         theme: {
           color: "#FF6321"
@@ -85,7 +163,7 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
       rzp.open();
     } catch (error) {
       console.error('Checkout error:', error);
-      setNotification({ message: 'Something went wrong during checkout.', type: 'error' });
+      setNotification({ message: error instanceof Error ? error.message : 'Something went wrong during checkout.', type: 'error' });
     } finally {
       setIsProcessing(false);
     }
@@ -123,57 +201,167 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
             {/* Header */}
             <div className="p-4 md:p-6 border-b border-brand-accent-secondary/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
-                <h2 className="text-xl md:text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">Your Cart</h2>
-                <span className="bg-brand-accent text-brand-bg-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {totalItems}
-                </span>
+                {showDeliveryForm ? (
+                  <button onClick={() => setShowDeliveryForm(false)} className="p-1 hover:bg-brand-accent/10 rounded-full transition-colors">
+                    <Minus className="w-5 h-5 text-brand-accent rotate-90" />
+                  </button>
+                ) : (
+                  <ShoppingBag className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
+                )}
+                <h2 className="text-xl md:text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">
+                  {showDeliveryForm ? 'Delivery Details' : 'Your Cart'}
+                </h2>
+                {!showDeliveryForm && (
+                  <span className="bg-brand-accent text-brand-bg-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {totalItems}
+                  </span>
+                )}
               </div>
               <button onClick={onClose} className="p-2 hover:bg-brand-accent/10 rounded-full transition-colors">
                 <X className="text-brand-primary w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
 
-            {/* Items */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-              {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-brand-accent/5 rounded-full flex items-center justify-center mb-4">
-                    <ShoppingBag className="w-8 h-8 md:w-10 md:h-10 text-brand-accent/20" />
+            {/* Login Prompt */}
+            {!user && showDeliveryForm && (
+              <div className="mx-6 mt-6 p-4 bg-brand-accent/10 border border-brand-accent/20 rounded-2xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <User className="w-5 h-5 text-brand-accent" />
+                  <p className="text-[10px] font-bold text-brand-primary uppercase tracking-widest leading-tight">
+                    Sign in to track your order history
+                  </p>
+                </div>
+                <button 
+                  onClick={() => {
+                    onClose();
+                    // This is a bit tricky since onLogin is in Navbar. 
+                    // But we can just navigate to /user which will show login.
+                    window.location.href = '/user';
+                  }}
+                  className="px-4 py-2 bg-brand-accent text-brand-bg-secondary rounded-lg text-[8px] font-bold uppercase tracking-widest hover:bg-brand-primary transition-all"
+                >
+                  Login
+                </button>
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+              {showDeliveryForm ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-primary/60">Full Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={deliveryInfo.name}
+                      onChange={handleInputChange}
+                      placeholder="John Doe"
+                      className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-accent transition-colors"
+                    />
                   </div>
-                  <p className="text-brand-text/60 font-medium text-sm md:text-base">Your cart is empty</p>
-                  <button onClick={onClose} className="mt-4 text-brand-accent font-bold uppercase text-xs md:text-sm tracking-widest hover:underline">
-                    Start Shopping
-                  </button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-primary/60">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={deliveryInfo.email}
+                        onChange={handleInputChange}
+                        placeholder="john@example.com"
+                        className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-accent transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-primary/60">Phone</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={deliveryInfo.phone}
+                        onChange={handleInputChange}
+                        placeholder="9999999999"
+                        className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-accent transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-primary/60">Delivery Address</label>
+                    <textarea
+                      name="address"
+                      value={deliveryInfo.address}
+                      onChange={handleInputChange}
+                      placeholder="Street, Landmark, Area"
+                      rows={3}
+                      className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-accent transition-colors resize-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-primary/60">City</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={deliveryInfo.city}
+                        onChange={handleInputChange}
+                        placeholder="New Delhi"
+                        className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-accent transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-primary/60">Pincode</label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={deliveryInfo.pincode}
+                        onChange={handleInputChange}
+                        placeholder="110096"
+                        className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-accent transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
               ) : (
-                cart.map((item) => (
-                  <div key={item.id} className="flex gap-3 md:gap-4 group">
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-brand-bg-secondary border border-brand-accent-secondary/10 shrink-0">
-                      <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-brand-primary font-bold uppercase tracking-tighter truncate pr-2 text-sm md:text-base">{item.name}</h3>
-                        <button onClick={() => removeFromCart(item.id)} className="text-brand-text/40 hover:text-red-500 transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                <div className="space-y-6">
+                  {cart.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center py-20">
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-brand-accent/5 rounded-full flex items-center justify-center mb-4">
+                        <ShoppingBag className="w-8 h-8 md:w-10 md:h-10 text-brand-accent/20" />
                       </div>
-                      <div className="text-brand-accent font-bold mb-2 md:mb-3 text-sm md:text-base">₹{item.price.toLocaleString()}</div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center border border-brand-accent-secondary/20 rounded-lg overflow-hidden">
-                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1 hover:bg-brand-accent/10 transition-colors">
-                            <Minus className="w-3 h-3 text-brand-primary" />
-                          </button>
-                          <span className="px-2 md:px-3 text-[10px] md:text-xs font-bold text-brand-primary">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1 hover:bg-brand-accent/10 transition-colors">
-                            <Plus className="w-3 h-3 text-brand-primary" />
-                          </button>
+                      <p className="text-brand-text/60 font-medium text-sm md:text-base">Your cart is empty</p>
+                      <button onClick={onClose} className="mt-4 text-brand-accent font-bold uppercase text-xs md:text-sm tracking-widest hover:underline">
+                        Start Shopping
+                      </button>
+                    </div>
+                  ) : (
+                    cart.map((item) => (
+                      <div key={item.id} className="flex gap-3 md:gap-4 group">
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-brand-bg-secondary border border-brand-accent-secondary/10 shrink-0">
+                          <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="text-brand-primary font-bold uppercase tracking-tighter truncate pr-2 text-sm md:text-base">{item.name}</h3>
+                            <button onClick={() => removeFromCart(item.id)} className="text-brand-text/40 hover:text-red-500 transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="text-brand-accent font-bold mb-2 md:mb-3 text-sm md:text-base">₹{item.price.toLocaleString()}</div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center border border-brand-accent-secondary/20 rounded-lg overflow-hidden">
+                              <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1 hover:bg-brand-accent/10 transition-colors">
+                                <Minus className="w-3 h-3 text-brand-primary" />
+                              </button>
+                              <span className="px-2 md:px-3 text-[10px] md:text-xs font-bold text-brand-primary">{item.quantity}</span>
+                              <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1 hover:bg-brand-accent/10 transition-colors">
+                                <Plus className="w-3 h-3 text-brand-primary" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))
+                    ))
+                  )}
+                </div>
               )}
             </div>
 
@@ -195,8 +383,8 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
                     <div className="w-5 h-5 border-2 border-brand-bg-secondary/30 border-t-brand-bg-secondary rounded-full animate-spin" />
                   ) : (
                     <>
-                      <CreditCard className="w-5 h-5" />
-                      Checkout
+                      {showDeliveryForm ? <CreditCard className="w-5 h-5" /> : <ShoppingBag className="w-5 h-5" />}
+                      {showDeliveryForm ? 'Pay Now' : 'Proceed to Delivery'}
                     </>
                   )}
                 </button>

@@ -7,8 +7,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
-import Notification, { NotificationType } from '../components/Notification';
-import { AnimatePresence } from 'motion/react';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -18,7 +16,6 @@ const ProductDetailPage = () => {
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
   const [activeImage, setActiveImage] = useState(0);
   const { addToCart, setIsCartOpen } = useCart();
-  const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -62,7 +59,6 @@ const ProductDetailPage = () => {
       name: selectedVariation ? `${product.name} (${selectedVariation.label})` : product.name,
       type: 'product' 
     });
-    setNotification({ message: 'Added to cart successfully!', type: 'success' });
   };
 
   const handleBuyNow = () => {
@@ -77,15 +73,6 @@ const ProductDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
-      <AnimatePresence>
-        {notification && (
-          <Notification 
-            message={notification.message}
-            type={notification.type}
-            onClose={() => setNotification(null)}
-          />
-        )}
-      </AnimatePresence>
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => navigate(-1)}

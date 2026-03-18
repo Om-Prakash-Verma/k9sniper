@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 interface LoginPageProps {
   isAdmin: boolean;
   user: any;
   onSuccess: () => void;
+  title?: string;
+  description?: string;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, description }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -40,6 +42,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess }) => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      onSuccess();
+    } catch (err: any) {
+      setError(err.message || "Google Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
       <motion.div 
@@ -52,13 +68,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess }) => {
         </div>
         
         <h1 className="text-3xl font-display font-bold text-brand-primary uppercase tracking-tighter mb-2">
-          {isRegistering ? 'Create Account' : 'Admin Access'}
+          {title || (isRegistering ? 'Create Account' : 'Welcome Back')}
         </h1>
         
         <p className="text-brand-text/60 mb-8 text-sm leading-relaxed">
-          {isRegistering 
-            ? 'Join the K9 SNIPERS community to manage your preferences.' 
-            : 'Please sign in with your credentials to manage the catalog and orders.'}
+          {description || (isRegistering 
+            ? 'Join the K9 SNIPERS community to manage your pets and orders.' 
+            : 'Sign in to access your dashboard, track orders, and more.')}
         </p>
 
         {user && !isAdmin && !isRegistering && (
@@ -114,6 +130,24 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess }) => {
             )}
           </button>
         </form>
+
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-brand-accent-secondary/10"></div>
+          </div>
+          <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
+            <span className="bg-brand-bg-secondary px-4 text-brand-text/40">Or Continue With</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full py-4 bg-brand-bg border border-brand-accent-secondary/20 rounded-2xl flex items-center justify-center gap-3 text-brand-primary font-bold uppercase tracking-widest hover:border-brand-accent transition-all disabled:opacity-50"
+        >
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+          Google
+        </button>
 
         <button 
           onClick={() => setIsRegistering(!isRegistering)}

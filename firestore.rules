@@ -87,7 +87,8 @@ service cloud.firestore {
 
     match /orders/{orderId} {
       allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) || 
+                   (!isAuthenticated() && request.resource.data.userId == 'anonymous');
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }

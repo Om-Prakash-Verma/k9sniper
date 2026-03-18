@@ -19,6 +19,8 @@ interface CartContextType {
   totalPrice: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
+  notification: { message: string; type: 'success' | 'error' | 'info' } | null;
+  setNotification: (notif: { message: string; type: 'success' | 'error' | 'info' } | null) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -29,6 +31,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return savedCart ? JSON.parse(savedCart) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     localStorage.setItem('k9_cart', JSON.stringify(cart));
@@ -46,6 +49,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, { ...item, quantity: 1 }];
     });
+    setNotification({ message: `${item.name} added to cart!`, type: 'success' });
   };
 
   const removeFromCart = (id: string) => {
@@ -71,7 +75,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       totalItems, 
       totalPrice,
       isCartOpen,
-      setIsCartOpen
+      setIsCartOpen,
+      notification,
+      setNotification
     }}>
       {children}
     </CartContext.Provider>

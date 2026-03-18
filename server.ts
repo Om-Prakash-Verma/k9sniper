@@ -36,22 +36,26 @@ async function startServer() {
 
   // API Routes
   app.get("/api/health", (req, res) => {
+    console.log("Health check requested");
     res.json({ status: "ok" });
   });
 
   // Create Razorpay Order
   app.post("/api/payments/order", async (req, res) => {
+    console.log("Order creation requested", req.body);
     try {
-      const { amount, currency = "INR", receipt } = req.body;
+      const { amount, currency = "INR", receipt, notes } = req.body;
       const razorpay = getRazorpay();
 
       const options = {
         amount: Math.round(amount * 100), // Razorpay expects amount in paise
         currency,
         receipt,
+        notes,
       };
 
       const order = await razorpay.orders.create(options);
+      console.log("Order created successfully", order.id);
       res.json(order);
     } catch (error) {
       console.error("Razorpay Order Error:", error);
@@ -61,6 +65,7 @@ async function startServer() {
 
   // Verify Razorpay Payment
   app.post("/api/payments/verify", async (req, res) => {
+    console.log("Payment verification requested", req.body);
     try {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
       const key_secret = process.env.RAZORPAY_KEY_SECRET;
@@ -76,8 +81,10 @@ async function startServer() {
         .digest("hex");
 
       if (razorpay_signature === expectedSign) {
+        console.log("Payment verified successfully");
         res.json({ status: "success", message: "Payment verified successfully" });
       } else {
+        console.warn("Invalid payment signature");
         res.status(400).json({ status: "failure", message: "Invalid signature" });
       }
     } catch (error) {
