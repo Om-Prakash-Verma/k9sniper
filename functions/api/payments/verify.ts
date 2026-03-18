@@ -1,5 +1,3 @@
-import Razorpay from 'razorpay';
-
 export const onRequestPost: any = async (context: any) => {
   try {
     const { RAZORPAY_KEY_SECRET } = context.env;

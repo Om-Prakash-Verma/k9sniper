@@ -1,5 +1,3 @@
-import Razorpay from 'razorpay';
-
 export const onRequestPost: any = async (context: any) => {
   try {
     const { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } = context.env;
@@ -14,19 +12,32 @@ export const onRequestPost: any = async (context: any) => {
     const body: any = await context.request.json();
     const { amount, currency = 'INR', receipt, notes } = body;
 
-    const razorpay = new Razorpay({
-      key_id: RAZORPAY_KEY_ID,
-      key_secret: RAZORPAY_KEY_SECRET,
+    // Razorpay API endpoint for order creation
+    const url = 'https://api.razorpay.com/v1/orders';
+    
+    // Basic Auth header
+    const auth = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${auth}`
+      },
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // Razorpay expects amount in paise
+        currency,
+        receipt,
+        notes
+      })
     });
 
-    const options = {
-      amount: Math.round(amount * 100),
-      currency,
-      receipt,
-      notes
-    };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.description || 'Failed to create order via Razorpay API');
+    }
 
-    const order = await razorpay.orders.create(options);
+    const order = await response.json();
     return new Response(JSON.stringify(order), {
       headers: { 'Content-Type': 'application/json' }
     });
