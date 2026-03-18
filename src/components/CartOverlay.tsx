@@ -35,8 +35,18 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
       const order = await response.json();
 
       // 2. Open Razorpay Checkout
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      
+      if (!razorpayKey) {
+        throw new Error('Razorpay Key ID is missing. Please set VITE_RAZORPAY_KEY_ID in your environment.');
+      }
+
+      if (!(window as any).Razorpay) {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+      }
+
       const options = {
-        key: "rzp_test_placeholder", // This should ideally come from env or backend
+        key: razorpayKey,
         amount: order.amount,
         currency: order.currency,
         name: "K9 SNIPERS",

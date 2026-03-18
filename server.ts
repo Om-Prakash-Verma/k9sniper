@@ -15,11 +15,24 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // Razorpay Initialization
-  const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder",
-    key_secret: process.env.RAZORPAY_KEY_SECRET || "placeholder_secret",
-  });
+  // Razorpay Lazy Initialization
+  let razorpayInstance: Razorpay | null = null;
+  const getRazorpay = () => {
+    if (!razorpayInstance) {
+      const key_id = process.env.RAZORPAY_KEY_ID;
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+      
+      if (!key_id || !key_secret) {
+        throw new Error("RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables are required");
+      }
+      
+      razorpayInstance = new Razorpay({
+        key_id,
+        key_secret,
+      });
+    }
+    return razorpayInstance;
+  };
 
   // API Routes
   app.get("/api/health", (req, res) => {
@@ -30,6 +43,7 @@ async function startServer() {
   app.post("/api/payments/order", async (req, res) => {
     try {
       const { amount, currency = "INR", receipt } = req.body;
+      const razorpay = getRazorpay();
 
       const options = {
         amount: Math.round(amount * 100), // Razorpay expects amount in paise
@@ -41,7 +55,7 @@ async function startServer() {
       res.json(order);
     } catch (error) {
       console.error("Razorpay Order Error:", error);
-      res.status(500).json({ error: "Failed to create order" });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Failed to create order" });
     }
   });
 
@@ -49,10 +63,15 @@ async function startServer() {
   app.post("/api/payments/verify", async (req, res) => {
     try {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+
+      if (!key_secret) {
+        throw new Error("RAZORPAY_KEY_SECRET is missing");
+      }
 
       const sign = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSign = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "placeholder_secret")
+        .createHmac("sha256", key_secret)
         .update(sign.toString())
         .digest("hex");
 
@@ -63,7 +82,7 @@ async function startServer() {
       }
     } catch (error) {
       console.error("Razorpay Verification Error:", error);
-      res.status(500).json({ error: "Verification failed" });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Verification failed" });
     }
   });
 
