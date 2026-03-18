@@ -18,32 +18,28 @@ const products = [
     title: "Premium Food", 
     icon: Utensils, 
     desc: "Complete range of Premium Dog Food, Cat Food, Bird Feed, and Fish Feed.",
-    price: 1200,
-    image: "premium-food.jpg"
+    image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&q=80&w=1000"
   },
   { 
     id: "prod_comfort_01",
     title: "Comfort & Style", 
     icon: Bed, 
     desc: "High-quality Pet Beds, Collars, and Leashes for your pet's comfort and safety.",
-    price: 2500,
-    image: "comfort-style.jpg"
+    image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=1000"
   },
   { 
     id: "prod_groom_01",
     title: "Care & Grooming", 
     icon: Scissors, 
     desc: "Professional Grooming Products and Aquarium Equipment for maintenance.",
-    price: 850,
-    image: "care-grooming.jpg"
+    image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1000"
   },
   { 
     id: "prod_living_01",
     title: "Living Solutions", 
     icon: Box, 
     desc: "Durable Toys, Cages, and Carriers for all types of pets.",
-    price: 3200,
-    image: "living-solutions.jpg"
+    image: "https://images.unsplash.com/photo-1545249390-6bdfa286032f?auto=format&fit=crop&q=80&w=1000"
   }
 ];
 
@@ -96,9 +92,6 @@ const Accessories = () => {
 
               <div className="relative z-10 mt-12">
                 <div className="flex items-center justify-between mb-8">
-                  <div className="text-brand-accent font-bold text-2xl group-hover:text-brand-bg-secondary transition-colors duration-500">
-                    ₹{item.price.toLocaleString()}
-                  </div>
                   <span className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     In Stock

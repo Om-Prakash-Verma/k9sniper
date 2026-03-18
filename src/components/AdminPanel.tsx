@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard, 
   Dog, 
@@ -11,7 +11,8 @@ import {
   Save, 
   X,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Settings
 } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { 
@@ -23,18 +24,31 @@ import {
   updateDoc, 
   onSnapshot,
   query,
-  orderBy
+  orderBy,
+  setDoc
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
+import { slugify } from '../utils/slugify';
 
 import { getImageUrl } from '../utils/imageHelper';
 
+import Notification, { NotificationType } from './Notification';
+import ConfirmationModal from './ConfirmationModal';
+
 const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders'>('pets');
+  const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings'>('pets');
   const [pets, setPets] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>({ whatsapp: '', instagram: '' });
   const [loading, setLoading] = useState(true);
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  // Notification state
+  const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
+  
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
 
   // Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,21 +56,44 @@ const AdminPanel = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
 
+  const showNotification = (message: string, type: NotificationType = 'success') => {
+    setNotification({ message, type });
+  };
+
   useEffect(() => {
+    // Only listen if user is logged in
+    if (!auth.currentUser) {
+      setLoading(false);
+      return;
+    }
+
     const unsubPets = onSnapshot(query(collection(db, 'pets')), (snapshot) => {
       setPets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'pets');
+      console.error('Pets snapshot error:', error);
+      // handleFirestoreError(error, OperationType.GET, 'pets');
     });
+
     const unsubProducts = onSnapshot(query(collection(db, 'products')), (snapshot) => {
       setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'products');
+      console.error('Products snapshot error:', error);
+      // handleFirestoreError(error, OperationType.GET, 'products');
     });
+
     const unsubOrders = onSnapshot(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), (snapshot) => {
       setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'orders');
+      console.error('Orders snapshot error:', error);
+      // handleFirestoreError(error, OperationType.GET, 'orders');
+    });
+
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'general'), (doc) => {
+      if (doc.exists()) {
+        setSettings(doc.data());
+      }
+    }, (error) => {
+      console.error('Settings snapshot error:', error);
     });
 
     setLoading(false);
@@ -64,6 +101,7 @@ const AdminPanel = () => {
       unsubPets();
       unsubProducts();
       unsubOrders();
+      unsubSettings();
     };
   }, []);
 
@@ -87,40 +125,59 @@ const AdminPanel = () => {
     try {
       // Basic validation
       if (!formData.name || !formData.image || !formData.price) {
-        alert('Please fill in all required fields (Name, Image, Price)');
+        showNotification('Please fill in all required fields (Name, Image, Price)', 'error');
         return;
       }
 
       const dataToSave = {
         ...formData,
+        slug: activeTab === 'pets' ? slugify(formData.name) : undefined,
         updatedAt: new Date().toISOString()
       };
 
       if (isEditing && editingId) {
         await updateDoc(doc(db, collectionName, editingId), dataToSave);
+        showNotification(`${activeTab === 'pets' ? 'Pet' : 'Product'} updated successfully!`);
       } else {
         await addDoc(collection(db, collectionName), {
           ...dataToSave,
           createdAt: new Date().toISOString(),
           status: activeTab === 'pets' ? 'available' : 'in-stock'
         });
+        showNotification(`${activeTab === 'pets' ? 'Pet' : 'Product'} added successfully!`);
       }
       setIsModalOpen(false);
       setFormData({});
       setIsEditing(false);
       setEditingId(null);
     } catch (error) {
+      showNotification('Failed to save changes. Please try again.', 'error');
       handleFirestoreError(error, isEditing ? OperationType.WRITE : OperationType.WRITE, collectionName);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
     const collectionName = activeTab === 'pets' ? 'pets' : 'products';
     try {
       await deleteDoc(doc(db, collectionName, id));
+      showNotification('Item deleted successfully!');
     } catch (error) {
+      showNotification('Failed to delete item.', 'error');
       handleFirestoreError(error, OperationType.DELETE, `${collectionName}/${id}`);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSettings(true);
+    try {
+      await setDoc(doc(db, 'settings', 'general'), settings);
+      showNotification('Settings saved successfully!');
+    } catch (error) {
+      showNotification('Failed to save settings.', 'error');
+      handleFirestoreError(error, OperationType.WRITE, 'settings/general');
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -134,22 +191,23 @@ const AdminPanel = () => {
             <div className="micro-label text-brand-accent mb-2">Management Console</div>
             <h1 className="text-5xl font-display font-bold text-brand-primary uppercase tracking-tighter">Admin Dashboard</h1>
           </div>
-          <div className="flex bg-brand-bg-secondary p-1 rounded-2xl border border-brand-accent-secondary/10">
+          <div className="flex flex-wrap bg-brand-bg-secondary p-1 rounded-2xl border border-brand-accent-secondary/10">
             {[
               { id: 'pets', icon: Dog, label: 'Pets' },
               { id: 'products', icon: Package, label: 'Products' },
-              { id: 'orders', icon: ShoppingCart, label: 'Orders' }
+              { id: 'orders', icon: ShoppingCart, label: 'Orders' },
+              { id: 'settings', icon: Settings, label: 'Settings' }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all ${
+                className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold uppercase text-[10px] md:text-xs tracking-widest transition-all ${
                   activeTab === tab.id 
                     ? 'bg-brand-accent text-brand-bg-secondary shadow-lg' 
                     : 'text-brand-text hover:bg-brand-accent/10'
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className="w-3 h-3 md:w-4 md:h-4" />
                 {tab.label}
               </button>
             ))}
@@ -173,10 +231,53 @@ const AdminPanel = () => {
             )}
           </div>
 
-          <div className="p-8">
-            {activeTab === 'orders' ? (
+          <div className="p-6 md:p-8">
+            {activeTab === 'settings' ? (
+              <form onSubmit={handleSaveSettings} className="max-w-2xl space-y-8">
+                <div className="form-section-card">
+                  <div className="flex items-center gap-4 border-b border-brand-accent/10 pb-5">
+                    <div className="w-10 h-10 bg-brand-accent/10 rounded-xl flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-brand-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-brand-primary font-display font-bold text-lg uppercase tracking-tight">Contact Settings</h3>
+                      <p className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest">Manage WhatsApp and Instagram links</p>
+                    </div>
+                  </div>
+                  <div className="space-y-6 pt-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">WhatsApp Number (with country code)</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. 919643797801"
+                        className="admin-input" 
+                        value={settings.whatsapp || ''}
+                        onChange={e => setSettings({...settings, whatsapp: e.target.value})} 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Instagram Username</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. k9_snipers_petshop"
+                        className="admin-input" 
+                        value={settings.instagram || ''}
+                        onChange={e => setSettings({...settings, instagram: e.target.value})} 
+                      />
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={savingSettings}
+                  className="btn-premium px-10 py-4 rounded-2xl text-brand-bg-secondary font-bold uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {savingSettings ? 'Saving...' : 'Save Settings'}
+                </button>
+              </form>
+            ) : activeTab === 'orders' ? (
               <div className="overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="w-full text-left min-w-[600px]">
                   <thead>
                     <tr className="border-b border-brand-accent-secondary/10">
                       <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Order ID</th>
@@ -206,17 +307,17 @@ const AdminPanel = () => {
                 </table>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {(activeTab === 'pets' ? pets : products).map(item => (
-                  <div key={item.id} className="bg-brand-bg p-6 rounded-3xl border border-brand-accent-secondary/10 group relative overflow-hidden">
+                  <div key={item.id} className="bg-brand-bg p-4 md:p-6 rounded-3xl border border-brand-accent-secondary/10 group relative overflow-hidden">
                     <div className="aspect-video rounded-2xl overflow-hidden mb-4 bg-brand-bg-secondary">
                       <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </div>
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-xl font-display font-bold text-brand-primary uppercase tracking-tighter">{item.name}</h3>
-                      <div className="text-brand-accent font-bold">₹{item.price?.toLocaleString()}</div>
+                      <h3 className="text-lg md:text-xl font-display font-bold text-brand-primary uppercase tracking-tighter">{item.name}</h3>
+                      <div className="text-brand-accent font-bold text-sm md:text-base">₹{item.price?.toLocaleString()}</div>
                     </div>
-                    <p className="text-brand-text/60 text-sm mb-6 line-clamp-2">{item.description}</p>
+                    <p className="text-brand-text/60 text-xs md:text-sm mb-6 line-clamp-2">{item.description}</p>
                     <div className="flex gap-2">
                       <button 
                         onClick={() => openEditModal(item)}
@@ -225,7 +326,7 @@ const AdminPanel = () => {
                         Edit
                       </button>
                       <button 
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => setDeleteConfirm({ id: item.id, name: item.name })}
                         className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -238,6 +339,27 @@ const AdminPanel = () => {
           </div>
         </div>
       </div>
+
+      {/* Modals and Notifications */}
+      <ConfirmationModal 
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => deleteConfirm && handleDelete(deleteConfirm.id)}
+        title="Delete Item"
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        type="danger"
+      />
+
+      <AnimatePresence>
+        {notification && (
+          <Notification 
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Modal */}
       {isModalOpen && (
@@ -675,12 +797,12 @@ const AdminPanel = () => {
                             <div className="w-12 h-12 rounded-full border-2 border-dashed border-brand-text/20 flex items-center justify-center">
                               <Plus className="w-6 h-6" />
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Image Preview</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Main Image</span>
                           </div>
                         )}
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Image Filename <span className="text-brand-accent">*</span></label>
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Main Image Filename <span className="text-brand-accent">*</span></label>
                         <input 
                           required 
                           type="text" 
@@ -689,6 +811,50 @@ const AdminPanel = () => {
                           value={formData.image || ''}
                           onChange={e => setFormData({...formData, image: e.target.value})} 
                         />
+                      </div>
+
+                      {/* Multiple Images */}
+                      <div className="space-y-4 pt-4 border-t border-brand-accent/5">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Additional Images</label>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const currentImages = formData.images || [];
+                              setFormData({...formData, images: [...currentImages, '']});
+                            }}
+                            className="text-[8px] font-bold text-brand-accent uppercase tracking-widest hover:text-brand-primary transition-colors flex items-center gap-1 bg-brand-accent/5 px-2 py-1 rounded-lg"
+                          >
+                            <Plus className="w-3 h-3" /> Add Image
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          {(formData.images || []).map((img: string, idx: number) => (
+                            <div key={idx} className="flex gap-2">
+                              <input 
+                                type="text" 
+                                placeholder="e.g. dog-01-side.jpg"
+                                className="admin-input text-xs flex-1" 
+                                value={img}
+                                onChange={e => {
+                                  const newImages = [...formData.images];
+                                  newImages[idx] = e.target.value;
+                                  setFormData({...formData, images: newImages});
+                                }} 
+                              />
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const newImages = formData.images.filter((_: any, i: number) => i !== idx);
+                                  setFormData({...formData, images: newImages});
+                                }}
+                                className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>

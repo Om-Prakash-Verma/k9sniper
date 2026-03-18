@@ -6,26 +6,26 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-brand-primary text-brand-bg-secondary py-12 lg:py-20 overflow-hidden relative">
+    <footer className="bg-brand-primary text-brand-bg-secondary py-16 lg:py-24 overflow-hidden relative">
       {/* Background Decorative Element */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl -mr-48 -mt-48" />
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 mb-16 lg:mb-24">
           {/* Brand Column */}
-          <div className="lg:col-span-5">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-brand-accent flex items-center justify-center text-brand-bg-secondary shadow-xl">
-                <Dog className="w-6 h-6" />
+          <div className="lg:col-span-5 text-center lg:text-left">
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-8">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-brand-accent flex items-center justify-center text-brand-bg-secondary shadow-xl">
+                <Dog className="w-5 h-5 md:w-6 md:h-6" />
               </div>
-              <h2 className="text-4xl font-display font-bold uppercase tracking-tighter">
+              <h2 className="text-3xl md:text-4xl font-display font-bold uppercase tracking-tighter">
                 K9 <span className="text-brand-accent">Snipers</span>
               </h2>
             </div>
-            <p className="text-brand-bg-secondary/70 text-xl leading-relaxed max-w-md mb-10">
+            <p className="text-brand-bg-secondary/70 text-lg md:text-xl leading-relaxed max-w-md mx-auto lg:mx-0 mb-10">
               Healthy Pets. Happy Homes. Setting the benchmark for professional pet care and variety in New Delhi since inception.
             </p>
-            <div className="flex gap-4">
+            <div className="flex justify-center lg:justify-start gap-4">
               <a 
                 href="https://www.instagram.com/k9_snipers_petshop/" 
                 target="_blank"
@@ -38,7 +38,7 @@ const Footer = () => {
           </div>
 
           {/* Links Columns */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-12">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 text-center sm:text-left">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent mb-8">Explore</div>
               <ul className="space-y-4">
@@ -56,13 +56,13 @@ const Footer = () => {
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent mb-8">Contact</div>
               <ul className="space-y-4">
                 <li>
-                  <a href="tel:+919643797801" className="text-brand-bg-secondary/60 hover:text-brand-accent transition-colors font-medium flex items-center gap-2">
+                  <a href="tel:+919643797801" className="text-brand-bg-secondary/60 hover:text-brand-accent transition-colors font-medium flex items-center justify-center sm:justify-start gap-2">
                     <Phone className="w-4 h-4" />
                     +91 96437 97801
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:info@k9snipers.com" className="text-brand-bg-secondary/60 hover:text-brand-accent transition-colors font-medium flex items-center gap-2">
+                  <a href="mailto:info@k9snipers.com" className="text-brand-bg-secondary/60 hover:text-brand-accent transition-colors font-medium flex items-center justify-center sm:justify-start gap-2">
                     <Mail className="w-4 h-4" />
                     info@k9snipers.com
                   </a>
@@ -70,13 +70,13 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div className="col-span-2 md:col-span-1">
+            <div className="col-span-1 sm:col-span-2 md:col-span-1">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent mb-8">Location</div>
               <a 
                 href="https://maps.app.goo.gl/YourActualMapLink" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-brand-bg-secondary/60 hover:text-brand-accent transition-colors font-medium flex items-start gap-2"
+                className="text-brand-bg-secondary/60 hover:text-brand-accent transition-colors font-medium flex items-start justify-center sm:justify-start gap-2"
               >
                 <MapPin className="w-4 h-4 mt-1 shrink-0" />
                 <span>Mayur Vihar Phase 3, New Delhi – 110096</span>

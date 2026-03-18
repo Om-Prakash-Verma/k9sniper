@@ -32,6 +32,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cart]);
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
+    if (item.type === 'pet') {
+      console.warn('Pets cannot be added to cart directly.');
+      return;
+    }
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {

@@ -283,7 +283,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
         >
           <div className="max-w-4xl">
             <motion.h2 
-              className="text-3xl sm:text-5xl md:text-8xl font-display font-bold mb-3 md:mb-6 tracking-tighter text-brand-primary uppercase leading-[0.9]"
+              className="text-4xl sm:text-5xl md:text-8xl font-display font-bold mb-3 md:mb-6 tracking-tighter text-brand-primary uppercase leading-[0.9]"
               style={{ textShadow: '0 4px 20px rgba(232, 223, 200, 0.8)' }}
             >
               {section.title}
@@ -293,7 +293,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-base sm:text-xl md:text-3xl text-brand-accent font-bold mb-2 md:mb-4 uppercase tracking-widest"
+                className="text-lg sm:text-xl md:text-3xl text-brand-accent font-bold mb-2 md:mb-4 uppercase tracking-widest"
               >
                 {section.subtitle}
               </motion.p>
@@ -303,7 +303,7 @@ const SectionContent: React.FC<{ section: Section; progress: any }> = ({ section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-sm sm:text-lg md:text-2xl text-brand-text max-w-2xl mx-auto font-bold px-4"
+                className="text-sm sm:text-lg md:text-2xl text-brand-text max-w-2xl mx-auto font-bold px-4 leading-tight sm:leading-normal"
               >
                 {section.content}
               </motion.p>

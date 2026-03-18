@@ -1,39 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Dog, ArrowLeft, ShoppingCart, ShieldCheck, Truck, Heart } from 'lucide-react';
+import { Dog, ArrowLeft, ShieldCheck, Truck, Heart, MessageCircle, Instagram } from 'lucide-react';
 import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
 
 const PetDetailPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [pet, setPet] = useState<any>(null);
+  const [settings, setSettings] = useState<any>({ whatsapp: '', instagram: '' });
   const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState(0);
   const { addToCart } = useCart();
 
   useEffect(() => {
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'general'), (doc) => {
+      if (doc.exists()) {
+        setSettings(doc.data());
+      }
+    });
+
     const fetchPet = async () => {
-      if (!id) return;
+      if (!slug) return;
       try {
-        const docRef = doc(db, 'pets', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
+        // Try to fetch by slug first
+        const q = query(collection(db, 'pets'), where('slug', '==', slug));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const docSnap = querySnapshot.docs[0];
           setPet({ id: docSnap.id, ...docSnap.data() });
         } else {
-          navigate('/pets');
+          // Fallback to ID if slug not found (for old links)
+          try {
+            const docRef = doc(db, 'pets', slug);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              setPet({ id: docSnap.id, ...docSnap.data() });
+            } else {
+              navigate('/pets');
+            }
+          } catch (e) {
+            navigate('/pets');
+          }
         }
       } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `pets/${id}`);
+        handleFirestoreError(error, OperationType.GET, `pets/${slug}`);
       } finally {
         setLoading(false);
       }
     };
     fetchPet();
-  }, [id, navigate]);
+    return () => unsubSettings();
+  }, [slug, navigate]);
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(`Hi, I'm interested in ${pet.name} (${pet.breed}). Can you provide more details?`);
+    window.open(`https://wa.me/${settings.whatsapp}?text=${message}`, '_blank');
+  };
+
+  const handleInstagram = () => {
+    window.open(`https://instagram.com/${settings.instagram}`, '_blank');
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center">
@@ -43,36 +75,52 @@ const PetDetailPage = () => {
 
   if (!pet) return null;
 
+  const images = [pet.image, ...(pet.images || [])].filter(Boolean);
+
   return (
-    <div className="min-h-screen bg-brand-bg pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-brand-accent font-bold uppercase tracking-widest text-xs mb-12 hover:translate-x-[-4px] transition-transform"
+          className="flex items-center gap-2 text-brand-accent font-bold uppercase tracking-widest text-[10px] md:text-xs mb-8 md:mb-12 hover:translate-x-[-4px] transition-transform"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Collection
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-start">
           {/* Image Section */}
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="relative"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
           >
-            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl border border-brand-accent-secondary/10">
+            <div className="aspect-[4/5] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden shadow-2xl border border-brand-accent-secondary/10 relative group">
               <img 
-                src={getImageUrl(pet.image)} 
+                src={getImageUrl(images[activeImage])} 
                 alt={pet.name} 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-brand-accent rounded-full flex flex-col items-center justify-center text-brand-bg-secondary shadow-2xl border-8 border-brand-bg">
-              <div className="text-sm font-bold uppercase tracking-widest mb-1">Price</div>
-              <div className="text-3xl font-display font-bold">₹{pet.petPrice || pet.price?.toLocaleString()}</div>
-            </div>
+
+            {/* Thumbnails */}
+            {images.length > 1 && (
+              <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(idx)}
+                    className={`relative w-24 h-24 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${
+                      activeImage === idx ? 'border-brand-accent scale-105 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={getImageUrl(img)} alt={`${pet.name} ${idx + 1}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Info Section */}
@@ -82,33 +130,33 @@ const PetDetailPage = () => {
             className="flex flex-col"
           >
             <div className="micro-label text-brand-accent mb-4">Pet Details</div>
-            <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-8">
+            <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-8">
               {pet.name}
             </h1>
             
-            <div className="flex flex-wrap gap-4 mb-12">
-              <div className="px-6 py-3 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10 flex items-center gap-3">
-                <Dog className="w-5 h-5 text-brand-accent" />
-                <span className="text-brand-primary font-bold uppercase tracking-widest text-[10px]">{pet.breed || 'Pure Breed'}</span>
+            <div className="flex flex-wrap gap-3 md:gap-4 mb-8 md:mb-12">
+              <div className="px-4 md:px-6 py-2 md:py-3 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10 flex items-center gap-2 md:gap-3">
+                <Dog className="w-4 h-4 md:w-5 md:h-5 text-brand-accent" />
+                <span className="text-brand-primary font-bold uppercase tracking-widest text-[8px] md:text-[10px]">{pet.breed || 'Pure Breed'}</span>
               </div>
-              <div className="px-6 py-3 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10 flex items-center gap-3">
-                <ShieldCheck className="w-5 h-5 text-brand-accent" />
-                <span className="text-brand-primary font-bold uppercase tracking-widest text-[10px]">{pet.vaccinationStatus || 'Health Certified'}</span>
+              <div className="px-4 md:px-6 py-2 md:py-3 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10 flex items-center gap-2 md:gap-3">
+                <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-brand-accent" />
+                <span className="text-brand-primary font-bold uppercase tracking-widest text-[8px] md:text-[10px]">{pet.vaccinationStatus || 'Health Certified'}</span>
               </div>
-              <div className="px-6 py-3 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10 flex items-center gap-3">
-                <Truck className="w-5 h-5 text-brand-accent" />
-                <span className="text-brand-primary font-bold uppercase tracking-widest text-[10px]">Global Shipping</span>
+              <div className="px-4 md:px-6 py-2 md:py-3 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10 flex items-center gap-2 md:gap-3">
+                <Truck className="w-4 h-4 md:w-5 md:h-5 text-brand-accent" />
+                <span className="text-brand-primary font-bold uppercase tracking-widest text-[8px] md:text-[10px]">Global Shipping</span>
               </div>
             </div>
 
-            <div className="prose prose-invert max-w-none mb-12">
-              <p className="text-brand-text text-xl leading-relaxed">
+            <div className="prose prose-invert max-w-none mb-8 md:mb-12">
+              <p className="text-brand-text text-lg md:text-xl leading-relaxed">
                 {pet.description}
               </p>
             </div>
 
             {/* Detailed Specs Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-12">
               {[
                 { label: 'Age', value: pet.age },
                 { label: 'Gender', value: pet.gender },
@@ -120,9 +168,9 @@ const PetDetailPage = () => {
                 { label: 'Shedding', value: pet.sheddingLevel },
                 { label: 'Grooming', value: pet.groomingNeeds }
               ].map((spec, i) => spec.value && (
-                <div key={i} className="p-4 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/5">
+                <div key={i} className="p-3 md:p-4 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/5">
                   <div className="text-[8px] font-bold text-brand-accent uppercase tracking-widest mb-1">{spec.label}</div>
-                  <div className="text-sm font-bold text-brand-primary uppercase">{spec.value}</div>
+                  <div className="text-xs md:text-sm font-bold text-brand-primary uppercase">{spec.value}</div>
                 </div>
               ))}
             </div>
@@ -141,14 +189,18 @@ const PetDetailPage = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
-                onClick={() => addToCart({ ...pet, type: 'pet' })}
-                className="flex-1 btn-premium py-6 rounded-[2rem] text-brand-bg-secondary font-bold uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl"
+                onClick={handleWhatsApp}
+                className="flex-1 btn-premium py-5 md:py-6 rounded-[1.5rem] md:rounded-[2rem] text-brand-bg-secondary font-bold uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl"
               >
-                <ShoppingCart className="w-5 h-5" />
-                Add to Cart
+                <MessageCircle className="w-5 h-5" />
+                Contact on WhatsApp
               </button>
-              <button className="flex-1 py-6 bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[2rem] text-brand-primary font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all">
-                Contact Specialist
+              <button 
+                onClick={handleInstagram}
+                className="flex-1 py-5 md:py-6 bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[1.5rem] md:rounded-[2rem] text-brand-primary font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all flex items-center justify-center gap-3"
+              >
+                <Instagram className="w-5 h-5" />
+                Inquire on Instagram
               </button>
             </div>
           </motion.div>

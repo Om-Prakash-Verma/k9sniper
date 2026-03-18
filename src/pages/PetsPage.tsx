@@ -29,15 +29,15 @@ const PetsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-brand-bg pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-          <div className="max-w-2xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:text-left text-center md:mb-16 gap-8">
+          <div className="max-w-2xl w-full">
             <div className="micro-label mb-4 text-brand-accent">Available Companions</div>
-            <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-6">
+            <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-6">
               Our <span className="text-brand-accent">Pets</span>
             </h1>
-            <p className="text-brand-text text-xl leading-relaxed">
+            <p className="text-brand-text text-lg md:text-xl leading-relaxed">
               Browse our curated collection of healthy, happy pets waiting for their forever homes.
             </p>
           </div>
@@ -47,7 +47,7 @@ const PetsPage = () => {
             <input 
               type="text"
               placeholder="Search by breed or name..."
-              className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-2xl py-4 pl-12 pr-6 text-brand-primary outline-none focus:border-brand-accent transition-all"
+              className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-2xl py-3 md:py-4 pl-12 pr-6 text-brand-primary outline-none focus:border-brand-accent transition-all text-sm md:text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -68,7 +68,7 @@ const PetsPage = () => {
                 transition={{ delay: index * 0.05 }}
                 className="group bg-brand-bg-secondary rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 shadow-xl hover:shadow-2xl transition-all duration-500"
               >
-                <Link to={`/pet/${pet.id}`} className="block">
+                <Link to={`/pet/${pet.slug || pet.id}`} className="block">
                   <div className="aspect-[4/5] relative overflow-hidden">
                     <img 
                       src={getImageUrl(pet.image)} 
@@ -85,18 +85,17 @@ const PetsPage = () => {
                             {pet.name}
                           </h3>
                         </div>
-                        <div className="text-brand-accent font-bold text-xl">₹{pet.price?.toLocaleString()}</div>
                       </div>
                     </div>
                   </div>
                 </Link>
-                <div className="p-8">
-                  <p className="text-brand-text/70 text-sm leading-relaxed mb-8 line-clamp-2">
+                <div className="p-6 md:p-8">
+                  <p className="text-brand-text/70 text-xs md:text-sm leading-relaxed mb-6 md:mb-8 line-clamp-2">
                     {pet.description}
                   </p>
                   <Link 
-                    to={`/pet/${pet.id}`}
-                    className="w-full py-4 bg-brand-accent/10 text-brand-accent rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-500 flex items-center justify-center gap-2"
+                    to={`/pet/${pet.slug || pet.id}`}
+                    className="w-full py-3 md:py-4 bg-brand-accent/10 text-brand-accent rounded-2xl font-bold uppercase text-[8px] md:text-[10px] tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-500 flex items-center justify-center gap-2"
                   >
                     View Details
                     <ChevronRight className="w-4 h-4" />

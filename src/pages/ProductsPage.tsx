@@ -31,15 +31,15 @@ const ProductsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-brand-bg pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-          <div className="max-w-2xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:text-left text-center md:mb-16 gap-8">
+          <div className="max-w-2xl w-full">
             <div className="micro-label mb-4 text-brand-accent">Premium Catalog</div>
-            <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-6">
+            <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-6">
               Pet <span className="text-brand-accent">Essentials</span>
             </h1>
-            <p className="text-brand-text text-xl leading-relaxed">
+            <p className="text-brand-text text-lg md:text-xl leading-relaxed">
               High-quality food, accessories, and grooming supplies for your beloved companions.
             </p>
           </div>
@@ -49,7 +49,7 @@ const ProductsPage = () => {
             <input 
               type="text"
               placeholder="Search products..."
-              className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-2xl py-4 pl-12 pr-6 text-brand-primary outline-none focus:border-brand-accent transition-all"
+              className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-2xl py-3 md:py-4 pl-12 pr-6 text-brand-primary outline-none focus:border-brand-accent transition-all text-sm md:text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -78,26 +78,26 @@ const ProductsPage = () => {
                     referrerPolicy="no-referrer"
                   />
                 </Link>
-                <div className="p-8 flex flex-col flex-1">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-tight">
+                <div className="p-6 md:p-8 flex flex-col flex-1">
+                  <div className="flex justify-between items-start mb-4 gap-4">
+                    <h3 className="text-lg md:text-xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-tight">
                       <Link to={`/product/${product.id}`}>{product.name}</Link>
                     </h3>
-                    <div className="text-brand-accent font-bold">₹{product.price?.toLocaleString()}</div>
+                    <div className="text-brand-accent font-bold text-base md:text-lg whitespace-nowrap">₹{product.price?.toLocaleString()}</div>
                   </div>
-                  <p className="text-brand-text/60 text-sm mb-8 line-clamp-2 flex-1">
+                  <p className="text-brand-text/60 text-xs md:text-sm mb-6 md:mb-8 line-clamp-2 flex-1">
                     {product.description}
                   </p>
                   <div className="flex gap-2">
                     <Link 
                       to={`/product/${product.id}`}
-                      className="flex-1 py-3 bg-brand-bg border border-brand-accent-secondary/20 rounded-xl text-brand-primary font-bold uppercase text-[10px] tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all flex items-center justify-center"
+                      className="flex-1 py-2.5 md:py-3 bg-brand-bg border border-brand-accent-secondary/20 rounded-xl text-brand-primary font-bold uppercase text-[8px] md:text-[10px] tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all flex items-center justify-center"
                     >
                       Details
                     </Link>
                     <button 
                       onClick={() => addToCart({ ...product, type: 'product' })}
-                      className="p-3 bg-brand-accent text-brand-bg-secondary rounded-xl hover:bg-brand-primary transition-all shadow-lg"
+                      className="p-2.5 md:p-3 bg-brand-accent text-brand-bg-secondary rounded-xl hover:bg-brand-primary transition-all shadow-lg"
                     >
                       <ShoppingCart className="w-4 h-4" />
                     </button>

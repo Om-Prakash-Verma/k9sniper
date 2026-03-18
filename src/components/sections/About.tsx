@@ -55,7 +55,7 @@ const About = () => {
           className="absolute inset-0"
         >
           <img 
-            src={getImageUrl("about-hero.jpg")} 
+            src={getImageUrl("https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1000")} 
             alt="Happy Dog"
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             referrerPolicy="no-referrer"

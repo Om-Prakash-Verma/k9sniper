@@ -12,9 +12,8 @@ const categories = [
     title: "Dogs Collection",
     icon: Dog,
     description: "We deal in all popular and premium dog breeds including Labrador Retriever, German Shepherd, Golden Retriever, Shih Tzu, Pomeranian, Chihuahua, Rottweiler, Doberman, Siberian Husky, Beagle, and many more.",
-    image: "dog-collection.jpg",
+    image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1000",
     color: "from-orange-500/20 to-brand-accent/20",
-    price: 15000,
     type: 'pet' as const
   },
   {
@@ -22,9 +21,8 @@ const categories = [
     title: "Luxury & Exotic Cats",
     icon: Cat,
     description: "We offer a variety of cat breeds including Persian Cats, Himalayan Cats, Siamese Cats, British Shorthair, Maine Coon, and other exotic cats.",
-    image: "cat-collection.jpg",
+    image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=1000",
     color: "from-blue-500/20 to-indigo-500/20",
-    price: 12000,
     type: 'pet' as const
   },
   {
@@ -32,9 +30,8 @@ const categories = [
     title: "Birds Section",
     icon: Bird,
     description: "Our Birds Section includes a variety of birds such as Budgies, Cockatiels, Lovebirds, Finches, Parrots, and other available exotic birds.",
-    image: "bird-collection.jpg",
+    image: "https://images.unsplash.com/photo-1522926193917-29690d230241?auto=format&fit=crop&q=80&w=1000",
     color: "from-emerald-500/20 to-teal-500/20",
-    price: 2500,
     type: 'pet' as const
   },
   {
@@ -42,9 +39,8 @@ const categories = [
     title: "Aquatic Collection",
     icon: Fish,
     description: "We deal in a wide range of aquatic pets including Goldfish, Koi Fish, Betta Fish, Guppies, Angelfish, and complete aquarium setup solutions.",
-    image: "fish-collection.jpg",
+    image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=1000",
     color: "from-cyan-500/20 to-blue-500/20",
-    price: 1500,
     type: 'pet' as const
   },
   {
@@ -52,9 +48,8 @@ const categories = [
     title: "Cute Rabbits",
     icon: Rabbit,
     description: "We deal in domestic rabbits and fancy rabbits (as per availability). We provide proper feeding guidance and cage setup assistance.",
-    image: "rabbit-collection.jpg",
+    image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&q=80&w=1000",
     color: "from-pink-500/20 to-rose-500/20",
-    price: 800,
     type: 'pet' as const
   }
 ];
@@ -117,7 +112,6 @@ const OurPets = () => {
                     <h3 className="text-4xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-none">
                       {category.title}
                     </h3>
-                    <div className="text-brand-accent font-bold text-xl">₹{category.price.toLocaleString()}</div>
                   </div>
                   <p className="text-brand-bg-secondary/70 text-sm leading-relaxed mb-8 line-clamp-2 group-hover:line-clamp-none transition-all duration-500">
                     {category.description}

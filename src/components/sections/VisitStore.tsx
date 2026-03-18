@@ -21,6 +21,27 @@ const VisitStore = () => {
           </div>
         </div>
 
+        {/* Store Front Visual */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-12 aspect-[21/7] rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 shadow-2xl relative group"
+        >
+          <img 
+            src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1200" 
+            alt="K9 Snipers Store" 
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-brand-primary/20 group-hover:bg-transparent transition-colors duration-700" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="px-8 py-4 bg-brand-bg-secondary/90 backdrop-blur-md rounded-2xl border border-brand-accent/20 shadow-2xl">
+              <span className="text-brand-primary font-display font-bold text-3xl md:text-5xl uppercase tracking-tighter">Visit Our Store</span>
+            </div>
+          </div>
+        </motion.div>
+
         {/* New Connect Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           

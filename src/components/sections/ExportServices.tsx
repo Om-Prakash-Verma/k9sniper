@@ -45,6 +45,21 @@ const ExportServices = () => {
           </div>
         </div>
 
+        {/* Hero Image for Services */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="mb-16 aspect-[21/9] rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 shadow-2xl"
+        >
+          <img 
+            src="https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=1200" 
+            alt="Global Pet Transport" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </motion.div>
+
         {/* Technical Service Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {services.map((service, index) => (

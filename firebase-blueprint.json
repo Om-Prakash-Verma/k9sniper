@@ -6,12 +6,14 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "slug": { "type": "string" },
         "name": { "type": "string" },
         "category": { "type": "string", "enum": ["dog", "cat", "bird", "fish", "rabbit", "exotic"] },
         "breed": { "type": "string" },
         "price": { "type": "number" },
         "description": { "type": "string" },
         "image": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": ["available", "sold"] },
         "age": { "type": "string" },
         "gender": { "type": "string", "enum": ["Male", "Female", "Unknown"] },
@@ -43,6 +45,7 @@
         "price": { "type": "number" },
         "description": { "type": "string" },
         "image": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
         "stock": { "type": "number" },
         "variations": {
           "type": "array",
