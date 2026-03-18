@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, browserPopupRedirectResolver } from 'firebase/auth';
 
 interface LoginPageProps {
   isAdmin: boolean;
@@ -47,10 +47,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, 
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
       onSuccess();
     } catch (err: any) {
-      setError(err.message || "Google Authentication failed");
+      console.error("Google Login Error:", err);
+      if (err.code === 'auth/popup-blocked') {
+        setError("Popup blocked by browser. Please allow popups for this site.");
+      } else if (err.code === 'auth/cancelled-by-user') {
+        setError("Login cancelled.");
+      } else {
+        setError("Google Authentication failed. If you're in a restricted environment, try opening the app in a new tab.");
+      }
     } finally {
       setLoading(false);
     }
