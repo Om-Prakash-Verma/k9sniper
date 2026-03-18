@@ -12,7 +12,8 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  Settings
+  Settings,
+  User
 } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { 
@@ -28,6 +29,7 @@ import {
   setDoc
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
+import { useAuth } from '../context/AuthContext';
 import { slugify } from '../utils/slugify';
 
 import { getImageUrl } from '../utils/imageHelper';
@@ -36,6 +38,7 @@ import Notification, { NotificationType } from './Notification';
 import ConfirmationModal from './ConfirmationModal';
 
 const AdminPanel = () => {
+  const { user, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings'>('pets');
   const [pets, setPets] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -49,6 +52,7 @@ const AdminPanel = () => {
   
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   // Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,8 +65,8 @@ const AdminPanel = () => {
   };
 
   useEffect(() => {
-    // Only listen if user is logged in
-    if (!auth.currentUser) {
+    // Only listen if user is logged in and is admin
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -71,21 +75,21 @@ const AdminPanel = () => {
       setPets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
       console.error('Pets snapshot error:', error);
-      // handleFirestoreError(error, OperationType.GET, 'pets');
+      handleFirestoreError(error, OperationType.LIST, 'pets');
     });
 
     const unsubProducts = onSnapshot(query(collection(db, 'products')), (snapshot) => {
       setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
       console.error('Products snapshot error:', error);
-      // handleFirestoreError(error, OperationType.GET, 'products');
+      handleFirestoreError(error, OperationType.LIST, 'products');
     });
 
     const unsubOrders = onSnapshot(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), (snapshot) => {
       setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
       console.error('Orders snapshot error:', error);
-      // handleFirestoreError(error, OperationType.GET, 'orders');
+      handleFirestoreError(error, OperationType.LIST, 'orders');
     });
 
     const unsubSettings = onSnapshot(doc(db, 'settings', 'general'), (doc) => {
@@ -94,6 +98,7 @@ const AdminPanel = () => {
       }
     }, (error) => {
       console.error('Settings snapshot error:', error);
+      handleFirestoreError(error, OperationType.GET, 'settings/general');
     });
 
     setLoading(false);
@@ -103,7 +108,7 @@ const AdminPanel = () => {
       unsubOrders();
       unsubSettings();
     };
-  }, []);
+  }, [user, isAdmin]);
 
   const openAddModal = () => {
     setFormData({});
@@ -290,22 +295,35 @@ const AdminPanel = () => {
               </form>
             ) : activeTab === 'orders' ? (
               <div className="overflow-x-auto">
-                <table className="w-full text-left min-w-[600px]">
+                <table className="w-full text-left min-w-[800px]">
                   <thead>
                     <tr className="border-b border-brand-accent-secondary/10">
                       <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Order ID</th>
                       <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Customer</th>
+                      <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Items</th>
                       <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Amount</th>
                       <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Status</th>
                       <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest">Date</th>
+                      <th className="pb-4 font-mono text-[10px] text-brand-accent uppercase tracking-widest text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-brand-accent-secondary/5">
                     {orders.map(order => (
                       <tr key={order.id} className="group hover:bg-brand-accent/5 transition-colors">
-                        <td className="py-4 font-mono text-xs text-brand-primary">{order.id.slice(0, 8)}...</td>
-                        <td className="py-4 text-brand-text font-medium">{order.userId}</td>
-                        <td className="py-4 text-brand-primary font-bold">₹{order.totalAmount?.toLocaleString()}</td>
+                        <td className="py-4 font-mono text-xs text-brand-primary">{order.id.slice(-8).toUpperCase()}</td>
+                        <td className="py-4">
+                          <div className="text-brand-text font-bold text-sm">{order.deliveryInfo?.name || 'Anonymous'}</div>
+                          <div className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest">{order.deliveryInfo?.phone}</div>
+                        </td>
+                        <td className="py-4">
+                          <div className="text-brand-text text-xs">
+                            {order.items?.length} {order.items?.length === 1 ? 'Item' : 'Items'}
+                          </div>
+                          <div className="text-[10px] text-brand-text/40 font-bold uppercase truncate max-w-[150px]">
+                            {order.items?.map((item: any) => item.name).join(', ')}
+                          </div>
+                        </td>
+                        <td className="py-4 text-brand-primary font-bold">₹{order.amount?.toLocaleString()}</td>
                         <td className="py-4">
                           <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                             order.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
@@ -313,7 +331,22 @@ const AdminPanel = () => {
                             {order.status}
                           </span>
                         </td>
-                        <td className="py-4 text-brand-text/60 text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="py-4 text-brand-text/60 text-xs">
+                          {order.createdAt?.seconds 
+                            ? new Date(order.createdAt.seconds * 1000).toLocaleDateString()
+                            : order.createdAt 
+                              ? new Date(order.createdAt).toLocaleDateString()
+                              : 'N/A'
+                          }
+                        </td>
+                        <td className="py-4 text-right">
+                          <button 
+                            onClick={() => setSelectedOrder(order)}
+                            className="px-4 py-2 bg-brand-accent/10 text-brand-accent rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all"
+                          >
+                            View Details
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -373,6 +406,143 @@ const AdminPanel = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6">
+          <div className="absolute inset-0 bg-brand-primary/60 backdrop-blur-md" onClick={() => setSelectedOrder(null)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-brand-bg w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          >
+            <div className="p-8 border-b border-brand-accent-secondary/10 flex justify-between items-center bg-brand-bg-secondary/50">
+              <div>
+                <div className="micro-label text-brand-accent mb-1">Order Details</div>
+                <h2 className="text-3xl font-display font-bold text-brand-primary uppercase tracking-tighter">
+                  Order #{selectedOrder.id.slice(-8).toUpperCase()}
+                </h2>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="p-3 hover:bg-brand-accent/10 rounded-2xl transition-colors group">
+                <X className="text-brand-primary group-hover:rotate-90 transition-transform" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 space-y-10">
+              {/* Status & Date */}
+              <div className="flex flex-wrap gap-8">
+                <div>
+                  <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest mb-2">Payment Status</div>
+                  <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest ${
+                    selectedOrder.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
+                  }`}>
+                    {selectedOrder.status}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest mb-2">Order Date</div>
+                  <div className="text-brand-primary font-bold">
+                    {selectedOrder.createdAt?.seconds 
+                      ? new Date(selectedOrder.createdAt.seconds * 1000).toLocaleString()
+                      : selectedOrder.createdAt 
+                        ? new Date(selectedOrder.createdAt).toLocaleString()
+                        : 'N/A'
+                    }
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest mb-2">Total Amount</div>
+                  <div className="text-brand-accent font-bold text-xl">₹{selectedOrder.amount?.toLocaleString()}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/* Customer Info */}
+                <div className="form-section-card">
+                  <div className="flex items-center gap-4 border-b border-brand-accent/10 pb-5 mb-6">
+                    <div className="w-10 h-10 bg-brand-accent/10 rounded-xl flex items-center justify-center">
+                      <User className="w-5 h-5 text-brand-accent" />
+                    </div>
+                    <h3 className="text-brand-primary font-display font-bold text-lg uppercase tracking-tight">Customer Info</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Name</div>
+                      <div className="text-brand-primary font-bold">{selectedOrder.deliveryInfo?.name}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Email</div>
+                      <div className="text-brand-primary font-bold">{selectedOrder.deliveryInfo?.email}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Phone</div>
+                      <div className="text-brand-primary font-bold">{selectedOrder.deliveryInfo?.phone}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Address */}
+                <div className="form-section-card">
+                  <div className="flex items-center gap-4 border-b border-brand-accent/10 pb-5 mb-6">
+                    <div className="w-10 h-10 bg-brand-accent/10 rounded-xl flex items-center justify-center">
+                      <ShoppingCart className="w-5 h-5 text-brand-accent" />
+                    </div>
+                    <h3 className="text-brand-primary font-display font-bold text-lg uppercase tracking-tight">Delivery Address</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Address</div>
+                      <div className="text-brand-primary font-bold leading-relaxed">{selectedOrder.deliveryInfo?.address}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">City</div>
+                        <div className="text-brand-primary font-bold">{selectedOrder.deliveryInfo?.city}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Pincode</div>
+                        <div className="text-brand-primary font-bold">{selectedOrder.deliveryInfo?.pincode}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div className="form-section-card">
+                <div className="flex items-center gap-4 border-b border-brand-accent/10 pb-5 mb-6">
+                  <div className="w-10 h-10 bg-brand-accent/10 rounded-xl flex items-center justify-center">
+                    <Package className="w-5 h-5 text-brand-accent" />
+                  </div>
+                  <h3 className="text-brand-primary font-display font-bold text-lg uppercase tracking-tight">Order Items</h3>
+                </div>
+                <div className="space-y-4">
+                  {selectedOrder.items?.map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center p-4 bg-brand-bg rounded-2xl border border-brand-accent-secondary/5">
+                      <div>
+                        <div className="text-brand-primary font-bold uppercase tracking-tight">{item.name}</div>
+                        <div className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest">
+                          Qty: {item.quantity} × ₹{item.price?.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="text-brand-primary font-bold">₹{(item.price * item.quantity).toLocaleString()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-8 bg-brand-bg-secondary/50 border-t border-brand-accent-secondary/10 flex justify-end">
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                className="btn-premium px-10 py-4 rounded-2xl text-brand-bg-secondary font-bold uppercase tracking-widest"
+              >
+                Close Details
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Modal */}
       {isModalOpen && (

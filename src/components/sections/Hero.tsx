@@ -57,9 +57,9 @@ const Hero = () => {
                 <span className="micro-label text-brand-accent">Est. 2008 • New Delhi</span>
               </div>
 
-              <h1 className="editorial-title mb-6 lg:mb-8">
+              <h1 className="editorial-title mb-6 lg:mb-8 break-words overflow-hidden">
                 K9 Snipers <br />
-                <span className="text-brand-accent italic font-serif normal-case tracking-normal">Pet Shop</span>
+                <span className="text-brand-accent italic font-serif normal-case tracking-normal block sm:inline">Pet Shop</span>
               </h1>
 
               <div className="relative mb-8 lg:mb-10">

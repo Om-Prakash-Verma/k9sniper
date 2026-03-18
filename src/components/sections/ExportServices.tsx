@@ -32,7 +32,7 @@ const ExportServices = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start mb-12 lg:mb-16 gap-8">
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">Global Logistics</div>
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4 break-words">
               Global <br />
               <span className="text-brand-accent">Pet Mobility</span>
             </h2>
@@ -83,7 +83,7 @@ const ExportServices = () => {
                       <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Active Service</span>
                     </div>
                   </div>
-                  <h3 className="text-4xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-none mb-6 group-hover:text-brand-bg-secondary transition-colors duration-500">
+                  <h3 className="text-3xl sm:text-4xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-none mb-6 group-hover:text-brand-bg-secondary transition-colors duration-500 break-words">
                     {service.title}
                   </h3>
                   <p className="text-brand-text text-lg leading-relaxed mb-8 group-hover:text-brand-bg-secondary/70 transition-colors duration-500">

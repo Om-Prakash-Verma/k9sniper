@@ -15,7 +15,7 @@ const About = () => {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="micro-label mb-4 text-brand-accent">A World of Pets, Care & Comfort</div>
-          <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary mb-8">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary mb-8 break-words">
             Healthy Pets <br />
             <span className="text-brand-accent">Happy Homes</span>
           </h2>

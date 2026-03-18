@@ -96,9 +96,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, 
         )}
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs">
-            {error}
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-5 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-start gap-4 text-left"
+          >
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest leading-tight">{error}</p>
+              {error.includes("Authentication failed") && (
+                <p className="text-[9px] text-red-500/60 font-medium leading-relaxed uppercase tracking-wider">
+                  If you're in a preview window, try opening the app in a new tab using the icon at the top right.
+                </p>
+              )}
+            </div>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-left">

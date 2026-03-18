@@ -24,7 +24,7 @@ const AfterCare = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start mb-12 lg:mb-16 gap-8">
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">Lifelong Support</div>
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4 break-words">
               Beyond the <br />
               <span className="text-brand-accent italic">First Day</span>
             </h2>
@@ -55,7 +55,7 @@ const AfterCare = () => {
                 Service Phase 0{index + 1}
               </div>
               
-              <h3 className="text-4xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-none mb-6 group-hover:text-brand-bg-secondary transition-colors duration-500">
+              <h3 className="text-3xl sm:text-4xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-none mb-6 group-hover:text-brand-bg-secondary transition-colors duration-500 break-words">
                 {step.title}
               </h3>
               
@@ -85,7 +85,7 @@ const AfterCare = () => {
               <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-brand-bg-secondary mb-8">
                 <ShieldCheck className="w-8 h-8" />
               </div>
-              <h3 className="text-5xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-[0.85] mb-6">
+              <h3 className="text-4xl sm:text-5xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-[0.85] mb-6 break-words">
                 10AM - 7PM <br />
                 Priority <br />
                 <span className="text-brand-primary">Support</span>

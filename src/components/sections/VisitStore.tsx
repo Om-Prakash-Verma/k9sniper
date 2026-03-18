@@ -9,7 +9,7 @@ const VisitStore = () => {
         <div className="flex flex-col lg:flex-row justify-between items-end mb-12 lg:mb-16 gap-8">
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">Get In Touch</div>
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary break-words">
               Connect <br />
               <span className="text-brand-accent">With Us</span>
             </h2>
@@ -37,7 +37,7 @@ const VisitStore = () => {
           <div className="absolute inset-0 bg-brand-primary/20 group-hover:bg-transparent transition-colors duration-700" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="px-8 py-4 bg-brand-bg-secondary/90 backdrop-blur-md rounded-2xl border border-brand-accent/20 shadow-2xl">
-              <span className="text-brand-primary font-display font-bold text-3xl md:text-5xl uppercase tracking-tighter">Visit Our Store</span>
+              <span className="text-brand-primary font-display font-bold text-2xl sm:text-3xl md:text-5xl uppercase tracking-tighter break-words text-center px-4">Visit Our Store</span>
             </div>
           </div>
         </motion.div>

@@ -31,7 +31,7 @@ const ResponsibleOwnership = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-3xl mb-16">
           <div className="micro-label mb-4 text-brand-accent">Our Philosophy</div>
-          <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary mb-6">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary mb-6 break-words">
             Responsible <br />
             <span className="text-brand-accent">Pet Ownership</span>
           </h2>

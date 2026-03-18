@@ -137,7 +137,7 @@ const OurPets = () => {
           >
             <div>
               <div className="micro-label text-brand-accent mb-4">Special Request</div>
-              <h3 className="text-5xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-[0.85] mb-4">
+              <h3 className="text-5xl font-display font-bold text-brand-bg-secondary uppercase tracking-tighter leading-[0.85] mb-4 break-words">
                 Looking for <br />
                 Something <br />
                 <span className="text-brand-accent">Unique?</span>

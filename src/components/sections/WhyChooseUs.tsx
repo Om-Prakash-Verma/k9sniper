@@ -62,7 +62,7 @@ const WhyChooseUs = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start mb-12 lg:mb-16 gap-8">
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">The K9 Standard</div>
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4 break-words">
               Why <br />
               <span className="text-brand-accent">K9 Snipers</span>
             </h2>
