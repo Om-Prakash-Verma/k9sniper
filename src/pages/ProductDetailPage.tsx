@@ -5,12 +5,15 @@ import { ShoppingBag, ArrowLeft, ShoppingCart, ShieldCheck, Truck, Package } fro
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
+import { useShopData } from '../context/ShopDataContext';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
+import { shopDb } from '../db/shopDb';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { products, loading: shopLoading } = useShopData();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
@@ -18,28 +21,60 @@ const ProductDetailPage = () => {
   const { addToCart, setIsCartOpen } = useCart();
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (!id) return;
+    const fetchProductData = async () => {
+      // 1. Try to find in in-memory cache
+      const foundProduct = products.find(p => p.id === id || p.slug === id);
+      if (foundProduct) {
+        setProduct(foundProduct);
+        if (foundProduct.variations && foundProduct.variations.length > 0) {
+          setSelectedVariation(foundProduct.variations[0]);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // 2. Try to find in IndexedDB
       try {
-        const docRef = doc(db, 'products', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setProduct({ id: docSnap.id, ...data });
+        const idbProduct = await shopDb.products.where('slug').equals(id as string).first() || 
+                           await shopDb.products.get(id as string);
+        if (idbProduct) {
+          setProduct(idbProduct);
+          if (idbProduct.variations && idbProduct.variations.length > 0) {
+            setSelectedVariation(idbProduct.variations[0]);
+          }
+          setLoading(false);
+          // Update lastAccessed for LRU
+          shopDb.products.update(idbProduct.id, { lastAccessed: Date.now() });
+          return;
+        }
+      } catch (err) {
+        console.error('IndexedDB fetch failed:', err);
+      }
+
+      // 3. If not in cache or IDB, fetch on demand from Firestore
+      try {
+        const productDoc = await getDoc(doc(db, 'products', id as string));
+        if (productDoc.exists()) {
+          const data = { id: productDoc.id, ...productDoc.data() } as any;
+          setProduct(data);
           if (data.variations && data.variations.length > 0) {
             setSelectedVariation(data.variations[0]);
           }
         } else {
           navigate('/products');
         }
-      } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `products/${id}`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, 'product_detail_fetch');
+        navigate('/products');
       } finally {
         setLoading(false);
       }
     };
-    fetchProduct();
-  }, [id, navigate]);
+
+    if (!shopLoading) {
+      fetchProductData();
+    }
+  }, [id, navigate, products, shopLoading]);
 
   if (loading) return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center">

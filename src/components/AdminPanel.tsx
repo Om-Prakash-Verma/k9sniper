@@ -30,15 +30,18 @@ import {
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useAuth } from '../context/AuthContext';
+import { useShopData } from '../context/ShopDataContext';
 import { slugify } from '../utils/slugify';
 
 import { getImageUrl } from '../utils/imageHelper';
+import { updateMetadata } from '../utils/metadataHelper';
 
 import Notification, { NotificationType } from './Notification';
 import ConfirmationModal from './ConfirmationModal';
 
 const AdminPanel = () => {
   const { user, isAdmin } = useAuth();
+  const { pets: cachedPets, products: cachedProducts, loading: shopLoading } = useShopData();
   const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings'>('pets');
   const [pets, setPets] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -65,25 +68,16 @@ const AdminPanel = () => {
   };
 
   useEffect(() => {
+    if (cachedPets.length > 0) setPets(cachedPets);
+    if (cachedProducts.length > 0) setProducts(cachedProducts);
+  }, [cachedPets, cachedProducts]);
+
+  useEffect(() => {
     // Only listen if user is logged in and is admin
     if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
-
-    const unsubPets = onSnapshot(query(collection(db, 'pets')), (snapshot) => {
-      setPets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-      console.error('Pets snapshot error:', error);
-      handleFirestoreError(error, OperationType.LIST, 'pets');
-    });
-
-    const unsubProducts = onSnapshot(query(collection(db, 'products')), (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-      console.error('Products snapshot error:', error);
-      handleFirestoreError(error, OperationType.LIST, 'products');
-    });
 
     const unsubOrders = onSnapshot(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), (snapshot) => {
       setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -103,8 +97,6 @@ const AdminPanel = () => {
 
     setLoading(false);
     return () => {
-      unsubPets();
-      unsubProducts();
       unsubOrders();
       unsubSettings();
     };
@@ -164,6 +156,7 @@ const AdminPanel = () => {
         });
         showNotification(`${activeTab === 'pets' ? 'Pet' : 'Product'} added successfully!`);
       }
+      await updateMetadata(collectionName as 'pets' | 'products');
       setIsModalOpen(false);
       setFormData({});
       setIsEditing(false);
@@ -178,6 +171,7 @@ const AdminPanel = () => {
     const collectionName = activeTab === 'pets' ? 'pets' : 'products';
     try {
       await deleteDoc(doc(db, collectionName, id));
+      await updateMetadata(collectionName as 'pets' | 'products');
       showNotification('Item deleted successfully!');
     } catch (error) {
       showNotification('Failed to delete item.', 'error');

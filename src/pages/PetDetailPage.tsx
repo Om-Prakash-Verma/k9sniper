@@ -5,12 +5,15 @@ import { Dog, ArrowLeft, ShieldCheck, Truck, Heart, MessageCircle, Instagram } f
 import { db } from '../firebase';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
+import { useShopData } from '../context/ShopDataContext';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
+import { shopDb } from '../db/shopDb';
 
 const PetDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { pets, loading: shopLoading } = useShopData();
   const [pet, setPet] = useState<any>(null);
   const [settings, setSettings] = useState<any>({ whatsapp: '', instagram: '' });
   const [loading, setLoading] = useState(true);
@@ -24,39 +27,66 @@ const PetDetailPage = () => {
       }
     });
 
-    const fetchPet = async () => {
-      if (!slug) return;
+    const fetchPetData = async () => {
+      // 1. Try to find in in-memory cache
+      const foundPet = pets.find(p => p.slug === slug || p.id === slug);
+      if (foundPet) {
+        setPet(foundPet);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Try to find in IndexedDB
       try {
-        // Try to fetch by slug first
+        const idbPet = await shopDb.pets.where('slug').equals(slug as string).first() || 
+                       await shopDb.pets.get(slug as string);
+        if (idbPet) {
+          setPet(idbPet);
+          setLoading(false);
+          // Update lastAccessed for LRU
+          shopDb.pets.update(idbPet.id, { lastAccessed: Date.now() });
+          return;
+        }
+      } catch (err) {
+        console.error('IndexedDB fetch failed:', err);
+      }
+
+      // 3. If not in cache or IDB, fetch on demand from Firestore
+      try {
+        // Try by ID first
+        let petDoc = await getDoc(doc(db, 'pets', slug as string));
+        if (petDoc.exists()) {
+          setPet({ id: petDoc.id, ...petDoc.data() });
+          setLoading(false);
+          return;
+        }
+
+        // Try by slug
         const q = query(collection(db, 'pets'), where('slug', '==', slug));
         const querySnapshot = await getDocs(q);
-        
         if (!querySnapshot.empty) {
-          const docSnap = querySnapshot.docs[0];
-          setPet({ id: docSnap.id, ...docSnap.data() });
-        } else {
-          // Fallback to ID if slug not found (for old links)
-          try {
-            const docRef = doc(db, 'pets', slug);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              setPet({ id: docSnap.id, ...docSnap.data() });
-            } else {
-              navigate('/pets');
-            }
-          } catch (e) {
-            navigate('/pets');
-          }
+          const doc = querySnapshot.docs[0];
+          setPet({ id: doc.id, ...doc.data() });
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `pets/${slug}`);
+
+        // Truly not found
+        navigate('/pets');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, 'pet_detail_fetch');
+        navigate('/pets');
       } finally {
         setLoading(false);
       }
     };
-    fetchPet();
+
+    if (!shopLoading) {
+      fetchPetData();
+    }
+
     return () => unsubSettings();
-  }, [slug, navigate]);
+  }, [slug, navigate, pets, shopLoading]);
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(`Hi, I'm interested in ${pet.name} (${pet.breed}). Can you provide more details?`);

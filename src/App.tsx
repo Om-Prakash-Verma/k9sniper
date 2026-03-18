@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ShopDataProvider } from './context/ShopDataContext';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import Footer from './components/sections/Footer';
@@ -96,9 +97,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
+        <ShopDataProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </ShopDataProvider>
       </AuthProvider>
     </BrowserRouter>
   );

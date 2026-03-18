@@ -97,5 +97,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    match /metadata/{metadataId} {
+      allow read: if true; // Publicly viewable for cache checks
+      allow write: if isAdmin();
+    }
   }
 }
