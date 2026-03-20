@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/imageHelper';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { fetchWithAuth } from '../utils/auth';
 
 interface CartOverlayProps {
   isOpen: boolean;
@@ -63,27 +62,20 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
 
     if (!validateForm()) return;
 
-    if (!user) {
-      setNotification({ message: 'Please sign in to complete your purchase.', type: 'error' });
-      setIsProcessing(false);
-      return;
-    }
-
     setIsProcessing(true);
 
     try {
-      // 1. Create Pending Order and Razorpay Order on Backend
-      const response = await fetchWithAuth('/api/payments/order', {
+      // 1. Create Order on Backend
+      const response = await fetch('/api/payments/order', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            type: item.type
-          })),
-          deliveryInfo
+          amount: totalPrice,
+          currency: 'INR',
+          receipt: `receipt_${Date.now()}`,
+          notes: {
+            ...deliveryInfo
+          }
         })
       });
 
@@ -114,16 +106,39 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
         order_id: order.id,
         handler: async (rzpResponse: any) => {
           // 3. Verify Payment on Backend
-          const verifyRes = await fetchWithAuth('/api/payments/verify', {
+          const verifyRes = await fetch('/api/payments/verify', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               ...rzpResponse,
-              internal_order_id: order.orderId
+              deliveryInfo
             })
           });
 
           const result = await verifyRes.json();
           if (result.status === 'success') {
+            // 4. Save Order to Firestore
+            try {
+              await addDoc(collection(db, 'orders'), {
+                userId: user?.uid || 'anonymous',
+                items: cart.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity,
+                  type: item.type
+                })),
+                amount: totalPrice,
+                deliveryInfo,
+                razorpay_order_id: rzpResponse.razorpay_order_id,
+                razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                status: 'paid',
+                createdAt: serverTimestamp()
+              });
+            } catch (err) {
+              console.error('Error saving order to Firestore:', err);
+            }
+
             setNotification({ message: 'Payment Successful! Thank you for your purchase.', type: 'success' });
             setTimeout(() => {
               clearCart();
