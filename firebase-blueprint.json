@@ -73,13 +73,15 @@
         "id": { "type": "string" },
         "userId": { "type": "string" },
         "items": { "type": "array" },
-        "totalAmount": { "type": "number" },
+        "deliveryInfo": { "type": "object" },
+        "amount": { "type": "number" },
         "status": { "type": "string", "enum": ["pending", "paid", "shipped", "delivered"] },
         "razorpayOrderId": { "type": "string" },
         "razorpayPaymentId": { "type": "string" },
+        "paidAt": { "type": "string", "format": "date-time" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "items", "totalAmount", "status"]
+      "required": ["userId", "items", "amount", "status", "deliveryInfo"]
     }
   },
   "firestore": {

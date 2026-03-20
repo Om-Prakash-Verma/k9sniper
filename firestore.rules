@@ -1,106 +1,99 @@
-// ===============================================================
-// Assumed Data Model
-// ===============================================================
-//
-// Collection: users
-// Document ID: {uid}
-// Fields:
-//   - email: string (required)
-//   - role: string (required, 'admin' or 'client')
-//
-// Collection: pets
-// Document ID: auto-generated
-// Fields:
-//   - name: string (required)
-//   - category: string (required)
-//   - price: number (required)
-//   - status: string (required)
-//   - description: string
-//   - image: string
-//
-// Collection: products
-// Document ID: auto-generated
-// Fields:
-//   - name: string (required)
-//   - price: number (required)
-//   - stock: number (required)
-//
-// Collection: orders
-// Document ID: auto-generated
-// Fields:
-//   - userId: string (required)
-//   - totalAmount: number (required)
-//   - status: string (required)
-//
-// ===============================================================
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     // ===============================================================
     // Helper Functions
     // ===============================================================
-
     function isAuthenticated() {
       return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email == "flixwatch.pro@gmail.com" ||
-        request.auth.token.email == "webapp1.in@gmail.com" ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
-      );
     }
 
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isAuthenticated() && 
+             (request.auth.token.role == 'admin' || 
+              (request.auth.token.email == 'webapp1.in@gmail.com' && request.auth.token.email_verified == true));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidString(data, field, min, max) {
+      return data[field] is string && 
+             data[field].size() >= min && 
+             data[field].size() <= max;
+    }
+
+    // ===============================================================
+    // Validators
+    // ===============================================================
+    function isValidUser(data) {
+      return data.keys().hasOnly(['uid', 'email', 'displayName', 'role', 'createdAt', 'updatedAt']) &&
+             data.uid == request.auth.uid &&
+             data.email == request.auth.token.email &&
+             isValidString(data, 'displayName', 2, 50) &&
+             (data.role == 'user' || (data.role == 'admin' && isAdmin()));
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['userId', 'items', 'deliveryInfo', 'amount', 'status', 'createdAt']) &&
+             data.keys().hasOnly(['userId', 'items', 'deliveryInfo', 'amount', 'status', 'createdAt', 'razorpayPaymentId', 'paidAt']) &&
+             data.userId == request.auth.uid &&
+             data.status == 'pending' &&
+             data.amount > 0 &&
+             data.items is list &&
+             data.items.size() > 0 &&
+             data.items.size() <= 50;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
 
+    // Users Collection
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isAuthenticated() && (
-        (isOwner(userId) && request.resource.data.role == 'client') || 
-        isAdmin()
-      );
-      allow update: if isAuthenticated() && (
-        (isOwner(userId) && request.resource.data.role == resource.data.role) || 
-        isAdmin()
-      );
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && 
+                      hasOnlyAllowedFields(['displayName', 'updatedAt']) && 
+                      isValidString(request.resource.data, 'displayName', 2, 50);
+      allow delete: if false; // Users cannot delete themselves
     }
 
-    match /pets/{petId} {
-      allow read: if true; // Publicly viewable
-      allow write: if isAdmin();
-    }
-
-    match /products/{productId} {
-      allow read: if true; // Publicly viewable
-      allow write: if isAdmin();
-    }
-
+    // Orders Collection
     match /orders/{orderId} {
       allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) || 
-                   (!isAuthenticated() && request.resource.data.userId == 'anonymous');
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      // Only backend/admin can create/update orders with status other than 'pending'
+      // Clients can only create 'pending' orders
+      allow create: if isAuthenticated() && isValidOrder(request.resource.data);
+      allow update: if isAdmin(); // Only admin/backend can update orders (e.g. status to 'paid')
+      allow delete: if false;
     }
 
-    match /settings/{settingId} {
+    // Pets & Products (Read-only for users, Admin only for writes)
+    match /pets/{petId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /metadata/{metadataId} {
-      allow read: if true; // Publicly viewable for cache checks
+    match /products/{productId} {
+      allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // Metadata (Read-only for all, Admin only for writes)
+    match /metadata/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default Deny
+    match /{path=**} {
+      allow read, write: if false;
     }
   }
 }

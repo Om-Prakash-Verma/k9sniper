@@ -26,6 +26,8 @@ import {
   onSnapshot,
   query,
   orderBy,
+  limit,
+  startAfter,
   setDoc
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
@@ -41,11 +43,15 @@ import ConfirmationModal from './ConfirmationModal';
 
 const AdminPanel = () => {
   const { user, isAdmin } = useAuth();
-  const { pets: cachedPets, products: cachedProducts, loading: shopLoading } = useShopData();
+  const { pets: cachedPets, products: cachedProducts, loading: shopLoading, refreshData } = useShopData();
   const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings'>('pets');
   const [pets, setPets] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [lastOrderDoc, setLastOrderDoc] = useState<any>(null);
+  const [hasMoreOrders, setHasMoreOrders] = useState(true);
+  const [loadingMoreOrders, setLoadingMoreOrders] = useState(false);
+  const ORDERS_PER_PAGE = 20;
   const [settings, setSettings] = useState<any>({ whatsapp: '', instagram: '' });
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -79,8 +85,18 @@ const AdminPanel = () => {
       return;
     }
 
-    const unsubOrders = onSnapshot(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    // Initial orders fetch with limit
+    const ordersQuery = query(
+      collection(db, 'orders'), 
+      orderBy('createdAt', 'desc'), 
+      limit(ORDERS_PER_PAGE)
+    );
+
+    const unsubOrders = onSnapshot(ordersQuery, (snapshot) => {
+      const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setOrders(newOrders);
+      setLastOrderDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMoreOrders(snapshot.docs.length === ORDERS_PER_PAGE);
     }, (error) => {
       console.error('Orders snapshot error:', error);
       handleFirestoreError(error, OperationType.LIST, 'orders');
@@ -121,8 +137,12 @@ const AdminPanel = () => {
     const collectionName = activeTab === 'pets' ? 'pets' : 'products';
     try {
       // Basic validation
-      if (!formData.name || !formData.image || !formData.price) {
-        showNotification('Please fill in all required fields (Name, Image, Price)', 'error');
+      const isPet = activeTab === 'pets';
+      const requiredFields = isPet ? ['name', 'image', 'price'] : ['name', 'image', 'price'];
+      const missingFields = requiredFields.filter(field => !formData[field]);
+      
+      if (missingFields.length > 0) {
+        showNotification(`Please fill in all required fields (${missingFields.map(f => f.charAt(0).toUpperCase() + f.slice(1)).join(', ')})`, 'error');
         return;
       }
 
@@ -131,7 +151,7 @@ const AdminPanel = () => {
         return;
       }
 
-      if (formData.variations && formData.variations.some((v: any) => v.price <= 0)) {
+      if (!isPet && formData.variations && formData.variations.some((v: any) => v.price <= 0)) {
         showNotification('All variation prices must be greater than zero', 'error');
         return;
       }
@@ -152,11 +172,12 @@ const AdminPanel = () => {
         await addDoc(collection(db, collectionName), {
           ...dataToSave,
           createdAt: new Date().toISOString(),
-          status: activeTab === 'pets' ? 'available' : 'in-stock'
+          status: activeTab === 'pets' ? (formData.status || 'available') : 'in-stock'
         });
         showNotification(`${activeTab === 'pets' ? 'Pet' : 'Product'} added successfully!`);
       }
       await updateMetadata(collectionName as 'pets' | 'products');
+      await refreshData(true);
       setIsModalOpen(false);
       setFormData({});
       setIsEditing(false);
@@ -172,6 +193,7 @@ const AdminPanel = () => {
     try {
       await deleteDoc(doc(db, collectionName, id));
       await updateMetadata(collectionName as 'pets' | 'products');
+      await refreshData(true);
       showNotification('Item deleted successfully!');
     } catch (error) {
       showNotification('Failed to delete item.', 'error');
@@ -190,6 +212,48 @@ const AdminPanel = () => {
       handleFirestoreError(error, OperationType.WRITE, 'settings/general');
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const loadMoreOrders = async () => {
+    if (!lastOrderDoc || loadingMoreOrders || !hasMoreOrders) return;
+
+    setLoadingMoreOrders(true);
+    try {
+      const nextQuery = query(
+        collection(db, 'orders'),
+        orderBy('createdAt', 'desc'),
+        startAfter(lastOrderDoc),
+        limit(ORDERS_PER_PAGE)
+      );
+
+      const snapshot = await getDocs(nextQuery);
+      const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      if (newOrders.length > 0) {
+        setOrders(prev => [...prev, ...newOrders]);
+        setLastOrderDoc(snapshot.docs[snapshot.docs.length - 1]);
+        setHasMoreOrders(snapshot.docs.length === ORDERS_PER_PAGE);
+      } else {
+        setHasMoreOrders(false);
+      }
+    } catch (error) {
+      console.error('Error loading more orders:', error);
+      showNotification('Failed to load more orders.', 'error');
+    } finally {
+      setLoadingMoreOrders(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
+      setSelectedOrder((prev: any) => ({ ...prev, status: newStatus }));
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      showNotification('Order status updated successfully!');
+    } catch (error) {
+      showNotification('Failed to update order status.', 'error');
+      handleFirestoreError(error, OperationType.WRITE, `orders/${orderId}`);
     }
   };
 
@@ -345,6 +409,17 @@ const AdminPanel = () => {
                     ))}
                   </tbody>
                 </table>
+                {hasMoreOrders && (
+                  <div className="mt-8 flex justify-center">
+                    <button
+                      onClick={loadMoreOrders}
+                      disabled={loadingMoreOrders}
+                      className="px-8 py-3 bg-brand-accent/10 text-brand-accent rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all disabled:opacity-50"
+                    >
+                      {loadingMoreOrders ? 'Loading...' : 'Load More Orders'}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -356,6 +431,18 @@ const AdminPanel = () => {
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg md:text-xl font-display font-bold text-brand-primary uppercase tracking-tighter">{item.name}</h3>
                       <div className="text-brand-accent font-bold text-sm md:text-base">₹{item.price?.toLocaleString()}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-2 py-1 bg-brand-accent/5 text-brand-text/60 rounded-lg text-[8px] font-bold uppercase tracking-widest">
+                        {item.category}
+                      </span>
+                      <span className={`px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest ${
+                        item.status === 'available' || item.status === 'in-stock' ? 'bg-emerald-500/10 text-emerald-500' :
+                        item.status === 'sold' || item.status === 'out-of-stock' ? 'bg-red-500/10 text-red-500' :
+                        'bg-orange-500/10 text-orange-500'
+                      }`}>
+                        {item.status?.replace('-', ' ')}
+                      </span>
                     </div>
                     <p className="text-brand-text/60 text-xs md:text-sm mb-6 line-clamp-2">{item.description}</p>
                     <div className="flex gap-2">
@@ -427,11 +514,21 @@ const AdminPanel = () => {
               <div className="flex flex-wrap gap-8">
                 <div>
                   <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest mb-2">Payment Status</div>
-                  <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest ${
-                    selectedOrder.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
-                  }`}>
-                    {selectedOrder.status}
-                  </span>
+                  <select 
+                    value={selectedOrder.status}
+                    onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest outline-none border-none cursor-pointer ${
+                      selectedOrder.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 
+                      selectedOrder.status === 'shipped' ? 'bg-blue-500/10 text-blue-500' :
+                      selectedOrder.status === 'delivered' ? 'bg-purple-500/10 text-purple-500' :
+                      'bg-orange-500/10 text-orange-500'
+                    }`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
                 </div>
                 <div>
                   <div className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest mb-2">Order Date</div>
@@ -725,6 +822,16 @@ const AdminPanel = () => {
                               placeholder="e.g. 985112345678901"
                               value={formData.microchipId || ''}
                               onChange={e => setFormData({...formData, microchipId: e.target.value})} 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Life Expectancy</label>
+                            <input 
+                              type="text" 
+                              className="admin-input" 
+                              placeholder="e.g. 10 - 12 Years"
+                              value={formData.lifeExpectancy || ''}
+                              onChange={e => setFormData({...formData, lifeExpectancy: e.target.value})} 
                             />
                           </div>
                         </div>
@@ -1036,83 +1143,118 @@ const AdminPanel = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Pricing & Inventory Card */}
+                               {/* Pricing & Inventory Card */}
                   <div className="form-section-card">
                     <div className="flex items-center gap-3 border-b border-brand-accent/10 pb-4">
-                      <ShoppingCart className="w-4 h-4 text-brand-accent" />
-                      <h3 className="text-brand-primary font-display font-bold uppercase tracking-tight">Pricing & Stock</h3>
+                      {activeTab === 'pets' ? (
+                        <Dog className="w-4 h-4 text-brand-accent" />
+                      ) : (
+                        <ShoppingCart className="w-4 h-4 text-brand-accent" />
+                      )}
+                      <h3 className="text-brand-primary font-display font-bold uppercase tracking-tight">
+                        {activeTab === 'pets' ? 'Pet Specifications' : 'Pricing & Stock'}
+                      </h3>
                     </div>
                     <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Base Price (INR) <span className="text-brand-accent">*</span></label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary font-bold">₹</span>
-                          <input 
-                            required 
-                            type="number" 
-                            min="1"
-                            className="admin-input pl-10" 
-                            value={formData.price || ''}
-                            onChange={e => setFormData({...formData, price: Math.max(0, Number(e.target.value))})} 
-                          />
-                        </div>
-                      </div>
-                      {activeTab === 'products' && (
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Base Stock</label>
-                          <input 
-                            type="number" 
-                            className="admin-input" 
-                            value={formData.stock || ''}
-                            onChange={e => setFormData({...formData, stock: Number(e.target.value)})} 
-                          />
-                        </div>
-                      )}
-                      {activeTab === 'pets' && (
-                        <div className="grid grid-cols-2 gap-4">
+                      {activeTab === 'products' ? (
+                        <>
                           <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Age</label>
-                            <input 
-                              type="text" 
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Base Price (INR) <span className="text-brand-accent">*</span></label>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary font-bold">₹</span>
+                              <input 
+                                required 
+                                type="number" 
+                                min="1"
+                                className="admin-input pl-10" 
+                                value={formData.price || ''}
+                                onChange={e => setFormData({...formData, price: Math.max(0, Number(e.target.value))})} 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Product Status</label>
+                            <select 
                               className="admin-input text-xs" 
-                              placeholder="e.g. 2 Months"
-                              value={formData.age || ''}
-                              onChange={e => setFormData({...formData, age: e.target.value})} 
+                              value={formData.status || 'in-stock'}
+                              onChange={e => setFormData({...formData, status: e.target.value})}
+                            >
+                              <option value="in-stock">In Stock</option>
+                              <option value="out-of-stock">Out of Stock</option>
+                              <option value="discontinued">Discontinued</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Base Stock</label>
+                            <input 
+                              type="number" 
+                              className="admin-input" 
+                              value={formData.stock || ''}
+                              onChange={e => setFormData({...formData, stock: Number(e.target.value)})} 
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Gender</label>
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Warranty Info</label>
+                            <input 
+                              type="text" 
+                              className="admin-input text-xs" 
+                              placeholder="e.g. 1 Year Manufacturer Warranty"
+                              value={formData.warranty || ''}
+                              onChange={e => setFormData({...formData, warranty: e.target.value})} 
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Price (INR) <span className="text-brand-accent">*</span></label>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary font-bold">₹</span>
+                              <input 
+                                required 
+                                type="number" 
+                                min="1"
+                                className="admin-input pl-10" 
+                                value={formData.price || ''}
+                                onChange={e => setFormData({...formData, price: Math.max(0, Number(e.target.value))})} 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Status</label>
                             <select 
                               className="admin-input text-xs" 
-                              value={formData.gender || 'Unknown'}
-                              onChange={e => setFormData({...formData, gender: e.target.value})}
+                              value={formData.status || 'available'}
+                              onChange={e => setFormData({...formData, status: e.target.value})}
                             >
-                              <option value="Unknown">Unknown</option>
-                              <option value="Male">Male</option>
-                              <option value="Female">Female</option>
+                              <option value="available">Available</option>
+                              <option value="sold">Sold</option>
                             </select>
                           </div>
-                        </div>
-                      )}
-                      <div className="pt-2">
-                        <div className="flex items-center gap-3 text-[10px] font-bold text-brand-accent uppercase tracking-widest bg-brand-accent/5 p-4 rounded-2xl border border-brand-accent/10">
-                          <AlertCircle className="w-4 h-4" />
-                          <span>Visible in store immediately after saving</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Attributes Card */}
-                  <div className="form-section-card">
-                    <div className="flex items-center gap-3 border-b border-brand-accent/10 pb-4">
-                      <LayoutDashboard className="w-4 h-4 text-brand-accent" />
-                      <h3 className="text-brand-primary font-display font-bold uppercase tracking-tight">Attributes</h3>
-                    </div>
-                    <div className="space-y-6">
-                      {activeTab === 'pets' ? (
-                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Age</label>
+                              <input 
+                                type="text" 
+                                className="admin-input text-xs" 
+                                placeholder="e.g. 2 Months"
+                                value={formData.age || ''}
+                                onChange={e => setFormData({...formData, age: e.target.value})} 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Gender</label>
+                              <select 
+                                className="admin-input text-xs" 
+                                value={formData.gender || 'Unknown'}
+                                onChange={e => setFormData({...formData, gender: e.target.value})}
+                              >
+                                <option value="Unknown">Unknown</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                              </select>
+                            </div>
+                          </div>
                           <div className="space-y-2">
                             <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Size Category</label>
                             <select 
@@ -1136,22 +1278,16 @@ const AdminPanel = () => {
                               onChange={e => setFormData({...formData, weight: e.target.value})} 
                             />
                           </div>
-                        </>
-                      ) : (
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest ml-1">Warranty Info</label>
-                          <input 
-                            type="text" 
-                            className="admin-input text-xs" 
-                            placeholder="e.g. 1 Year Manufacturer Warranty"
-                            value={formData.warranty || ''}
-                            onChange={e => setFormData({...formData, warranty: e.target.value})} 
-                          />
                         </div>
                       )}
+                      <div className="pt-2">
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-brand-accent uppercase tracking-widest bg-brand-accent/5 p-4 rounded-2xl border border-brand-accent/10">
+                          <AlertCircle className="w-4 h-4" />
+                          <span>Visible in store immediately after saving</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
                 </div>
               </div>
 

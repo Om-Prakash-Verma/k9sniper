@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { User, Package, LogOut, Settings, ChevronRight, ShoppingBag, X, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth, db } from '../firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,10 @@ const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastOrderDoc, setLastOrderDoc] = useState<any>(null);
+  const [hasMoreOrders, setHasMoreOrders] = useState(true);
+  const [loadingMoreOrders, setLoadingMoreOrders] = useState(false);
+  const ORDERS_PER_PAGE = 10;
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isLoyaltyOpen, setIsLoyaltyOpen] = useState(false);
@@ -29,11 +33,15 @@ const UserDashboard = () => {
     const q = query(
       collection(db, 'orders'),
       where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
+      limit(ORDERS_PER_PAGE)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setOrders(newOrders);
+      setLastOrderDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMoreOrders(snapshot.docs.length === ORDERS_PER_PAGE);
       setLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'orders');
@@ -46,6 +54,36 @@ const UserDashboard = () => {
   const handleLogout = async () => {
     await auth.signOut();
     navigate('/');
+  };
+
+  const loadMoreOrders = async () => {
+    if (!lastOrderDoc || loadingMoreOrders || !hasMoreOrders || !user) return;
+
+    setLoadingMoreOrders(true);
+    try {
+      const nextQuery = query(
+        collection(db, 'orders'),
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc'),
+        startAfter(lastOrderDoc),
+        limit(ORDERS_PER_PAGE)
+      );
+
+      const snapshot = await getDocs(nextQuery);
+      const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      if (newOrders.length > 0) {
+        setOrders(prev => [...prev, ...newOrders]);
+        setLastOrderDoc(snapshot.docs[snapshot.docs.length - 1]);
+        setHasMoreOrders(snapshot.docs.length === ORDERS_PER_PAGE);
+      } else {
+        setHasMoreOrders(false);
+      }
+    } catch (error) {
+      console.error('Error loading more orders:', error);
+    } finally {
+      setLoadingMoreOrders(false);
+    }
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -204,53 +242,65 @@ const UserDashboard = () => {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {orders.map((order) => (
-                    <div 
-                      key={order.id}
-                      className="p-6 bg-brand-bg border border-brand-accent-secondary/10 rounded-3xl hover:border-brand-accent/30 transition-all group"
-                    >
-                      <div className="flex flex-col md:flex-row justify-between gap-6">
-                        <div className="flex gap-6">
-                          <div className="w-16 h-16 rounded-2xl bg-brand-bg-secondary flex items-center justify-center text-brand-accent border border-brand-accent-secondary/10">
-                            <Package className="w-8 h-8" />
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <div 
+                        key={order.id}
+                        className="p-6 bg-brand-bg border border-brand-accent-secondary/10 rounded-3xl hover:border-brand-accent/30 transition-all group"
+                      >
+                        <div className="flex flex-col md:flex-row justify-between gap-6">
+                          <div className="flex gap-6">
+                            <div className="w-16 h-16 rounded-2xl bg-brand-bg-secondary flex items-center justify-center text-brand-accent border border-brand-accent-secondary/10">
+                              <Package className="w-8 h-8" />
+                            </div>
+                             <div>
+                              <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Order #{order.id.slice(-8).toUpperCase()}</div>
+                              <h4 className="text-lg font-display font-bold text-brand-primary uppercase tracking-tighter mb-1">
+                                ₹{order.amount?.toLocaleString()}
+                              </h4>
+                              <p className="text-brand-text/60 text-xs font-bold uppercase tracking-widest">
+                                {order.createdAt?.seconds 
+                                  ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-IN', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })
+                                  : order.createdAt 
+                                    ? new Date(order.createdAt).toLocaleDateString()
+                                    : 'N/A'
+                                }
+                              </p>
+                            </div>
                           </div>
-                           <div>
-                            <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Order #{order.id.slice(-8).toUpperCase()}</div>
-                            <h4 className="text-lg font-display font-bold text-brand-primary uppercase tracking-tighter mb-1">
-                              ₹{order.amount?.toLocaleString()}
-                            </h4>
-                            <p className="text-brand-text/60 text-xs font-bold uppercase tracking-widest">
-                              {order.createdAt?.seconds 
-                                ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-IN', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric'
-                                  })
-                                : order.createdAt 
-                                  ? new Date(order.createdAt).toLocaleDateString()
-                                  : 'N/A'
-                              }
-                            </p>
+                          <div className="flex items-center justify-between md:justify-end gap-4">
+                            <div className={`px-4 py-2 rounded-full text-[8px] font-bold uppercase tracking-widest ${
+                              order.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-brand-accent/10 text-brand-accent'
+                            }`}>
+                              {order.status || 'Processing'}
+                            </div>
+                            <button 
+                              onClick={() => setSelectedOrder(order)}
+                              className="p-3 bg-brand-bg-secondary rounded-xl hover:bg-brand-accent hover:text-brand-bg-secondary transition-all"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-between md:justify-end gap-4">
-                          <div className={`px-4 py-2 rounded-full text-[8px] font-bold uppercase tracking-widest ${
-                            order.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-brand-accent/10 text-brand-accent'
-                          }`}>
-                            {order.status || 'Processing'}
-                          </div>
-                          <button 
-                            onClick={() => setSelectedOrder(order)}
-                            className="p-3 bg-brand-bg-secondary rounded-xl hover:bg-brand-accent hover:text-brand-bg-secondary transition-all"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                    
+                    {hasMoreOrders && (
+                      <div className="mt-8 flex justify-center">
+                        <button
+                          onClick={loadMoreOrders}
+                          disabled={loadingMoreOrders}
+                          className="px-8 py-3 bg-brand-accent/10 text-brand-accent rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all disabled:opacity-50"
+                        >
+                          {loadingMoreOrders ? 'Loading...' : 'Load More Orders'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
               )}
             </div>
           </motion.div>
