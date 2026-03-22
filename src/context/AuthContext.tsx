@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
-import { ADMIN_EMAIL } from '../constants';
-import { UserProfile } from '../types';
+import { UserProfile } from '../types/index';
 
 interface AuthContextType {
   user: User | null;
@@ -34,32 +33,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          const isHardcodedAdmin = currentUser.email === ADMIN_EMAIL;
-          
           let role: 'admin' | 'client' = 'client';
           if (userDoc.exists()) {
             role = userDoc.data().role as 'admin' | 'client';
           } else {
-            role = isHardcodedAdmin ? 'admin' : 'client';
             const userData: Omit<UserProfile, 'uid'> = {
               email: currentUser.email,
               displayName: currentUser.displayName,
               photoURL: currentUser.photoURL,
-              role: role,
+              role: 'client',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             };
             await setDoc(doc(db, 'users', currentUser.uid), userData);
           }
 
-          const isRoleAdmin = role === 'admin' || isHardcodedAdmin;
+          const isRoleAdmin = role === 'admin';
           setIsUnverifiedAdmin(isRoleAdmin && !currentUser.emailVerified);
           setIsAdmin(isRoleAdmin && currentUser.emailVerified);
         } catch (error) {
           handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
-          const isHardcoded = currentUser.email === ADMIN_EMAIL;
-          setIsUnverifiedAdmin(isHardcoded && !currentUser.emailVerified);
-          setIsAdmin(isHardcoded && currentUser.emailVerified);
+          setIsUnverifiedAdmin(false);
+          setIsAdmin(false);
         }
       } else {
         setIsAdmin(false);
