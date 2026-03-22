@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, Edit, X, Save } from 'lucide-react';
 import { db } from '../../firebase';
-import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, updateDoc, query, where, getDocs } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 import { getImageUrl } from '../../utils/imageHelper';
 import { updateMetadata } from '../../utils/metadataHelper';
+import { slugify } from '../../utils/slugify';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { Product } from '../../types';
@@ -45,8 +46,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
         return;
       }
 
+      const slug = slugify(formData.name);
       const dataToSave: Partial<Product> = {
         ...formData,
+        slug,
         price: Number(formData.price),
         updatedAt: new Date().toISOString()
       };

@@ -21,16 +21,57 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import UserDashboard from './pages/UserDashboard';
 import Notification from './components/Notification';
 import { useCart } from './context/CartContext';
-import { AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Navigate } from 'react-router-dom';
+import { AlertCircle, X } from 'lucide-react';
+import { auth } from './firebase';
+import { sendEmailVerification } from 'firebase/auth';
 
 function AppContent() {
   const { user, isAdmin, isUnverifiedAdmin, loading: authLoading } = useAuth();
   const { notification, setNotification } = useCart();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+
+  const handleSendVerification = async () => {
+    if (!auth.currentUser) return;
+    try {
+      await sendEmailVerification(auth.currentUser);
+      setVerificationSent(true);
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+    }
+  };
 
   return (
     <div className="bg-brand-bg min-h-screen selection:bg-brand-accent/30 relative overflow-x-hidden">
+      {/* Global Verification Banner */}
+      <AnimatePresence>
+        {user && !user.emailVerified && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-brand-accent text-brand-bg-secondary py-2 px-4 relative z-[60] overflow-hidden"
+          >
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Email Verification Required</span>
+              </div>
+              <p className="text-[10px] md:text-xs font-medium opacity-90">Please verify your email to access all features and track your orders.</p>
+              <button 
+                onClick={handleSendVerification}
+                disabled={verificationSent}
+                className="px-4 py-1 bg-brand-bg-secondary text-brand-primary rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-brand-primary hover:text-brand-bg-secondary transition-all disabled:opacity-50"
+              >
+                {verificationSent ? 'Verification Email Sent' : 'Resend Email'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Navbar onLogin={() => setShowLoginModal(true)} />
       
       <AnimatePresence>
@@ -51,7 +92,7 @@ function AppContent() {
           <Route path="/pets" element={<PetsPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/pet/:slug" element={<PetDetailPage />} />
-          <Route path="/product/:id" element={<ProductDetailPage />} />
+          <Route path="/product/:slug" element={<ProductDetailPage />} />
           <Route path="/user" element={
             authLoading ? (
               <div className="min-h-[60vh] flex items-center justify-center">

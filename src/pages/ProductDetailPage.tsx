@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ShoppingBag, ArrowLeft, ShoppingCart, ShieldCheck, Truck, Package } from 'lucide-react';
 import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useShopData } from '../context/ShopDataContext';
 import { useCart } from '../context/CartContext';
@@ -53,6 +53,7 @@ const ProductDetailPage = () => {
 
       // 3. If not in cache or IDB, fetch on demand from Firestore
       try {
+        // First try by ID
         const productDoc = await getDoc(doc(db, 'products', id as string));
         if (productDoc.exists()) {
           const data = { id: productDoc.id, ...productDoc.data() } as any;
@@ -61,7 +62,19 @@ const ProductDetailPage = () => {
             setSelectedVariation(data.variations[0]);
           }
         } else {
-          navigate('/products');
+          // If not found by ID, try by slug
+          const q = query(collection(db, 'products'), where('slug', '==', id));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const data = { id: doc.id, ...doc.data() } as any;
+            setProduct(data);
+            if (data.variations && data.variations.length > 0) {
+              setSelectedVariation(data.variations[0]);
+            }
+          } else {
+            navigate('/products');
+          }
         }
       } catch (err) {
         handleFirestoreError(err, OperationType.GET, 'product_detail_fetch');
