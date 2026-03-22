@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ShoppingBag, Plus, Minus, Trash2, CreditCard, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/imageHelper';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 interface CartOverlayProps {
   isOpen: boolean;
@@ -17,17 +18,25 @@ import Notification, { NotificationType } from './Notification';
 const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart, updateQuantity, totalPrice, deliveryFee, finalTotal, totalItems, clearCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
-  const [deliveryInfo, setDeliveryInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    pincode: ''
+  const [deliveryInfo, setDeliveryInfo] = useState(() => {
+    const saved = localStorage.getItem('k9_delivery_info');
+    return saved ? JSON.parse(saved) : {
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      pincode: ''
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('k9_delivery_info', JSON.stringify(deliveryInfo));
+  }, [deliveryInfo]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -70,13 +79,11 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: finalTotal,
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity, type: item.type })),
           currency: 'INR',
           receipt: `receipt_${Date.now()}`,
           notes: {
             ...deliveryInfo,
-            subtotal: totalPrice,
-            deliveryFee: deliveryFee
           }
         })
       });
@@ -217,9 +224,7 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
                 <button 
                   onClick={() => {
                     onClose();
-                    // This is a bit tricky since onLogin is in Navbar. 
-                    // But we can just navigate to /user which will show login.
-                    window.location.href = '/user';
+                    navigate('/user');
                   }}
                   className="px-4 py-2 bg-brand-accent text-brand-bg-secondary rounded-lg text-[8px] font-bold uppercase tracking-widest hover:bg-brand-primary transition-all"
                 >

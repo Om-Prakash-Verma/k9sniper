@@ -18,7 +18,23 @@ const UserDashboard = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [updating, setUpdating] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const navigate = useNavigate();
+  const [marketingSettings, setMarketingSettings] = useState(() => {
+    const saved = localStorage.getItem('k9_marketing_settings');
+    return saved ? JSON.parse(saved) : { orders: true, marketing: false };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('k9_marketing_settings', JSON.stringify(marketingSettings));
+  }, [marketingSettings]);
+
+  const loyaltyPoints = orders.reduce((sum, order) => {
+    if (order.status === 'paid') {
+      return sum + Math.floor((order.amount || 0) / 10);
+    }
+    return sum;
+  }, 0);
 
   useEffect(() => {
     if (user?.displayName) setDisplayName(user.displayName);
@@ -87,12 +103,33 @@ const UserDashboard = () => {
     setUpdating(true);
     try {
       const { updateProfile } = await import('firebase/auth');
+      const { doc, updateDoc } = await import('firebase/firestore');
+      
       await updateProfile(user, { displayName });
+      
+      // Update Firestore user document
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        displayName,
+        updatedAt: new Date().toISOString()
+      });
+      
       setIsEditProfileOpen(false);
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleSendVerification = async () => {
+    if (!user) return;
+    try {
+      const { sendEmailVerification } = await import('firebase/auth');
+      await sendEmailVerification(user);
+      setVerificationSent(true);
+    } catch (error) {
+      console.error('Error sending verification email:', error);
     }
   };
 
@@ -113,9 +150,24 @@ const UserDashboard = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-8">
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">User Account</div>
-            <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-6">
-              My <span className="text-brand-accent">Dashboard</span>
-            </h1>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+              <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary">
+                My <span className="text-brand-accent">Dashboard</span>
+              </h1>
+              {!user.emailVerified && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-brand-accent/10 border border-brand-accent/20 rounded-full">
+                  <AlertCircle className="w-3 h-3 text-brand-accent" />
+                  <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest">Email Not Verified</span>
+                  <button 
+                    onClick={handleSendVerification}
+                    disabled={verificationSent}
+                    className="text-[10px] font-bold text-brand-primary uppercase tracking-widest hover:text-brand-accent transition-colors ml-2 underline underline-offset-2"
+                  >
+                    {verificationSent ? 'Email Sent' : 'Verify Now'}
+                  </button>
+                </div>
+              )}
+            </div>
             <p className="text-brand-text text-lg md:text-xl leading-relaxed">
               Manage your orders, profile, and preferences.
             </p>
@@ -477,7 +529,7 @@ const UserDashboard = () => {
                     <ShoppingBag className="w-8 h-8" />
                   </div>
                   <div>
-                    <div className="text-2xl font-display font-bold text-brand-primary">0 Points</div>
+                    <div className="text-2xl font-display font-bold text-brand-primary">{loyaltyPoints} Points</div>
                     <div className="text-xs text-brand-accent font-bold uppercase tracking-widest">Current Balance</div>
                   </div>
                 </div>
@@ -535,18 +587,24 @@ const UserDashboard = () => {
                       <div className="text-sm font-bold text-brand-primary">Order Notifications</div>
                       <div className="text-[10px] text-brand-text/40 uppercase font-bold tracking-widest">Email & Push</div>
                     </div>
-                    <div className="w-12 h-6 bg-brand-accent rounded-full relative">
-                      <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
-                    </div>
+                    <button 
+                      onClick={() => setMarketingSettings(prev => ({ ...prev, orders: !prev.orders }))}
+                      className={`w-12 h-6 rounded-full relative transition-colors ${marketingSettings.orders ? 'bg-brand-accent' : 'bg-brand-accent/20'}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${marketingSettings.orders ? 'right-1' : 'left-1'}`} />
+                    </button>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-brand-bg-secondary rounded-2xl border border-brand-accent-secondary/10">
                     <div>
                       <div className="text-sm font-bold text-brand-primary">Marketing Updates</div>
                       <div className="text-[10px] text-brand-text/40 uppercase font-bold tracking-widest">New Arrivals</div>
                     </div>
-                    <div className="w-12 h-6 bg-brand-accent/20 rounded-full relative">
-                      <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full" />
-                    </div>
+                    <button 
+                      onClick={() => setMarketingSettings(prev => ({ ...prev, marketing: !prev.marketing }))}
+                      className={`w-12 h-6 rounded-full relative transition-colors ${marketingSettings.marketing ? 'bg-brand-accent' : 'bg-brand-accent/20'}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${marketingSettings.marketing ? 'right-1' : 'left-1'}`} />
+                    </button>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-brand-accent-secondary/10">

@@ -376,24 +376,74 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLoading(false);
   };
 
-  const searchPets = useCallback(async (query: string): Promise<Pet[]> => {
-    if (!query) return pets;
-    return await shopDb.pets
-      .filter(pet => 
-        pet.name.toLowerCase().includes(query.toLowerCase()) || 
-        pet.description.toLowerCase().includes(query.toLowerCase())
-      )
-      .toArray();
+  const searchPets = useCallback(async (queryText: string): Promise<Pet[]> => {
+    if (!queryText) return pets;
+    
+    // 1. Search local state/IDB first
+    const localResults = pets.filter(pet => 
+      pet.name.toLowerCase().includes(queryText.toLowerCase()) || 
+      pet.description.toLowerCase().includes(queryText.toLowerCase())
+    );
+
+    // 2. If we have enough results locally, return them
+    if (localResults.length >= 5) return localResults;
+
+    // 3. Otherwise, perform a global Firestore search
+    try {
+      const q = query(
+        collection(db, 'pets'),
+        where('name', '>=', queryText),
+        where('name', '<=', queryText + '\uf8ff'),
+        limit(10)
+      );
+      const snapshot = await getDocs(q);
+      const remoteResults = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Pet));
+      
+      // Merge and deduplicate
+      const merged = [...localResults];
+      remoteResults.forEach(rp => {
+        if (!merged.find(lp => lp.id === rp.id)) merged.push(rp);
+      });
+      return merged;
+    } catch (err) {
+      console.error('Global pet search failed:', err);
+      return localResults;
+    }
   }, [pets]);
 
-  const searchProducts = useCallback(async (query: string): Promise<Product[]> => {
-    if (!query) return products;
-    return await shopDb.products
-      .filter(product => 
-        product.name.toLowerCase().includes(query.toLowerCase()) || 
-        product.description.toLowerCase().includes(query.toLowerCase())
-      )
-      .toArray();
+  const searchProducts = useCallback(async (queryText: string): Promise<Product[]> => {
+    if (!queryText) return products;
+
+    // 1. Search local state/IDB first
+    const localResults = products.filter(product => 
+      product.name.toLowerCase().includes(queryText.toLowerCase()) || 
+      product.description.toLowerCase().includes(queryText.toLowerCase())
+    );
+
+    // 2. If we have enough results locally, return them
+    if (localResults.length >= 5) return localResults;
+
+    // 3. Otherwise, perform a global Firestore search
+    try {
+      const q = query(
+        collection(db, 'products'),
+        where('name', '>=', queryText),
+        where('name', '<=', queryText + '\uf8ff'),
+        limit(10)
+      );
+      const snapshot = await getDocs(q);
+      const remoteResults = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      
+      // Merge and deduplicate
+      const merged = [...localResults];
+      remoteResults.forEach(rp => {
+        if (!merged.find(lp => lp.id === rp.id)) merged.push(rp);
+      });
+      return merged;
+    } catch (err) {
+      console.error('Global product search failed:', err);
+      return localResults;
+    }
   }, [products]);
 
   const updateShopSettings = async (newSettings: ShopSettings) => {

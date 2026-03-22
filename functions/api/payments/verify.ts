@@ -15,6 +15,7 @@ async function verifySignature(orderId: string, paymentId: string, signature: st
 }
 
 export const onRequestPost: PagesFunction<{
+  RAZORPAY_KEY_ID: string;
   RAZORPAY_KEY_SECRET: string;
   FIREBASE_SERVICE_ACCOUNT: string;
   FIREBASE_PROJECT_ID: string;
@@ -22,12 +23,34 @@ export const onRequestPost: PagesFunction<{
   const { request, env } = context;
   
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, deliveryInfo, items, userId, amount } = await request.json() as any;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, deliveryInfo, items, userId } = await request.json() as any;
     
     const isValid = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, env.RAZORPAY_KEY_SECRET);
 
     if (!isValid) {
       return new Response(JSON.stringify({ status: "failure", message: "Invalid payment signature" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 1. Fetch the order from Razorpay to verify the amount
+    const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
+    const razorpayOrderRes = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
+      headers: { "Authorization": `Basic ${auth}` }
+    });
+    
+    if (!razorpayOrderRes.ok) {
+      throw new Error("Failed to fetch order from Razorpay");
+    }
+    
+    const razorpayOrder = await razorpayOrderRes.json() as any;
+    const paidAmount = razorpayOrder.amount / 100; // Razorpay amount is in paise
+    const calculatedTotal = Number(razorpayOrder.notes.calculatedTotal);
+    
+    // 2. Validate that the paid amount matches our calculated total
+    if (Math.abs(paidAmount - calculatedTotal) > 0.01) {
+      return new Response(JSON.stringify({ status: "failure", message: "Amount mismatch detected" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -57,7 +80,7 @@ export const onRequestPost: PagesFunction<{
             }))
           }
         },
-        amount: { doubleValue: amount },
+        amount: { doubleValue: paidAmount },
         deliveryInfo: {
           mapValue: {
             fields: {

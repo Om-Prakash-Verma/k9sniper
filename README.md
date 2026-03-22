@@ -12,6 +12,28 @@ A high-performance, scalable, and resilient pet shop application built with Reac
 - **Animations**: Motion (Framer Motion)
 - **Icons**: Lucide React
 
+## 🛡️ Security & Data Integrity
+The application implements a multi-layered security architecture to protect user data and prevent fraudulent transactions.
+
+### 1. Payment Security (Razorpay Integration)
+- **Server-Side Price Recalculation**: The client never sends the total amount to the payment gateway. Instead, it sends a list of item IDs and quantities. The backend fetches current prices from Firestore and calculates the authoritative total.
+- **Signature Verification**: Every payment response from Razorpay is verified on the server using the `RAZORPAY_KEY_SECRET` to ensure the payment was actually made through the official gateway.
+- **Amount Validation**: Before saving an order, the backend fetches the order details directly from Razorpay's API to confirm that the amount paid matches the server-calculated total, preventing "price manipulation" attacks.
+
+### 2. Database Security (Firestore Rules)
+- **Default Deny**: All access is blocked by default.
+- **Admin Authorization**: Administrative access requires both a specific role in the `users` collection AND a verified email address (`email_verified: true`).
+- **Immutable Field Protection**: Critical fields like `createdAt`, `userId`, and `amount` are protected from modification after creation.
+- **Schema Enforcement**: All writes are validated against strict type and size constraints to prevent data corruption or DoS attacks via large payloads.
+
+### 3. User Data Integrity
+- **Profile Synchronization**: User profile updates (like `displayName`) are automatically synchronized between Firebase Authentication and the Firestore `users` collection.
+- **Email Verification**: Users are prompted to verify their email in the dashboard. Verification is a hard requirement for administrative privileges and secure operations.
+
+### 4. Hybrid Search Strategy
+- **Low-Latency Local Search**: Initial searches are performed against the IndexedDB cache for instant results.
+- **Global Firestore Search**: If local results are insufficient, the app automatically performs a global search against Firestore to ensure full catalog coverage.
+
 ## 🏗️ Data Architecture
 
 The application implements a multi-tier data strategy to ensure high performance and minimal remote reads.

@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          const isHardcodedAdmin = currentUser.email === ADMIN_EMAIL;
+          const isHardcodedAdmin = currentUser.email === ADMIN_EMAIL && currentUser.emailVerified;
 
           if (!userDoc.exists()) {
             const role = isHardcodedAdmin ? 'admin' : 'client';
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsAdmin(role === 'admin');
           } else {
             const data = userDoc.data();
-            setIsAdmin(data.role === 'admin' || isHardcodedAdmin);
+            setIsAdmin((data.role === 'admin' && currentUser.emailVerified) || isHardcodedAdmin);
           }
         } catch (error) {
           handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
