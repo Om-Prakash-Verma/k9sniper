@@ -23,6 +23,10 @@ import { PAGE_SIZE, SYNC_INTERVAL, MAX_CACHE_SIZE } from '../constants';
 interface ShopDataContextType {
   pets: Pet[];
   products: Product[];
+  metadata: {
+    pets?: { version: number; lastUpdated: any };
+    products?: { version: number; lastUpdated: any };
+  };
   loading: boolean;
   loadingMore: boolean;
   hasMorePets: boolean;
@@ -40,6 +44,7 @@ const ShopDataContext = createContext<ShopDataContextType | undefined>(undefined
 export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [metadata, setMetadata] = useState<ShopDataContextType['metadata']>({});
   const [lastPetDoc, setLastPetDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [lastProductDoc, setLastProductDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMorePets, setHasMorePets] = useState(true);
@@ -127,6 +132,15 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (currentData.length === 0) await fetchInitialData(type);
         return;
       }
+
+      // Update metadata state
+      setMetadata(prev => ({
+        ...prev,
+        [type]: {
+          version: remoteMetadata.version || 1,
+          lastUpdated: remoteMetadata.lastUpdated
+        }
+      }));
 
       const remoteLastUpdated = remoteMetadata.lastUpdated?.toMillis() || 0;
       const remoteVersion = remoteMetadata.version || 1;
@@ -359,6 +373,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     <ShopDataContext.Provider value={{ 
       pets, 
       products, 
+      metadata,
       loading, 
       loadingMore,
       hasMorePets,

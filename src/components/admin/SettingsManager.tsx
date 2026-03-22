@@ -7,7 +7,10 @@ import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorH
 import { Metadata } from '../../types';
 
 interface SettingsManagerProps {
-  metadata: Metadata;
+  metadata: {
+    pets?: { version: number; lastUpdated: any };
+    products?: { version: number; lastUpdated: any };
+  };
 }
 
 const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
@@ -19,9 +22,10 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
     setMessage(null);
     try {
       const metadataRef = doc(db, 'metadata', type);
+      const currentVersion = metadata?.[type]?.version || 0;
       await updateDoc(metadataRef, {
         lastUpdated: serverTimestamp(),
-        version: (metadata[type]?.version || 0) + 1
+        version: currentVersion + 1
       });
       setMessage({ text: `${type.charAt(0).toUpperCase() + type.slice(1)} cache invalidated successfully!`, type: 'success' });
     } catch (error) {
