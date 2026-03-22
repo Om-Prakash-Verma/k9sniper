@@ -8,8 +8,10 @@ import { getImageUrl } from '../../utils/imageHelper';
 import { updateMetadata } from '../../utils/metadataHelper';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { Pet } from '../../types';
+
 interface PetManagerProps {
-  pets: any[];
+  pets: Pet[];
   onNotification: (message: string, type: 'success' | 'error') => void;
   onDeleteConfirm: (id: string, name: string) => void;
 }
@@ -18,7 +20,7 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Partial<Pet>>({});
   const [isSaving, setIsSaving] = useState(false);
 
   const openAddModal = () => {
@@ -28,7 +30,7 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
     setIsModalOpen(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: Pet) => {
     setFormData({ ...item });
     setIsEditing(true);
     setEditingId(item.id);
@@ -44,7 +46,7 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
         return;
       }
 
-      const dataToSave: any = {
+      const dataToSave: Partial<Pet> = {
         ...formData,
         price: Number(formData.price),
         updatedAt: new Date().toISOString(),

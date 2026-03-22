@@ -80,11 +80,11 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+        const errorData = await response.json().catch(() => ({ error: 'Unknown server error' })) as any;
         throw new Error(errorData.error || `Server responded with ${response.status}`);
       }
 
-      const order = await response.json();
+      const order = await response.json() as any;
 
       // 2. Open Razorpay Checkout
       const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
@@ -118,7 +118,7 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
             })
           });
 
-          const result = await verifyRes.json();
+          const result = await verifyRes.json() as any;
           if (result.status === 'success') {
             setNotification({ message: 'Payment Successful! Thank you for your purchase.', type: 'success' });
             setTimeout(() => {

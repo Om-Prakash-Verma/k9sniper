@@ -4,8 +4,10 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
+import { Metadata } from '../../types';
+
 interface SettingsManagerProps {
-  metadata: any;
+  metadata: Metadata;
 }
 
 const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {

@@ -8,16 +8,41 @@ import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHand
 import { useShopData } from '../context/ShopDataContext';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
+import { Product } from '../types';
 
 const ProductsPage = () => {
-  const { products, loading, loadingMore, hasMoreProducts, loadMoreProducts } = useShopData();
+  const { products, loading, error, loadingMore, hasMoreProducts, loadMoreProducts, searchProducts } = useShopData();
   const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    const performSearch = async () => {
+      const results = await searchProducts(searchTerm);
+      setFilteredProducts(results);
+    };
+    performSearch();
+  }, [searchTerm, products, searchProducts]);
+
+  if (error && products.length === 0) {
+    return (
+      <div className="min-h-screen bg-brand-bg pt-32 px-4 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShoppingBag className="w-10 h-10 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-display font-bold text-brand-primary uppercase mb-4">Failed to load products</h2>
+          <p className="text-brand-text/60 mb-8">There was an error connecting to our shop database. Please try again later.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="btn-premium px-8 py-4 rounded-2xl text-brand-bg-secondary font-bold uppercase text-xs tracking-widest"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">

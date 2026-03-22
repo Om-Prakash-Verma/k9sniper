@@ -10,15 +10,15 @@ import {
   getDoc, 
   doc,
   Timestamp,
-  where
+  where,
+  QueryDocumentSnapshot,
+  DocumentData
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { getMetadata } from '../utils/metadataHelper';
-import { shopDb, Pet, Product } from '../db/shopDb';
-
-const PAGE_SIZE = 12;
-const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
-const MAX_CACHE_SIZE = 100; // Max items per collection in IndexedDB for LRU
+import { shopDb } from '../db/shopDb';
+import { Pet, Product } from '../types';
+import { PAGE_SIZE, SYNC_INTERVAL, MAX_CACHE_SIZE } from '../constants';
 
 interface ShopDataContextType {
   pets: Pet[];
@@ -30,6 +30,8 @@ interface ShopDataContextType {
   loadMorePets: () => Promise<void>;
   loadMoreProducts: () => Promise<void>;
   refreshData: (force?: boolean) => Promise<void>;
+  searchPets: (query: string) => Promise<Pet[]>;
+  searchProducts: (query: string) => Promise<Product[]>;
   error: string | null;
 }
 
@@ -38,8 +40,8 @@ const ShopDataContext = createContext<ShopDataContextType | undefined>(undefined
 export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [lastPetDoc, setLastPetDoc] = useState<any>(null);
-  const [lastProductDoc, setLastProductDoc] = useState<any>(null);
+  const [lastPetDoc, setLastPetDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [lastProductDoc, setLastProductDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMorePets, setHasMorePets] = useState(true);
   const [hasMoreProducts, setHasMoreProducts] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -174,7 +176,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         id: doc.id, 
         ...doc.data(),
         lastAccessed: Date.now() 
-      } as any));
+      } as any)); // We use any here because Firestore data is untyped by default, but we cast to Pet/Product later
 
       // Update both in-memory and IDB
       if (type === 'pets') {
@@ -317,6 +319,26 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLoading(false);
   };
 
+  const searchPets = useCallback(async (query: string): Promise<Pet[]> => {
+    if (!query) return pets;
+    return await shopDb.pets
+      .filter(pet => 
+        pet.name.toLowerCase().includes(query.toLowerCase()) || 
+        pet.description.toLowerCase().includes(query.toLowerCase())
+      )
+      .toArray();
+  }, [pets]);
+
+  const searchProducts = useCallback(async (query: string): Promise<Product[]> => {
+    if (!query) return products;
+    return await shopDb.products
+      .filter(product => 
+        product.name.toLowerCase().includes(query.toLowerCase()) || 
+        product.description.toLowerCase().includes(query.toLowerCase())
+      )
+      .toArray();
+  }, [products]);
+
   return (
     <ShopDataContext.Provider value={{ 
       pets, 
@@ -328,6 +350,8 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       loadMorePets,
       loadMoreProducts,
       refreshData,
+      searchPets,
+      searchProducts,
       error 
     }}>
       {children}

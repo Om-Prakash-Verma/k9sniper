@@ -7,8 +7,10 @@ import { getImageUrl } from '../../utils/imageHelper';
 import { updateMetadata } from '../../utils/metadataHelper';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { Product } from '../../types';
+
 interface ProductManagerProps {
-  products: any[];
+  products: Product[];
   onNotification: (message: string, type: 'success' | 'error') => void;
   onDeleteConfirm: (id: string, name: string) => void;
 }
@@ -17,7 +19,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Partial<Product>>({});
   const [isSaving, setIsSaving] = useState(false);
 
   const openAddModal = () => {
@@ -27,7 +29,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
     setIsModalOpen(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: Product) => {
     setFormData({ ...item });
     setIsEditing(true);
     setEditingId(item.id);
@@ -43,7 +45,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
         return;
       }
 
-      const dataToSave: any = {
+      const dataToSave: Partial<Product> = {
         ...formData,
         price: Number(formData.price),
         updatedAt: new Date().toISOString()

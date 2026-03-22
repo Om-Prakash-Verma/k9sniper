@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { ShoppingCart, X, User, Package, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { Order } from '../../types';
+
 interface OrderManagerProps {
-  orders: any[];
+  orders: Order[];
 }
 
 const OrderManager: React.FC<OrderManagerProps> = ({ orders }) => {
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   return (
     <div className="space-y-8">

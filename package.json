@@ -7,12 +7,12 @@
     "dev": "tsx server.ts",
     "start": "node server.ts",
     "build": "vite build",
+    "pages:dev": "wrangler pages dev dist --compatibility-date=2026-03-22 --proxy 3000",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@google/genai": "^1.29.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "cors": "^2.8.6",
@@ -29,7 +29,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.13.1",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "wrangler": "^4.76.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260317.1",

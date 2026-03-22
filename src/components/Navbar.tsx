@@ -48,12 +48,16 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
         }
       } else {
         navigate('/');
-        setTimeout(() => {
+        // Use a more robust way to scroll after navigation
+        const checkElement = () => {
           const element = document.getElementById(id);
           if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            requestAnimationFrame(checkElement);
           }
-        }, 100);
+        };
+        requestAnimationFrame(checkElement);
       }
     } else {
       navigate(path);
