@@ -15,7 +15,7 @@ interface CartOverlayProps {
 import Notification, { NotificationType } from './Notification';
 
 const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
-  const { cart, removeFromCart, updateQuantity, totalPrice, totalItems, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, totalPrice, deliveryFee, finalTotal, totalItems, clearCart } = useCart();
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
@@ -70,11 +70,13 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: totalPrice,
+          amount: finalTotal,
           currency: 'INR',
           receipt: `receipt_${Date.now()}`,
           notes: {
-            ...deliveryInfo
+            ...deliveryInfo,
+            subtotal: totalPrice,
+            deliveryFee: deliveryFee
           }
         })
       });
@@ -114,7 +116,7 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
               deliveryInfo,
               items: cart,
               userId: user?.uid,
-              amount: totalPrice
+              amount: finalTotal
             })
           });
 
@@ -348,17 +350,31 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
 
             {/* Footer */}
             {cart.length > 0 && (
-              <div className="p-4 md:p-6 border-t border-brand-accent-secondary/10 bg-brand-bg-secondary/50">
-                <div className="flex justify-between items-center mb-4 md:mb-6">
+              <div className="p-4 md:p-6 border-t border-brand-accent-secondary/10 bg-brand-bg-secondary/50 space-y-3">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-xs md:text-sm">
+                    <span className="text-brand-text/60">Subtotal</span>
+                    <span className="text-brand-primary font-bold">₹{totalPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs md:text-sm">
+                    <span className="text-brand-text/60">Delivery Fee</span>
+                    <span className={`font-bold ${deliveryFee === 0 ? 'text-emerald-500' : 'text-brand-primary'}`}>
+                      {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toLocaleString()}`}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center pt-2">
                   <span className="text-brand-text/60 font-medium text-sm md:text-base">Total Amount</span>
                   <span className="text-2xl md:text-3xl font-display font-bold text-brand-primary tracking-tighter">
-                    ₹{totalPrice.toLocaleString()}
+                    ₹{finalTotal.toLocaleString()}
                   </span>
                 </div>
+                
                 <button
                   onClick={handleCheckout}
                   disabled={isProcessing}
-                  className="w-full btn-premium py-3 md:py-4 rounded-2xl flex items-center justify-center gap-3 text-brand-bg-secondary font-bold uppercase text-xs md:text-sm tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-premium py-3 md:py-4 rounded-2xl flex items-center justify-center gap-3 text-brand-bg-secondary font-bold uppercase text-xs md:text-sm tracking-widest disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                 >
                   {isProcessing ? (
                     <div className="w-5 h-5 border-2 border-brand-bg-secondary/30 border-t-brand-bg-secondary rounded-full animate-spin" />

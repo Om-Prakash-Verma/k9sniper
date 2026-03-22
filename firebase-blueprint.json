@@ -80,6 +80,16 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "items", "totalAmount", "status"]
+    },
+    "ShopSettings": {
+      "title": "Shop Settings",
+      "description": "Global configuration for the shop",
+      "type": "object",
+      "properties": {
+        "deliveryFeeThreshold": { "type": "number", "description": "Free delivery threshold" },
+        "fixedDeliveryFee": { "type": "number", "description": "Fixed delivery fee" }
+      },
+      "required": ["deliveryFeeThreshold", "fixedDeliveryFee"]
     }
   },
   "firestore": {
@@ -94,6 +104,10 @@
     "/orders": {
       "schema": "Order",
       "description": "Collection of customer orders"
+    },
+    "/settings": {
+      "schema": "ShopSettings",
+      "description": "Global shop settings"
     }
   }
 }

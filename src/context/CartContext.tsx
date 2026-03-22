@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem } from '../types';
+import { useShopData } from './ShopDataContext';
 
 interface CartContextType {
   cart: CartItem[];
@@ -9,6 +10,8 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  deliveryFee: number;
+  finalTotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
   notification: { message: string; type: 'success' | 'error' | 'info' } | null;
@@ -18,6 +21,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { shopSettings } = useShopData();
   const [cart, setCart] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem('k9_cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -57,6 +61,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+  const deliveryFee = totalPrice >= shopSettings.deliveryFeeThreshold ? 0 : shopSettings.fixedDeliveryFee;
+  const finalTotal = totalPrice + deliveryFee;
+
   return (
     <CartContext.Provider value={{ 
       cart, 
@@ -66,6 +73,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearCart, 
       totalItems, 
       totalPrice,
+      deliveryFee,
+      finalTotal,
       isCartOpen,
       setIsCartOpen,
       notification,

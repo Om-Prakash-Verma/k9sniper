@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { RefreshCw, Save, Shield, Database } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { RefreshCw, Save, Shield, Database, Truck } from 'lucide-react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
+import { useShopData } from '../../context/ShopDataContext';
 
-import { Metadata } from '../../types';
+import { Metadata, ShopSettings } from '../../types';
 
 interface SettingsManagerProps {
   metadata: {
@@ -14,8 +15,15 @@ interface SettingsManagerProps {
 }
 
 const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
+  const { shopSettings, updateShopSettings } = useShopData();
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  
+  const [localSettings, setLocalSettings] = useState<ShopSettings>(shopSettings);
+
+  useEffect(() => {
+    setLocalSettings(shopSettings);
+  }, [shopSettings]);
 
   const handleUpdateMetadata = async (type: 'pets' | 'products') => {
     setIsUpdating(true);
@@ -36,6 +44,19 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
     }
   };
 
+  const handleSaveSettings = async () => {
+    setIsUpdating(true);
+    setMessage(null);
+    try {
+      await updateShopSettings(localSettings);
+      setMessage({ text: 'Shop settings updated successfully!', type: 'success' });
+    } catch (error) {
+      setMessage({ text: 'Failed to update shop settings.', type: 'error' });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-4xl">
       <h2 className="text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">Shop Settings</h2>
@@ -49,6 +70,48 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Delivery Settings */}
+        <div className="bg-brand-bg-secondary p-8 rounded-[2rem] border border-brand-accent-secondary/5 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-brand-accent/10 rounded-2xl">
+              <Truck className="w-6 h-6 text-brand-accent" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-brand-primary uppercase tracking-tight">Delivery Rules</h3>
+              <p className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest">Configure delivery fees</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest ml-1">Free Delivery Threshold (₹)</label>
+              <input 
+                type="number"
+                value={localSettings.deliveryFeeThreshold}
+                onChange={(e) => setLocalSettings(prev => ({ ...prev, deliveryFeeThreshold: Number(e.target.value) }))}
+                className="w-full bg-brand-bg border border-brand-accent-secondary/10 rounded-2xl px-4 py-3 text-sm font-bold text-brand-primary focus:outline-none focus:border-brand-accent transition-colors"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest ml-1">Fixed Delivery Fee (₹)</label>
+              <input 
+                type="number"
+                value={localSettings.fixedDeliveryFee}
+                onChange={(e) => setLocalSettings(prev => ({ ...prev, fixedDeliveryFee: Number(e.target.value) }))}
+                className="w-full bg-brand-bg border border-brand-accent-secondary/10 rounded-2xl px-4 py-3 text-sm font-bold text-brand-primary focus:outline-none focus:border-brand-accent transition-colors"
+              />
+            </div>
+            <button
+              disabled={isUpdating}
+              onClick={handleSaveSettings}
+              className="w-full py-4 bg-brand-accent text-brand-bg-secondary rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-brand-accent/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {isUpdating ? 'Saving...' : 'Save Settings'}
+            </button>
+          </div>
+        </div>
+
         {/* Cache Management */}
         <div className="bg-brand-bg-secondary p-8 rounded-[2rem] border border-brand-accent-secondary/5 space-y-6">
           <div className="flex items-center gap-3">
@@ -90,34 +153,6 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
               >
                 <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* System Info */}
-        <div className="bg-brand-bg-secondary p-8 rounded-[2rem] border border-brand-accent-secondary/5 space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-brand-accent/10 rounded-2xl">
-              <Shield className="w-6 h-6 text-brand-accent" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-brand-primary uppercase tracking-tight">Security & System</h3>
-              <p className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest">Admin access & shop status</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="p-4 bg-brand-bg rounded-2xl border border-brand-accent-secondary/5">
-              <p className="text-xs font-bold text-brand-text uppercase tracking-tight">Shop Status</p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Live & Accepting Orders</span>
-              </div>
-            </div>
-
-            <div className="p-4 bg-brand-bg rounded-2xl border border-brand-accent-secondary/5">
-              <p className="text-xs font-bold text-brand-text uppercase tracking-tight">Admin Role</p>
-              <p className="mt-1 text-[10px] text-brand-text/60 font-medium">Your account has full administrative privileges.</p>
             </div>
           </div>
         </div>

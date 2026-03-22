@@ -71,3 +71,8 @@ export interface Metadata {
   lastUpdated: number;
   version: number;
 }
+
+export interface ShopSettings {
+  deliveryFeeThreshold: number;
+  fixedDeliveryFee: number;
+}

@@ -11,13 +11,14 @@ import {
   doc,
   Timestamp,
   where,
+  setDoc,
   QueryDocumentSnapshot,
   DocumentData
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { getMetadata } from '../utils/metadataHelper';
 import { shopDb } from '../db/shopDb';
-import { Pet, Product } from '../types';
+import { Pet, Product, ShopSettings } from '../types';
 import { PAGE_SIZE, SYNC_INTERVAL, MAX_CACHE_SIZE } from '../constants';
 
 interface ShopDataContextType {
@@ -27,6 +28,8 @@ interface ShopDataContextType {
     pets?: { version: number; lastUpdated: any };
     products?: { version: number; lastUpdated: any };
   };
+  shopSettings: ShopSettings;
+  updateShopSettings: (settings: ShopSettings) => Promise<void>;
   loading: boolean;
   loadingMore: boolean;
   hasMorePets: boolean;
@@ -45,6 +48,10 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [pets, setPets] = useState<Pet[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [metadata, setMetadata] = useState<ShopDataContextType['metadata']>({});
+  const [shopSettings, setShopSettings] = useState<ShopSettings>({
+    deliveryFeeThreshold: 1000,
+    fixedDeliveryFee: 100
+  });
   const [lastPetDoc, setLastPetDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [lastProductDoc, setLastProductDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMorePets, setHasMorePets] = useState(true);
@@ -62,6 +69,12 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initData = async () => {
       try {
+        // Fetch settings first
+        const settingsSnap = await getDoc(doc(db, 'settings', 'shop'));
+        if (settingsSnap.exists()) {
+          setShopSettings(settingsSnap.data() as ShopSettings);
+        }
+
         // Ensure DB is open
         await shopDb.safeOpen();
 
@@ -369,11 +382,23 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       .toArray();
   }, [products]);
 
+  const updateShopSettings = async (newSettings: ShopSettings) => {
+    try {
+      await setDoc(doc(db, 'settings', 'shop'), newSettings);
+      setShopSettings(newSettings);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, 'settings/shop');
+      throw err;
+    }
+  };
+
   return (
     <ShopDataContext.Provider value={{ 
       pets, 
       products, 
       metadata,
+      shopSettings,
+      updateShopSettings,
       loading, 
       loadingMore,
       hasMorePets,
