@@ -14,13 +14,14 @@ import {
 
 interface LoginPageProps {
   isAdmin: boolean;
+  isUnverifiedAdmin?: boolean;
   user: any;
   onSuccess: () => void;
   title?: string;
   description?: string;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, description }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, isUnverifiedAdmin, user, onSuccess, title, description }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -137,7 +138,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, 
             className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-xs text-left"
           >
             <AlertCircle className="w-5 h-5 shrink-0" />
-            <p>Access Denied. Your account does not have administrator privileges.</p>
+            <div>
+              <p className="font-bold uppercase tracking-widest text-[10px] mb-1">Access Denied</p>
+              <p className="text-[11px] leading-relaxed">
+                {isUnverifiedAdmin 
+                  ? "Your account has admin privileges, but your email is not verified. Please verify your email in your dashboard to continue."
+                  : "Your account does not have administrator privileges."}
+              </p>
+              {isUnverifiedAdmin && (
+                <button 
+                  onClick={() => window.location.href = '/user'}
+                  className="mt-2 text-[10px] font-bold uppercase tracking-widest underline underline-offset-4 hover:text-brand-primary transition-colors"
+                >
+                  Go to Dashboard to Verify
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
 

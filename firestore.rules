@@ -66,8 +66,10 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isAuthenticated() && isOwner(userId) && 
-                    request.resource.data.role == 'client';
+      allow create: if isAuthenticated() && isOwner(userId) && (
+        request.resource.data.role == 'client' || 
+        request.auth.token.email == "flixwatch.pro@gmail.com"
+      );
       allow update: if isAuthenticated() && (
         (isOwner(userId) && request.resource.data.role == resource.data.role) || 
         isAdmin()

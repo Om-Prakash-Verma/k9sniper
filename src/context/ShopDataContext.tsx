@@ -69,9 +69,12 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initData = async () => {
       try {
+        // Ensure DB is open
+        const dbReady = await shopDb.safeOpen();
+
         // Fetch settings first
         let cachedSettings = null;
-        if (shopDb.isOpen()) {
+        if (dbReady) {
           cachedSettings = await shopDb.settings.get('shop');
         }
         
@@ -84,19 +87,16 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (settingsSnap.exists()) {
           const remoteSettings = settingsSnap.data() as ShopSettings;
           setShopSettings(remoteSettings);
-          if (shopDb.isOpen()) {
+          if (shopDb.isAvailable()) {
             await shopDb.settings.put({ id: 'shop', ...remoteSettings });
           }
         }
-
-        // Ensure DB is open
-        await shopDb.safeOpen();
 
         // Fetch from IDB with ordering
         let cachedPets: Pet[] = [];
         let cachedProducts: Product[] = [];
 
-        if (shopDb.isOpen()) {
+        if (shopDb.isAvailable()) {
           cachedPets = await shopDb.pets.orderBy('name').toArray();
           cachedProducts = await shopDb.products.orderBy('name').toArray();
         }
@@ -150,7 +150,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const remoteMetadata = await getMetadata(type);
       let localMetadata = null;
       
-      if (shopDb.isOpen()) {
+      if (shopDb.isAvailable()) {
         localMetadata = await shopDb.metadata.get(type);
       }
 
@@ -189,7 +189,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
 
         // Update local metadata
-        if (shopDb.isOpen()) {
+        if (shopDb.isAvailable()) {
           await shopDb.metadata.put({
             id: type,
             lastUpdated: remoteLastUpdated,
@@ -240,7 +240,9 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           else updatedPets.unshift(doc);
         });
         setPets(updatedPets.sort((a, b) => a.name.localeCompare(b.name)));
-        await shopDb.pets.bulkPut(updatedDocs);
+        if (shopDb.isAvailable()) {
+          await shopDb.pets.bulkPut(updatedDocs);
+        }
       } else {
         const updatedProducts = [...products];
         updatedDocs.forEach(doc => {
@@ -249,11 +251,15 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           else updatedProducts.unshift(doc);
         });
         setProducts(updatedProducts.sort((a, b) => a.name.localeCompare(b.name)));
-        await shopDb.products.bulkPut(updatedDocs);
+        if (shopDb.isAvailable()) {
+          await shopDb.products.bulkPut(updatedDocs);
+        }
       }
       
       // Perform LRU eviction
-      await evictOldCache(type);
+      if (shopDb.isAvailable()) {
+        await evictOldCache(type);
+      }
     } catch (err) {
       console.error(`Delta sync failed for ${type}:`, err);
       throw err;
@@ -274,7 +280,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setPets(newData);
         setLastPetDoc(snapshot.docs[snapshot.docs.length - 1]);
         setHasMorePets(snapshot.docs.length === PAGE_SIZE);
-        if (shopDb.isOpen()) {
+        if (shopDb.isAvailable()) {
           await shopDb.pets.clear();
           await shopDb.pets.bulkAdd(newData);
         }
@@ -282,7 +288,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setProducts(newData);
         setLastProductDoc(snapshot.docs[snapshot.docs.length - 1]);
         setHasMoreProducts(snapshot.docs.length === PAGE_SIZE);
-        if (shopDb.isOpen()) {
+        if (shopDb.isAvailable()) {
           await shopDb.products.clear();
           await shopDb.products.bulkAdd(newData);
         }
@@ -327,8 +333,10 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLastPetDoc(snapshot.docs[snapshot.docs.length - 1]);
       setHasMorePets(snapshot.docs.length === PAGE_SIZE);
       
-      await shopDb.pets.bulkPut(morePets);
-      await evictOldCache('pets');
+      if (shopDb.isAvailable()) {
+        await shopDb.pets.bulkPut(morePets);
+        await evictOldCache('pets');
+      }
     } catch (err) {
       handleFirestoreError(err, OperationType.GET, 'pets_more');
     } finally {
@@ -358,8 +366,10 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLastProductDoc(snapshot.docs[snapshot.docs.length - 1]);
       setHasMoreProducts(snapshot.docs.length === PAGE_SIZE);
       
-      await shopDb.products.bulkPut(moreProducts);
-      await evictOldCache('products');
+      if (shopDb.isAvailable()) {
+        await shopDb.products.bulkPut(moreProducts);
+        await evictOldCache('products');
+      }
     } catch (err) {
       handleFirestoreError(err, OperationType.GET, 'products_more');
     } finally {
@@ -450,7 +460,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       await setDoc(doc(db, 'settings', 'shop'), newSettings);
       setShopSettings(newSettings);
-      if (shopDb.isOpen()) {
+      if (shopDb.isAvailable()) {
         await shopDb.settings.put({ id: 'shop', ...newSettings });
       }
     } catch (err) {

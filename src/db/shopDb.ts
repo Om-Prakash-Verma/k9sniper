@@ -8,6 +8,8 @@ export class ShopDatabase extends Dexie {
   orders!: Table<Order>;
   settings!: Table<ShopSettings & { id: string }>;
 
+  private _failedToOpen = false;
+
   constructor() {
     super('K9ShopDB');
     this.version(3).stores({
@@ -20,18 +22,23 @@ export class ShopDatabase extends Dexie {
   }
 
   async safeOpen() {
+    if (this._failedToOpen) return false;
     try {
       if (!this.isOpen()) {
         await this.open();
       }
+      return true;
     } catch (err) {
-      console.error("Failed to open Dexie database:", err);
-      // If it fails, we might be in a restricted iframe.
-      // We don't throw here to allow the app to continue, 
-      // but subsequent DB operations will fail.
+      console.warn("IndexedDB unavailable, falling back to network-only mode:", err);
+      this._failedToOpen = true;
+      return false;
     }
+  }
+
+  isAvailable() {
+    return this.isOpen() && !this._failedToOpen;
   }
 }
 
 export const shopDb = new ShopDatabase();
-shopDb.safeOpen();
+// We don't call safeOpen() at top level to avoid race conditions with React mount

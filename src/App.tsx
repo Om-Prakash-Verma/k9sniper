@@ -25,7 +25,7 @@ import { AnimatePresence } from 'motion/react';
 import { Navigate } from 'react-router-dom';
 
 function AppContent() {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, isUnverifiedAdmin, loading: authLoading } = useAuth();
   const { notification, setNotification } = useCart();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -80,6 +80,7 @@ function AppContent() {
               <LoginPage 
                 user={user} 
                 isAdmin={isAdmin} 
+                isUnverifiedAdmin={isUnverifiedAdmin}
                 onSuccess={() => {}} 
                 title="Admin Access"
                 description="Please sign in with your administrator credentials to manage the catalog and orders."

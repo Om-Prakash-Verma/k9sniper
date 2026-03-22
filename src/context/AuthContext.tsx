@@ -9,12 +9,14 @@ import { UserProfile } from '../types';
 interface AuthContextType {
   user: User | null;
   isAdmin: boolean;
+  isUnverifiedAdmin: boolean;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAdmin: false,
+  isUnverifiedAdmin: false,
   loading: true,
 });
 
@@ -23,6 +25,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isUnverifiedAdmin, setIsUnverifiedAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,10 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          const isHardcodedAdmin = currentUser.email === ADMIN_EMAIL && currentUser.emailVerified;
-
-          if (!userDoc.exists()) {
-            const role = isHardcodedAdmin ? 'admin' : 'client';
+          const isHardcodedAdmin = currentUser.email === ADMIN_EMAIL;
+          
+          let role: 'admin' | 'client' = 'client';
+          if (userDoc.exists()) {
+            role = userDoc.data().role as 'admin' | 'client';
+          } else {
+            role = isHardcodedAdmin ? 'admin' : 'client';
             const userData: Omit<UserProfile, 'uid'> = {
               email: currentUser.email,
               displayName: currentUser.displayName,
@@ -44,18 +50,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               updatedAt: new Date().toISOString()
             };
             await setDoc(doc(db, 'users', currentUser.uid), userData);
-            setIsAdmin(role === 'admin');
-          } else {
-            const data = userDoc.data();
-            setIsAdmin((data.role === 'admin' && currentUser.emailVerified) || isHardcodedAdmin);
           }
+
+          const isRoleAdmin = role === 'admin' || isHardcodedAdmin;
+          setIsUnverifiedAdmin(isRoleAdmin && !currentUser.emailVerified);
+          setIsAdmin(isRoleAdmin && currentUser.emailVerified);
         } catch (error) {
           handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
-          // Fallback to hardcoded check if Firestore fails
-          setIsAdmin(currentUser.email === ADMIN_EMAIL);
+          const isHardcoded = currentUser.email === ADMIN_EMAIL;
+          setIsUnverifiedAdmin(isHardcoded && !currentUser.emailVerified);
+          setIsAdmin(isHardcoded && currentUser.emailVerified);
         }
       } else {
         setIsAdmin(false);
+        setIsUnverifiedAdmin(false);
       }
       setLoading(false);
     });
@@ -63,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading }}>
+    <AuthContext.Provider value={{ user, isAdmin, isUnverifiedAdmin, loading }}>
       {children}
     </AuthContext.Provider>
   );
