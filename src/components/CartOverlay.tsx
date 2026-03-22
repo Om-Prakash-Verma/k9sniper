@@ -111,34 +111,15 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               ...rzpResponse,
-              deliveryInfo
+              deliveryInfo,
+              items: cart,
+              userId: user?.uid,
+              amount: totalPrice
             })
           });
 
           const result = await verifyRes.json();
           if (result.status === 'success') {
-            // 4. Save Order to Firestore
-            try {
-              await addDoc(collection(db, 'orders'), {
-                userId: user?.uid || 'anonymous',
-                items: cart.map(item => ({
-                  id: item.id,
-                  name: item.name,
-                  price: item.price,
-                  quantity: item.quantity,
-                  type: item.type
-                })),
-                amount: totalPrice,
-                deliveryInfo,
-                razorpay_order_id: rzpResponse.razorpay_order_id,
-                razorpay_payment_id: rzpResponse.razorpay_payment_id,
-                status: 'paid',
-                createdAt: serverTimestamp()
-              });
-            } catch (err) {
-              console.error('Error saving order to Firestore:', err);
-            }
-
             setNotification({ message: 'Payment Successful! Thank you for your purchase.', type: 'success' });
             setTimeout(() => {
               clearCart();

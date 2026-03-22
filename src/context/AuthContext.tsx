@@ -30,12 +30,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
           if (!userDoc.exists()) {
-            const role = currentUser.email === 'flixwatch.pro@gmail.com' || currentUser.email === 'webapp1.in@gmail.com' ? 'admin' : 'client';
+            const role = 'client'; // Default role for new users
             await setDoc(doc(db, 'users', currentUser.uid), {
               email: currentUser.email,
               role: role
             });
-            setIsAdmin(role === 'admin');
+            setIsAdmin(false);
           } else {
             setIsAdmin(userDoc.data().role === 'admin');
           }

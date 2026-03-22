@@ -5,8 +5,19 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import rateLimit from "express-rate-limit";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import fs from "fs";
 
 dotenv.config();
+
+// Initialize Firebase Admin
+const firebaseConfig = JSON.parse(fs.readFileSync("./firebase-applet-config.json", "utf-8"));
+const firebaseApp = initializeApp({
+  projectId: firebaseConfig.projectId,
+});
+const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 
 async function startServer() {
   const app = express();
@@ -14,6 +25,14 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
+
+  // Rate Limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again after 15 minutes",
+  });
+  app.use("/api/payments/", limiter);
 
   // Razorpay Lazy Initialization
   let razorpayInstance: Razorpay | null = null;
@@ -36,13 +55,11 @@ async function startServer() {
 
   // API Routes
   app.get("/api/health", (req, res) => {
-    console.log("Health check requested");
     res.json({ status: "ok" });
   });
 
   // Create Razorpay Order
   app.post("/api/payments/order", async (req, res) => {
-    console.log("Order creation requested", req.body);
     try {
       const { amount, currency = "INR", receipt, notes } = req.body;
       const razorpay = getRazorpay();
@@ -55,7 +72,6 @@ async function startServer() {
       };
 
       const order = await razorpay.orders.create(options);
-      console.log("Order created successfully", order.id);
       res.json(order);
     } catch (error) {
       console.error("Razorpay Order Error:", error);
@@ -63,11 +79,10 @@ async function startServer() {
     }
   });
 
-  // Verify Razorpay Payment
+  // Verify Razorpay Payment and Save Order
   app.post("/api/payments/verify", async (req, res) => {
-    console.log("Payment verification requested", req.body);
     try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, deliveryInfo, items, userId, amount } = req.body;
       const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
       if (!key_secret) {
@@ -81,14 +96,36 @@ async function startServer() {
         .digest("hex");
 
       if (razorpay_signature === expectedSign) {
-        console.log("Payment verified successfully");
-        res.json({ status: "success", message: "Payment verified successfully" });
+        // Payment verified, now save order to Firestore securely
+        const orderData = {
+          userId: userId || 'anonymous',
+          items: items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            type: item.type
+          })),
+          amount: amount,
+          deliveryInfo,
+          razorpay_order_id,
+          razorpay_payment_id,
+          status: 'paid',
+          createdAt: FieldValue.serverTimestamp()
+        };
+
+        const orderRef = await db.collection('orders').add(orderData);
+        
+        res.json({ 
+          status: 'success', 
+          message: 'Payment verified and order saved successfully',
+          orderId: orderRef.id 
+        });
       } else {
-        console.warn("Invalid payment signature");
         res.status(400).json({ status: "failure", message: "Invalid signature" });
       }
     } catch (error) {
-      console.error("Razorpay Verification Error:", error);
+      console.error("Razorpay Verification/Save Error:", error);
       res.status(500).json({ error: error instanceof Error ? error.message : "Verification failed" });
     }
   });
