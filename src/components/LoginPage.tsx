@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ShieldCheck, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, browserPopupRedirectResolver } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  browserPopupRedirectResolver,
+  setPersistence,
+  browserLocalPersistence
+} from 'firebase/auth';
 
 interface LoginPageProps {
   isAdmin: boolean;
@@ -18,6 +26,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isIframe, setIsIframe] = useState(false);
+
+  useEffect(() => {
+    setIsIframe(window.self !== window.top);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +56,27 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, 
   };
 
   const handleGoogleLogin = async () => {
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
+      // Ensure persistence is set
+      await setPersistence(auth, browserLocalPersistence);
+      
       const provider = new GoogleAuthProvider();
+      // Add custom parameters to help with COOP issues
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
       await signInWithPopup(auth, provider, browserPopupRedirectResolver);
       onSuccess();
     } catch (err: any) {
       console.error("Google Login Error:", err);
       if (err.code === 'auth/popup-blocked') {
         setError("Popup blocked by browser. Please allow popups for this site.");
-      } else if (err.code === 'auth/cancelled-by-user') {
-        setError("Login cancelled.");
+      } else if (err.code === 'auth/cancelled-by-user' || err.code === 'auth/popup-closed-by-user') {
+        setError("Login cancelled or popup closed.");
+      } else if (err.message.includes('INTERNAL ASSERTION FAILED')) {
+        setError("Auth system encountered a race condition. Please refresh and try again.");
       } else {
         setError("Google Authentication failed. If you're in a restricted environment, try opening the app in a new tab.");
       }
@@ -83,6 +105,30 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, user, onSuccess, title, 
             ? 'Join the K9 SNIPERS community to manage your pets and orders.' 
             : 'Sign in to access your dashboard, track orders, and more.')}
         </p>
+
+        {isIframe && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-5 bg-brand-accent/10 border border-brand-accent/20 rounded-3xl flex flex-col gap-4 text-left"
+          >
+            <div className="flex items-start gap-4">
+              <ExternalLink className="w-5 h-5 text-brand-accent shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-brand-accent uppercase tracking-widest leading-tight">Restricted Environment Detected</p>
+                <p className="text-[9px] text-brand-primary/60 font-medium leading-relaxed uppercase tracking-wider">
+                  You are viewing this app in an iframe. Google Login and some features may be blocked by browser security policies.
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => window.open(window.location.href, '_blank')}
+              className="w-full py-2 bg-brand-accent text-brand-bg-secondary rounded-xl text-[8px] font-bold uppercase tracking-widest hover:bg-brand-primary transition-all"
+            >
+              Open in New Tab
+            </button>
+          </motion.div>
+        )}
 
         {user && !isAdmin && !isRegistering && (
           <motion.div 

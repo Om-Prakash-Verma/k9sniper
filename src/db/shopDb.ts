@@ -14,6 +14,20 @@ export class ShopDatabase extends Dexie {
       metadata: 'id'
     });
   }
+
+  async safeOpen() {
+    try {
+      if (!this.isOpen()) {
+        await this.open();
+      }
+    } catch (err) {
+      console.error("Failed to open Dexie database:", err);
+      // If it fails, we might be in a restricted iframe.
+      // We don't throw here to allow the app to continue, 
+      // but subsequent DB operations will fail.
+    }
+  }
 }
 
 export const shopDb = new ShopDatabase();
+shopDb.safeOpen();

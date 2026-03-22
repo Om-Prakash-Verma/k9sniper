@@ -57,9 +57,17 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initData = async () => {
       try {
+        // Ensure DB is open
+        await shopDb.safeOpen();
+
         // Fetch from IDB with ordering
-        const cachedPets = await shopDb.pets.orderBy('name').toArray();
-        const cachedProducts = await shopDb.products.orderBy('name').toArray();
+        let cachedPets: Pet[] = [];
+        let cachedProducts: Product[] = [];
+
+        if (shopDb.isOpen()) {
+          cachedPets = await shopDb.pets.orderBy('name').toArray();
+          cachedProducts = await shopDb.products.orderBy('name').toArray();
+        }
         
         if (cachedPets.length > 0) setPets(cachedPets);
         if (cachedProducts.length > 0) setProducts(cachedProducts);
@@ -71,9 +79,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ]);
       } catch (err) {
         console.error('Failed to initialize data from IndexedDB:', err);
-        // If corruption detected, clear and rebuild
-        await shopDb.delete();
-        await shopDb.open();
+        // Fallback to direct fetch if IDB fails
         await Promise.all([fetchInitialData('pets'), fetchInitialData('products')]);
       } finally {
         setLoading(false);
@@ -110,7 +116,11 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       const remoteMetadata = await getMetadata(type);
-      const localMetadata = await shopDb.metadata.get(type);
+      let localMetadata = null;
+      
+      if (shopDb.isOpen()) {
+        localMetadata = await shopDb.metadata.get(type);
+      }
 
       if (!remoteMetadata) {
         const currentData = type === 'pets' ? pets : products;
@@ -138,11 +148,13 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
 
         // Update local metadata
-        await shopDb.metadata.put({
-          id: type,
-          lastUpdated: remoteLastUpdated,
-          version: remoteVersion
-        });
+        if (shopDb.isOpen()) {
+          await shopDb.metadata.put({
+            id: type,
+            lastUpdated: remoteLastUpdated,
+            version: remoteVersion
+          });
+        }
         
         // Reset retry count on success
         retryCount.current[type] = 0;
@@ -221,14 +233,18 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setPets(newData);
         setLastPetDoc(snapshot.docs[snapshot.docs.length - 1]);
         setHasMorePets(snapshot.docs.length === PAGE_SIZE);
-        await shopDb.pets.clear();
-        await shopDb.pets.bulkAdd(newData);
+        if (shopDb.isOpen()) {
+          await shopDb.pets.clear();
+          await shopDb.pets.bulkAdd(newData);
+        }
       } else {
         setProducts(newData);
         setLastProductDoc(snapshot.docs[snapshot.docs.length - 1]);
         setHasMoreProducts(snapshot.docs.length === PAGE_SIZE);
-        await shopDb.products.clear();
-        await shopDb.products.bulkAdd(newData);
+        if (shopDb.isOpen()) {
+          await shopDb.products.clear();
+          await shopDb.products.bulkAdd(newData);
+        }
       }
     } catch (err) {
       handleFirestoreError(err, OperationType.GET, `${type}_initial`);
