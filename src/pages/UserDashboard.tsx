@@ -6,6 +6,7 @@ import { auth, db } from '../firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useNavigate } from 'react-router-dom';
+import { shopDb } from '../db/shopDb';
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -26,15 +27,47 @@ const UserDashboard = () => {
   useEffect(() => {
     if (!user) return;
 
+    const initOrders = async () => {
+      try {
+        await shopDb.safeOpen();
+        if (shopDb.isOpen()) {
+          const cachedOrders = await shopDb.orders
+            .where('userId')
+            .equals(user.uid)
+            .reverse()
+            .sortBy('createdAt');
+          if (cachedOrders.length > 0) {
+            setOrders(cachedOrders);
+            setLoading(false);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load orders from IndexedDB:', err);
+      }
+    };
+
+    initOrders();
+
     const q = query(
       collection(db, 'orders'),
       where('userId', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      setOrders(newOrders);
       setLoading(false);
+
+      // Update IndexedDB
+      try {
+        if (shopDb.isOpen()) {
+          // We use bulkPut to update/add all orders from this snapshot
+          await shopDb.orders.bulkPut(newOrders);
+        }
+      } catch (err) {
+        console.error('Failed to cache orders in IndexedDB:', err);
+      }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'orders');
       setLoading(false);

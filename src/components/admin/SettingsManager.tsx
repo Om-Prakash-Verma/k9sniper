@@ -4,6 +4,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 import { useShopData } from '../../context/ShopDataContext';
+import { shopDb } from '../../db/shopDb';
 
 import { Metadata, ShopSettings } from '../../types';
 
@@ -52,6 +53,30 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
       setMessage({ text: 'Shop settings updated successfully!', type: 'success' });
     } catch (error) {
       setMessage({ text: 'Failed to update shop settings.', type: 'error' });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleClearLocalCache = async () => {
+    setIsUpdating(true);
+    setMessage(null);
+    try {
+      if (shopDb.isOpen()) {
+        await Promise.all([
+          shopDb.pets.clear(),
+          shopDb.products.clear(),
+          shopDb.orders.clear(),
+          shopDb.settings.clear(),
+          shopDb.metadata.clear()
+        ]);
+        setMessage({ text: 'Local cache cleared successfully! Refresh the page to reload data.', type: 'success' });
+      } else {
+        setMessage({ text: 'IndexedDB is not open.', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Failed to clear local cache:', error);
+      setMessage({ text: 'Failed to clear local cache.', type: 'error' });
     } finally {
       setIsUpdating(false);
     }
@@ -153,6 +178,20 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
               >
                 <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
               </button>
+            </div>
+
+            <div className="pt-4 border-t border-brand-accent-secondary/10">
+              <button
+                disabled={isUpdating}
+                onClick={handleClearLocalCache}
+                className="w-full py-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2"
+              >
+                <Database className="w-4 h-4" />
+                Clear Local Cache
+              </button>
+              <p className="text-[8px] text-brand-text/40 font-bold uppercase tracking-widest text-center mt-2">
+                This will delete all locally cached data.
+              </p>
             </div>
           </div>
         </div>

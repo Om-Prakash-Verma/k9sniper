@@ -1,17 +1,21 @@
 import Dexie, { Table } from 'dexie';
-import { Pet, Product, Metadata } from '../types';
+import { Pet, Product, Metadata, Order, ShopSettings } from '../types';
 
 export class ShopDatabase extends Dexie {
   pets!: Table<Pet>;
   products!: Table<Product>;
   metadata!: Table<Metadata>;
+  orders!: Table<Order>;
+  settings!: Table<ShopSettings & { id: string }>;
 
   constructor() {
     super('K9ShopDB');
-    this.version(2).stores({
+    this.version(3).stores({
       pets: 'id, name, slug, category, price, updatedAt, lastAccessed',
       products: 'id, name, slug, category, price, updatedAt, lastAccessed',
-      metadata: 'id'
+      metadata: 'id',
+      orders: 'id, userId, status, createdAt',
+      settings: 'id'
     });
   }
 

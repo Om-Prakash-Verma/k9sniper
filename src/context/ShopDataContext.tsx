@@ -70,9 +70,23 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const initData = async () => {
       try {
         // Fetch settings first
+        let cachedSettings = null;
+        if (shopDb.isOpen()) {
+          cachedSettings = await shopDb.settings.get('shop');
+        }
+        
+        if (cachedSettings) {
+          const { id, ...settings } = cachedSettings;
+          setShopSettings(settings as ShopSettings);
+        }
+
         const settingsSnap = await getDoc(doc(db, 'settings', 'shop'));
         if (settingsSnap.exists()) {
-          setShopSettings(settingsSnap.data() as ShopSettings);
+          const remoteSettings = settingsSnap.data() as ShopSettings;
+          setShopSettings(remoteSettings);
+          if (shopDb.isOpen()) {
+            await shopDb.settings.put({ id: 'shop', ...remoteSettings });
+          }
         }
 
         // Ensure DB is open
@@ -386,6 +400,9 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       await setDoc(doc(db, 'settings', 'shop'), newSettings);
       setShopSettings(newSettings);
+      if (shopDb.isOpen()) {
+        await shopDb.settings.put({ id: 'shop', ...newSettings });
+      }
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, 'settings/shop');
       throw err;
