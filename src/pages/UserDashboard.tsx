@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Package, LogOut, Settings, ChevronRight, ShoppingBag, X, ShoppingCart } from 'lucide-react';
+import { User, Package, LogOut, Settings, ChevronRight, ShoppingBag, X, ShoppingCart, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth, db } from '../firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
