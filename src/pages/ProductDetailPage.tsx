@@ -11,7 +11,7 @@ import { getImageUrl } from '../utils/imageHelper';
 import { shopDb } from '../db/shopDb';
 
 const ProductDetailPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { products, loading: shopLoading } = useShopData();
   const [product, setProduct] = useState<any>(null);
@@ -22,8 +22,10 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     const fetchProductData = async () => {
+      if (!slug) return;
+
       // 1. Try to find in in-memory cache
-      const foundProduct = products.find(p => p.id === id || p.slug === id);
+      const foundProduct = products.find(p => p.id === slug || p.slug === slug);
       if (foundProduct) {
         setProduct(foundProduct);
         if (foundProduct.variations && foundProduct.variations.length > 0) {
@@ -35,8 +37,8 @@ const ProductDetailPage = () => {
 
       // 2. Try to find in IndexedDB
       try {
-        const idbProduct = await shopDb.products.where('slug').equals(id as string).first() || 
-                           await shopDb.products.get(id as string);
+        const idbProduct = await shopDb.products.where('slug').equals(slug as string).first() || 
+                           await shopDb.products.get(slug as string);
         if (idbProduct) {
           setProduct(idbProduct);
           if (idbProduct.variations && idbProduct.variations.length > 0) {
@@ -54,7 +56,7 @@ const ProductDetailPage = () => {
       // 3. If not in cache or IDB, fetch on demand from Firestore
       try {
         // First try by ID
-        const productDoc = await getDoc(doc(db, 'products', id as string));
+        const productDoc = await getDoc(doc(db, 'products', slug as string));
         if (productDoc.exists()) {
           const data = { id: productDoc.id, ...productDoc.data() } as any;
           setProduct(data);
@@ -63,7 +65,7 @@ const ProductDetailPage = () => {
           }
         } else {
           // If not found by ID, try by slug
-          const q = query(collection(db, 'products'), where('slug', '==', id));
+          const q = query(collection(db, 'products'), where('slug', '==', slug));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const doc = querySnapshot.docs[0];
@@ -87,7 +89,7 @@ const ProductDetailPage = () => {
     if (!shopLoading) {
       fetchProductData();
     }
-  }, [id, navigate, products, shopLoading]);
+  }, [slug, navigate, products, shopLoading]);
 
   if (loading) return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center">
