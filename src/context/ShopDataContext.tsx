@@ -68,49 +68,63 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Load from IndexedDB on mount
   useEffect(() => {
     const initData = async () => {
+      let hasInitialData = false;
       try {
-        // Ensure DB is open
-        const dbReady = await shopDb.safeOpen();
-
-        // Fetch settings first
-        let cachedSettings = null;
-        if (dbReady) {
-          cachedSettings = await shopDb.settings.get('shop');
-        }
+        // 1. Start remote settings fetch in parallel with IDB initialization
+        const settingsPromise = getDoc(doc(db, 'settings', 'shop'));
         
-        if (cachedSettings) {
-          const { id, ...settings } = cachedSettings;
-          setShopSettings(settings as ShopSettings);
-        }
-
-        const settingsSnap = await getDoc(doc(db, 'settings', 'shop'));
-        if (settingsSnap.exists()) {
-          const remoteSettings = settingsSnap.data() as ShopSettings;
-          setShopSettings(remoteSettings);
-          if (shopDb.isAvailable()) {
-            await shopDb.settings.put({ id: 'shop', ...remoteSettings });
+        // 2. Ensure DB is open and load cached data immediately
+        const dbReady = await shopDb.safeOpen();
+        
+        if (dbReady) {
+          const [cachedPets, cachedProducts, cachedSettings] = await Promise.all([
+            shopDb.pets.orderBy('name').toArray(),
+            shopDb.products.orderBy('name').toArray(),
+            shopDb.settings.get('shop')
+          ]);
+          
+          if (cachedSettings) {
+            const { id, ...settings } = cachedSettings;
+            setShopSettings(settings as ShopSettings);
+          }
+          
+          if (cachedPets.length > 0 || cachedProducts.length > 0) {
+            if (cachedPets.length > 0) setPets(cachedPets);
+            if (cachedProducts.length > 0) setProducts(cachedProducts);
+            setLoading(false); // DATA IS READY (STALE)
+            hasInitialData = true;
           }
         }
 
-        // Fetch from IDB with ordering
-        let cachedPets: Pet[] = [];
-        let cachedProducts: Product[] = [];
+        // 3. Background Sync (Settings + Data)
+        const syncPromise = (async () => {
+          try {
+            // Handle settings
+            const settingsSnap = await settingsPromise;
+            if (settingsSnap.exists()) {
+              const remoteSettings = settingsSnap.data() as ShopSettings;
+              setShopSettings(remoteSettings);
+              if (shopDb.isAvailable()) {
+                await shopDb.settings.put({ id: 'shop', ...remoteSettings });
+              }
+            }
 
-        if (shopDb.isAvailable()) {
-          cachedPets = await shopDb.pets.orderBy('name').toArray();
-          cachedProducts = await shopDb.products.orderBy('name').toArray();
+            // Initial check for updates (SWR)
+            await Promise.all([
+              checkUpdates('pets'),
+              checkUpdates('products')
+            ]);
+          } catch (syncErr) {
+            console.error('Background sync failed:', syncErr);
+          }
+        })();
+
+        // 4. If we have no cached data, we MUST wait for the remote sync to finish
+        if (!hasInitialData) {
+          await syncPromise;
         }
-        
-        if (cachedPets.length > 0) setPets(cachedPets);
-        if (cachedProducts.length > 0) setProducts(cachedProducts);
-        
-        // Initial check for updates (SWR)
-        await Promise.all([
-          checkUpdates('pets'),
-          checkUpdates('products')
-        ]);
       } catch (err) {
-        console.error('Failed to initialize data from IndexedDB:', err);
+        console.error('Failed to initialize data:', err);
         // Fallback to direct fetch if IDB fails
         await Promise.all([fetchInitialData('pets'), fetchInitialData('products')]);
       } finally {
@@ -147,12 +161,11 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isFetching.current = true;
 
     try {
-      const remoteMetadata = await getMetadata(type);
-      let localMetadata = null;
-      
-      if (shopDb.isAvailable()) {
-        localMetadata = await shopDb.metadata.get(type);
-      }
+      // Parallelize remote and local metadata fetch
+      const [remoteMetadata, localMetadata] = await Promise.all([
+        getMetadata(type),
+        shopDb.isAvailable() ? shopDb.metadata.get(type) : Promise.resolve(null)
+      ]);
 
       if (!remoteMetadata) {
         const currentData = type === 'pets' ? pets : products;
