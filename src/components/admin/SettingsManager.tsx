@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Save, Shield, Database, Truck } from 'lucide-react';
+import { RefreshCw, Save, Shield, Database, Truck, MessageCircle, Instagram } from 'lucide-react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
@@ -137,8 +137,56 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
           </div>
         </div>
 
-        {/* Cache Management */}
+        {/* Contact Settings */}
         <div className="bg-brand-bg-secondary p-8 rounded-[2rem] border border-brand-accent-secondary/5 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-brand-accent/10 rounded-2xl">
+              <MessageCircle className="w-6 h-6 text-brand-accent" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-brand-primary uppercase tracking-tight">Contact Info</h3>
+              <p className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest">WhatsApp & Instagram</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest ml-1 flex items-center gap-1">
+                <MessageCircle className="w-3 h-3" /> WhatsApp Number
+              </label>
+              <input 
+                type="text"
+                placeholder="e.g. 919876543210"
+                value={localSettings.whatsapp || ''}
+                onChange={(e) => setLocalSettings(prev => ({ ...prev, whatsapp: e.target.value }))}
+                className="w-full bg-brand-bg border border-brand-accent-secondary/10 rounded-2xl px-4 py-3 text-sm font-bold text-brand-primary focus:outline-none focus:border-brand-accent transition-colors"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] text-brand-text/40 font-bold uppercase tracking-widest ml-1 flex items-center gap-1">
+                <Instagram className="w-3 h-3" /> Instagram ID
+              </label>
+              <input 
+                type="text"
+                placeholder="e.g. your_shop_id"
+                value={localSettings.instagram || ''}
+                onChange={(e) => setLocalSettings(prev => ({ ...prev, instagram: e.target.value }))}
+                className="w-full bg-brand-bg border border-brand-accent-secondary/10 rounded-2xl px-4 py-3 text-sm font-bold text-brand-primary focus:outline-none focus:border-brand-accent transition-colors"
+              />
+            </div>
+            <button
+              disabled={isUpdating}
+              onClick={handleSaveSettings}
+              className="w-full py-4 bg-brand-accent text-brand-bg-secondary rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-brand-accent/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {isUpdating ? 'Saving...' : 'Save Settings'}
+            </button>
+          </div>
+        </div>
+
+        {/* Cache Management */}
+        <div className="bg-brand-bg-secondary p-8 rounded-[2rem] border border-brand-accent-secondary/5 space-y-6 md:col-span-2">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-brand-accent/10 rounded-2xl">
               <Database className="w-6 h-6 text-brand-accent" />
@@ -149,7 +197,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 bg-brand-bg rounded-2xl border border-brand-accent-secondary/5 flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-brand-text uppercase tracking-tight">Pets Data</p>
@@ -179,20 +227,20 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ metadata }) => {
                 <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
               </button>
             </div>
+          </div>
 
-            <div className="pt-4 border-t border-brand-accent-secondary/10">
-              <button
-                disabled={isUpdating}
-                onClick={handleClearLocalCache}
-                className="w-full py-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2"
-              >
-                <Database className="w-4 h-4" />
-                Clear Local Cache
-              </button>
-              <p className="text-[8px] text-brand-text/40 font-bold uppercase tracking-widest text-center mt-2">
-                This will delete all locally cached data.
-              </p>
-            </div>
+          <div className="pt-4 border-t border-brand-accent-secondary/10">
+            <button
+              disabled={isUpdating}
+              onClick={handleClearLocalCache}
+              className="w-full py-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              <Database className="w-4 h-4" />
+              Clear Local Cache
+            </button>
+            <p className="text-[8px] text-brand-text/40 font-bold uppercase tracking-widest text-center mt-2">
+              This will delete all locally cached data.
+            </p>
           </div>
         </div>
       </div>

@@ -98,4 +98,6 @@ export interface Metadata {
 export interface ShopSettings {
   deliveryFeeThreshold: number;
   fixedDeliveryFee: number;
+  whatsapp?: string;
+  instagram?: string;
 }

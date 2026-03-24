@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SEO from '../components/SEO';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ShoppingBag, ArrowLeft, ShoppingCart, ShieldCheck, Truck, Package } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, ShoppingCart, ShieldCheck, Truck, Package, MessageCircle, Instagram } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
@@ -14,7 +14,7 @@ import { shopDb } from '../db/shopDb';
 const ProductDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { products, loading: shopLoading } = useShopData();
+  const { products, shopSettings, loading: shopLoading } = useShopData();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
@@ -91,6 +91,15 @@ const ProductDetailPage = () => {
       fetchProductData();
     }
   }, [slug, navigate, products, shopLoading]);
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(`Hi, I'm interested in ${product.name}. Can you provide more details?`);
+    window.open(`https://wa.me/${shopSettings.whatsapp}?text=${message}`, '_blank');
+  };
+
+  const handleInstagram = () => {
+    window.open(`https://instagram.com/${shopSettings.instagram}`, '_blank');
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center">
@@ -260,7 +269,7 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <button 
                 onClick={handleAddToCart}
                 className="flex-1 btn-premium py-5 md:py-6 rounded-[1.5rem] md:rounded-[2rem] text-brand-bg-secondary font-bold uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl"
@@ -273,6 +282,23 @@ const ProductDetailPage = () => {
                 className="flex-1 py-5 md:py-6 bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[1.5rem] md:rounded-[2rem] text-brand-primary font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all"
               >
                 Buy Now
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button 
+                onClick={handleWhatsApp}
+                className="flex-1 py-4 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-[1.5rem] md:rounded-[2rem] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-500 hover:text-white transition-all"
+              >
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp
+              </button>
+              <button 
+                onClick={handleInstagram}
+                className="flex-1 py-4 bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-[1.5rem] md:rounded-[2rem] text-brand-primary font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all flex items-center justify-center gap-3"
+              >
+                <Instagram className="w-5 h-5" />
+                Instagram
               </button>
             </div>
           </motion.div>

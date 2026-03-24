@@ -4,7 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Dog, ArrowLeft, ShieldCheck, Truck, Heart, MessageCircle, Instagram } from 'lucide-react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useShopData } from '../context/ShopDataContext';
 import { useCart } from '../context/CartContext';
@@ -14,20 +14,13 @@ import { shopDb } from '../db/shopDb';
 const PetDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { pets, loading: shopLoading } = useShopData();
+  const { pets, shopSettings, loading: shopLoading } = useShopData();
   const [pet, setPet] = useState<any>(null);
-  const [settings, setSettings] = useState<any>({ whatsapp: '', instagram: '' });
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const unsubSettings = onSnapshot(doc(db, 'settings', 'general'), (doc) => {
-      if (doc.exists()) {
-        setSettings(doc.data());
-      }
-    });
-
     const fetchPetData = async () => {
       // 1. Try to find in in-memory cache
       const foundPet = pets.find(p => p.slug === slug || p.id === slug);
@@ -85,17 +78,15 @@ const PetDetailPage = () => {
     if (!shopLoading) {
       fetchPetData();
     }
-
-    return () => unsubSettings();
   }, [slug, navigate, pets, shopLoading]);
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(`Hi, I'm interested in ${pet.name} (${pet.breed}). Can you provide more details?`);
-    window.open(`https://wa.me/${settings.whatsapp}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${shopSettings.whatsapp}?text=${message}`, '_blank');
   };
 
   const handleInstagram = () => {
-    window.open(`https://instagram.com/${settings.instagram}`, '_blank');
+    window.open(`https://instagram.com/${shopSettings.instagram}`, '_blank');
   };
 
   if (loading) return (

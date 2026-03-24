@@ -50,7 +50,9 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [metadata, setMetadata] = useState<ShopDataContextType['metadata']>({});
   const [shopSettings, setShopSettings] = useState<ShopSettings>({
     deliveryFeeThreshold: 1000,
-    fixedDeliveryFee: 100
+    fixedDeliveryFee: 100,
+    whatsapp: '',
+    instagram: ''
   });
   const [lastPetDoc, setLastPetDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [lastProductDoc, setLastProductDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
