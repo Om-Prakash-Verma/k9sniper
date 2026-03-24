@@ -4,8 +4,24 @@ export interface Pet {
   name: string;
   description: string;
   image: string;
-  price: number;
+  images?: string[];
+  price?: number;
   category: string;
+  breed?: string;
+  age?: string;
+  gender?: 'male' | 'female' | 'unknown';
+  color?: string;
+  weight?: string;
+  location?: string;
+  isFeatured?: boolean;
+  features?: string[];
+  vaccinationStatus?: string;
+  origin?: string;
+  healthStatus?: string;
+  energyLevel?: string;
+  sheddingLevel?: string;
+  groomingNeeds?: string;
+  temperament?: string;
   slug?: string;
   updatedAt?: string;
   createdAt?: string;
@@ -18,14 +34,21 @@ export interface Product {
   name: string;
   description: string;
   image: string;
+  images?: string[];
   price: number;
   category: string;
+  brand?: string;
+  stock?: number;
+  isFeatured?: boolean;
+  specifications?: { key: string; value: string }[];
+  variations?: { label: string; price: number }[];
+  ingredients?: string;
+  usageInstructions?: string;
   slug?: string;
   updatedAt?: string;
   createdAt?: string;
   status?: 'in-stock' | 'out-of-stock';
   lastAccessed?: number;
-  variations?: string[];
 }
 
 export interface CartItem {

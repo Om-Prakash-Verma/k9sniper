@@ -120,7 +120,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ orders }) => {
                     <Package className="w-5 h-5 text-brand-accent" /> Order Items
                   </h3>
                   <div className="space-y-2">
-                    {selectedOrder.items?.map((item: any, idx: number) => (
+                    {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, idx: number) => (
                       <div key={idx} className="flex justify-between p-3 bg-brand-bg-secondary rounded-xl text-sm">
                         <span>{item.name} x {item.quantity}</span>
                         <span className="font-bold">₹{(item.price * item.quantity).toLocaleString()}</span>

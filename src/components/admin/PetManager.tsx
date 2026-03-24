@@ -22,33 +22,42 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Pet>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'basic' | 'health' | 'media' | 'extra'>('basic');
 
   const openAddModal = () => {
     setFormData({});
     setIsEditing(false);
     setEditingId(null);
     setIsModalOpen(true);
+    setActiveTab('basic');
   };
 
   const openEditModal = (item: Pet) => {
-    setFormData({ ...item });
+    // Normalize data to ensure arrays exist for mapping
+    const normalizedItem = {
+      ...item,
+      features: Array.isArray(item.features) ? item.features : [],
+      images: Array.isArray(item.images) ? item.images : []
+    };
+    setFormData(normalizedItem);
     setIsEditing(true);
     setEditingId(item.id);
     setIsModalOpen(true);
+    setActiveTab('basic');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      if (!formData.name || !formData.image || !formData.price) {
-        onNotification('Please fill in all required fields (Name, Image, Price)', 'error');
+      if (!formData.name || !formData.image) {
+        onNotification('Please fill in all required fields (Name, Image)', 'error');
         return;
       }
 
       const dataToSave: Partial<Pet> = {
         ...formData,
-        price: Number(formData.price),
+        price: formData.price ? Number(formData.price) : undefined,
         updatedAt: new Date().toISOString(),
         slug: slugify(formData.name)
       };
@@ -95,7 +104,11 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
             </div>
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-lg md:text-xl font-display font-bold text-brand-primary uppercase tracking-tighter">{pet.name}</h3>
-              <div className="text-brand-accent font-bold text-sm md:text-base">₹{pet.price?.toLocaleString()}</div>
+              {pet.price ? (
+                <div className="text-brand-accent font-bold text-sm md:text-base">₹{pet.price.toLocaleString()}</div>
+              ) : (
+                <div className="text-brand-accent font-bold text-[8px] uppercase tracking-widest">Price on Req</div>
+              )}
             </div>
             <p className="text-brand-text/60 text-xs md:text-sm mb-6 line-clamp-2">{pet.description}</p>
             <div className="flex gap-2">
@@ -125,7 +138,7 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="relative bg-brand-bg w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative bg-brand-bg w-full max-w-5xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
               <div className="p-6 md:p-8 border-b border-brand-accent-secondary/10 flex justify-between items-center bg-brand-bg-secondary/50">
                 <h2 className="text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">
@@ -136,80 +149,278 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Pet Name *</label>
-                    <input 
-                      required 
-                      type="text" 
-                      className="admin-input" 
-                      value={formData.name || ''}
-                      onChange={e => setFormData({...formData, name: e.target.value})} 
-                    />
+              {/* Tabs */}
+              <div className="flex border-b border-brand-accent-secondary/10 bg-brand-bg-secondary/20 overflow-x-auto">
+                {[
+                  { id: 'basic', label: 'Basic Info' },
+                  { id: 'health', label: 'Health & Origin' },
+                  { id: 'media', label: 'Media & Desc' },
+                  { id: 'extra', label: 'Additional' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`px-6 py-4 text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${
+                      activeTab === tab.id 
+                        ? 'border-brand-accent text-brand-accent bg-brand-accent/5' 
+                        : 'border-transparent text-brand-text/60 hover:text-brand-primary hover:bg-brand-accent/5'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col">
+                <div className="flex-1 space-y-8">
+                  {activeTab === 'basic' && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Pet Name *</label>
+                        <input 
+                          required 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.name || ''}
+                          onChange={e => setFormData({...formData, name: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Category *</label>
+                        <select 
+                          required 
+                          className="admin-input" 
+                          value={formData.category || ''}
+                          onChange={e => setFormData({...formData, category: e.target.value})}
+                        >
+                          <option value="">Select Category</option>
+                          <option value="dog">Dog</option>
+                          <option value="cat">Cat</option>
+                          <option value="bird">Bird</option>
+                          <option value="fish">Fish</option>
+                          <option value="rabbit">Rabbit</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Breed</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.breed || ''}
+                          onChange={e => setFormData({...formData, breed: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Age</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.age || ''}
+                          onChange={e => setFormData({...formData, age: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Gender</label>
+                        <select 
+                          className="admin-input" 
+                          value={formData.gender || ''}
+                          onChange={e => setFormData({...formData, gender: e.target.value as any})}
+                        >
+                          <option value="unknown">Unknown</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Color</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.color || ''}
+                          onChange={e => setFormData({...formData, color: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Weight</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.weight || ''}
+                          onChange={e => setFormData({...formData, weight: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Location</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.location || ''}
+                          onChange={e => setFormData({...formData, location: e.target.value})} 
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'health' && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Vaccination Status</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.vaccinationStatus || ''}
+                          onChange={e => setFormData({...formData, vaccinationStatus: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Origin</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.origin || ''}
+                          onChange={e => setFormData({...formData, origin: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Health Status</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.healthStatus || ''}
+                          onChange={e => setFormData({...formData, healthStatus: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Energy Level</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.energyLevel || ''}
+                          onChange={e => setFormData({...formData, energyLevel: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Shedding Level</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.sheddingLevel || ''}
+                          onChange={e => setFormData({...formData, sheddingLevel: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Grooming Needs</label>
+                        <input 
+                          type="text" 
+                          className="admin-input" 
+                          value={formData.groomingNeeds || ''}
+                          onChange={e => setFormData({...formData, groomingNeeds: e.target.value})} 
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'media' && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Main Image URL *</label>
+                          <input 
+                            required 
+                            type="text" 
+                            className="admin-input" 
+                            value={formData.image || ''}
+                            onChange={e => setFormData({...formData, image: e.target.value})} 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Additional Images (comma separated URLs)</label>
+                          <input 
+                            type="text" 
+                            className="admin-input" 
+                            placeholder="url1, url2, url3"
+                            value={formData.images?.join(', ') || ''}
+                            onChange={e => setFormData({...formData, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Description</label>
+                        <textarea 
+                          rows={6} 
+                          className="admin-input resize-none" 
+                          value={formData.description || ''}
+                          onChange={e => setFormData({...formData, description: e.target.value})} 
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'extra' && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Features (comma separated)</label>
+                          <input 
+                            type="text" 
+                            className="admin-input" 
+                            placeholder="Vaccinated, Friendly, Trained"
+                            value={formData.features?.join(', ') || ''}
+                            onChange={e => setFormData({...formData, features: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Temperament</label>
+                          <input 
+                            type="text" 
+                            className="admin-input" 
+                            value={formData.temperament || ''}
+                            onChange={e => setFormData({...formData, temperament: e.target.value})} 
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 bg-brand-bg-secondary/30 p-6 rounded-2xl border border-brand-accent-secondary/10">
+                        <input 
+                          type="checkbox" 
+                          id="isFeatured"
+                          className="w-5 h-5 rounded border-brand-accent-secondary/20 bg-brand-bg-secondary text-brand-accent focus:ring-brand-accent"
+                          checked={formData.isFeatured || false}
+                          onChange={e => setFormData({...formData, isFeatured: e.target.checked})}
+                        />
+                        <label htmlFor="isFeatured" className="text-xs font-bold text-brand-primary uppercase tracking-widest cursor-pointer">Feature this pet on home page</label>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center gap-4 pt-8 mt-8 border-t border-brand-accent-secondary/10">
+                  <div className="flex gap-2">
+                    {['basic', 'health', 'media', 'extra'].map((tabId, idx) => (
+                      <div 
+                        key={tabId} 
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          activeTab === tabId ? 'bg-brand-accent w-6' : 'bg-brand-accent/20'
+                        }`} 
+                      />
+                    ))}
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Price (₹) *</label>
-                    <input 
-                      required 
-                      type="number" 
-                      className="admin-input" 
-                      value={formData.price || ''}
-                      onChange={e => setFormData({...formData, price: e.target.value})} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Image URL *</label>
-                    <input 
-                      required 
-                      type="text" 
-                      className="admin-input" 
-                      value={formData.image || ''}
-                      onChange={e => setFormData({...formData, image: e.target.value})} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Category *</label>
-                    <select 
-                      required 
-                      className="admin-input" 
-                      value={formData.category || ''}
-                      onChange={e => setFormData({...formData, category: e.target.value})}
+                  <div className="flex gap-4">
+                    <button 
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-8 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest text-brand-primary hover:bg-brand-accent/10 transition-all"
                     >
-                      <option value="">Select Category</option>
-                      <option value="dog">Dog</option>
-                      <option value="cat">Cat</option>
-                      <option value="bird">Bird</option>
-                      <option value="fish">Fish</option>
-                    </select>
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit"
+                      disabled={isSaving}
+                      className="btn-premium px-10 py-3 rounded-xl text-brand-bg-secondary font-bold uppercase text-[10px] tracking-widest flex items-center gap-2"
+                    >
+                      {isSaving ? 'Saving...' : <><Save className="w-4 h-4" /> Save Pet</>}
+                    </button>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Description</label>
-                  <textarea 
-                    rows={4} 
-                    className="admin-input resize-none" 
-                    value={formData.description || ''}
-                    onChange={e => setFormData({...formData, description: e.target.value})} 
-                  />
-                </div>
-
-                <div className="flex justify-end gap-4 pt-4">
-                  <button 
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-8 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest text-brand-primary hover:bg-brand-accent/10 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit"
-                    disabled={isSaving}
-                    className="btn-premium px-10 py-3 rounded-xl text-brand-bg-secondary font-bold uppercase text-[10px] tracking-widest flex items-center gap-2"
-                  >
-                    {isSaving ? 'Saving...' : <><Save className="w-4 h-4" /> Save Pet</>}
-                  </button>
                 </div>
               </form>
             </motion.div>

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
-import LoginPage from './LoginPage';
 import { useAuth } from '../context/AuthContext';
+
+const LoginPage = lazy(() => import('./LoginPage'));
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -29,11 +30,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="relative w-full max-w-md"
           >
-            <LoginPage 
-              user={user} 
-              isAdmin={isAdmin} 
-              onSuccess={onClose} 
-            />
+            <Suspense fallback={
+              <div className="bg-brand-bg-secondary p-12 rounded-[2rem] flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
+              </div>
+            }>
+              <LoginPage 
+                user={user} 
+                isAdmin={isAdmin} 
+                onSuccess={onClose} 
+              />
+            </Suspense>
             <button 
               onClick={onClose}
               className="absolute top-6 right-6 p-2 text-brand-primary hover:bg-brand-accent/10 rounded-full transition-colors"

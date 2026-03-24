@@ -490,7 +490,7 @@ const UserDashboard = () => {
                       <h3 className="text-brand-primary font-display font-bold text-lg uppercase tracking-tight">Items</h3>
                     </div>
                     <div className="space-y-4">
-                      {selectedOrder.items?.map((item: any, idx: number) => (
+                      {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, idx: number) => (
                         <div key={idx} className="flex justify-between items-center p-3 bg-brand-bg rounded-2xl border border-brand-accent-secondary/5">
                           <div>
                             <div className="text-brand-primary font-bold text-sm uppercase tracking-tight">{item.name}</div>

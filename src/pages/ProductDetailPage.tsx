@@ -191,7 +191,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Variations Selector */}
-            {product.variations && product.variations.length > 0 && (
+            {Array.isArray(product.variations) && product.variations.length > 0 && (
               <div className="mb-8 md:mb-12">
                 <div className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest mb-4">Select Variation</div>
                 <div className="flex flex-wrap gap-3">
@@ -233,10 +233,17 @@ const ProductDetailPage = () => {
 
             {/* Additional Details Tabs/Accordion Style */}
             <div className="space-y-4 mb-12">
-              {product.specifications && (
+              {Array.isArray(product.specifications) && product.specifications.length > 0 && (
                 <div className="p-4 md:p-6 bg-brand-bg-secondary rounded-3xl border border-brand-accent-secondary/10">
-                  <h4 className="text-brand-primary font-bold uppercase tracking-widest text-[10px] md:text-xs mb-2">Specifications</h4>
-                  <p className="text-brand-text/60 text-xs md:text-sm whitespace-pre-wrap">{product.specifications}</p>
+                  <h4 className="text-brand-primary font-bold uppercase tracking-widest text-[10px] md:text-xs mb-4">Specifications</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {product.specifications.map((spec: any, i: number) => (
+                      <div key={i} className="flex justify-between border-b border-brand-accent-secondary/5 pb-2">
+                        <span className="text-brand-text/60 text-[10px] uppercase tracking-widest">{spec.key}</span>
+                        <span className="text-brand-primary text-xs font-bold uppercase">{spec.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               {product.ingredients && (
