@@ -25,7 +25,7 @@ const Hero = () => {
             >
               <div className="aspect-[16/10] sm:aspect-[21/9] rounded-[2.5rem] overflow-hidden hardware-border shadow-2xl">
                 <img 
-                  src={getImageUrl("https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200")} 
+                  src={getImageUrl("hero-dog.jpg")} 
                   alt="Happy Dog" 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -58,7 +58,7 @@ const Hero = () => {
               </div>
 
               <h1 className="editorial-title mb-6 lg:mb-8 break-words overflow-hidden">
-                K9 Snipers <br />
+                K9 Sniper <br />
                 <span className="text-brand-accent italic font-serif normal-case tracking-normal block sm:inline">Pet Shop</span>
               </h1>
 
@@ -113,7 +113,7 @@ const Hero = () => {
             >
               <div className="aspect-[4/5] rounded-[3rem] overflow-hidden hardware-border shadow-2xl">
                 <img 
-                  src={getImageUrl("https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1000")} 
+                  src={getImageUrl("hero-dog.jpg")} 
                   alt="Happy Dog" 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"

@@ -18,28 +18,28 @@ const products = [
     title: "Premium Food", 
     icon: Utensils, 
     desc: "Complete range of Premium Dog Food, Cat Food, Bird Feed, and Fish Feed.",
-    image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&q=80&w=1000"
+    image: "premium-food.jpg"
   },
   { 
     id: "prod_comfort_01",
     title: "Comfort & Style", 
     icon: Bed, 
     desc: "High-quality Pet Beds, Collars, and Leashes for your pet's comfort and safety.",
-    image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=1000"
+    image: "comfort-style.jpg"
   },
   { 
     id: "prod_groom_01",
     title: "Care & Grooming", 
     icon: Scissors, 
     desc: "Professional Grooming Products and Aquarium Equipment for maintenance.",
-    image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1000"
+    image: "care-grooming.jpg"
   },
   { 
     id: "prod_living_01",
     title: "Living Solutions", 
     icon: Box, 
     desc: "Durable Toys, Cages, and Carriers for all types of pets.",
-    image: "https://images.unsplash.com/photo-1545249390-6bdfa286032f?auto=format&fit=crop&q=80&w=1000"
+    image: "living-solutions.jpg"
   }
 ];
 

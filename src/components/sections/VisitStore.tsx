@@ -29,8 +29,8 @@ const VisitStore = () => {
           className="mb-12 aspect-[21/7] rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 shadow-2xl relative group"
         >
           <img 
-            src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1200" 
-            alt="K9 Snipers Store" 
+            src="/store-front.jpg" 
+            alt="K9 Sniper Store" 
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             referrerPolicy="no-referrer"
           />
@@ -66,7 +66,7 @@ const VisitStore = () => {
               </motion.a>
 
               <motion.a 
-                href="mailto:info@k9snipers.com"
+                href="mailto:info@k9sniper.com"
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -78,7 +78,7 @@ const VisitStore = () => {
                 </div>
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent group-hover:text-brand-bg-secondary/50 transition-colors">Email Us</div>
-                  <div className="text-brand-primary font-bold text-xl group-hover:text-brand-bg-secondary transition-colors">info@k9snipers.com</div>
+                  <div className="text-brand-primary font-bold text-xl group-hover:text-brand-bg-secondary transition-colors">info@k9sniper.com</div>
                 </div>
               </motion.a>
             </div>
@@ -158,7 +158,7 @@ const VisitStore = () => {
                 style={{ border: 0, filter: 'grayscale(1) contrast(1.1) brightness(0.9)' }} 
                 allowFullScreen={true} 
                 loading="lazy"
-                title="K9 Snipers Location"
+                title="K9 Sniper Location"
               ></iframe>
               <div className="absolute inset-0 bg-brand-primary/10 pointer-events-none group-hover:bg-transparent transition-all duration-700" />
               

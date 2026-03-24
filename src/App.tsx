@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ShopDataProvider } from './context/ShopDataContext';
@@ -32,6 +32,7 @@ function AppContent() {
   const { notification, setNotification } = useCart();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const location = useLocation();
 
   const handleSendVerification = async () => {
     if (!auth.currentUser) return;
@@ -42,6 +43,8 @@ function AppContent() {
       console.error('Error sending verification email:', error);
     }
   };
+
+  const isDashboardRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/user');
 
   return (
     <div className="bg-brand-bg min-h-screen selection:bg-brand-accent/30 relative overflow-x-hidden">
@@ -72,7 +75,7 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <Navbar onLogin={() => setShowLoginModal(true)} />
+      {!isDashboardRoute && <Navbar onLogin={() => setShowLoginModal(true)} />}
       
       <AnimatePresence>
         {notification && (
@@ -130,7 +133,7 @@ function AppContent() {
           } />
         </Routes>
       </main>
-      <Footer />
+      {!isDashboardRoute && <Footer />}
     </div>
   );
 }

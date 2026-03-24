@@ -1,116 +1,93 @@
-# K9 Shop - Production-Grade Offline-First Pet Shop
+# K9 Premium Shop - High-Performance Pet E-Commerce
 
-A high-performance, scalable, and resilient pet shop application built with React, Vite, Tailwind CSS, and Firebase. This project features a sophisticated **offline-first, low-read architecture** designed to provide a seamless user experience while operating efficiently within Firebase's free tier limits.
+A sophisticated, production-grade pet shop application built with **React 18**, **Vite**, **Tailwind CSS**, and **Firebase**. This project features a cutting-edge **offline-first, low-read architecture** designed for extreme performance and cost-efficiency.
+
+## ✨ Key Features
+
+- **💎 Premium Design**: Immersive UI with high-contrast typography, smooth motion transitions, and a "hardware-inspired" aesthetic.
+- **🚀 Offline-First Architecture**: Powered by **IndexedDB (Dexie.js)** for instant page loads and full offline browsing of the pet and product catalogs.
+- **🔄 Delta Synchronization**: Intelligent background syncing that only fetches modified data, drastically reducing Firestore read costs.
+- **🛡️ Multi-Layer Security**: Robust Firestore Security Rules combined with server-side payment verification via **Razorpay**.
+- **📊 Advanced Admin Panel**: Comprehensive management suite for pets, products, orders, and global shop settings.
+- **📱 Fully Responsive**: Optimized for everything from ultra-wide desktops to mobile touch devices.
+- **🛒 Seamless Checkout**: Integrated cart system with real-time stock validation and secure payment processing.
 
 ## 🚀 Tech Stack
 
-- **Frontend**: React 18+, Vite, TypeScript
-- **Styling**: Tailwind CSS
-- **Database (Remote)**: Firebase Firestore
-- **Authentication**: Firebase Auth (Google Login)
-- **Database (Local)**: IndexedDB with [Dexie.js](https://dexie.org/)
-- **Animations**: Motion (Framer Motion)
+- **Frontend**: React 18 (Functional Components, Hooks, Context API)
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS (Utility-first, mobile-first)
+- **Animations**: Motion (formerly Framer Motion)
 - **Icons**: Lucide React
-
-## 🛡️ Security & Data Integrity
-The application implements a multi-layered security architecture to protect user data and prevent fraudulent transactions.
-
-### 1. Payment Security (Razorpay Integration)
-- **Server-Side Price Recalculation**: The client never sends the total amount to the payment gateway. Instead, it sends a list of item IDs and quantities. The backend fetches current prices from Firestore and calculates the authoritative total.
-- **Signature Verification**: Every payment response from Razorpay is verified on the server using the `RAZORPAY_KEY_SECRET` to ensure the payment was actually made through the official gateway.
-- **Amount Validation**: Before saving an order, the backend fetches the order details directly from Razorpay's API to confirm that the amount paid matches the server-calculated total, preventing "price manipulation" attacks.
-
-### 2. Database Security (Firestore Rules)
-- **Default Deny**: All access is blocked by default.
-- **Admin Authorization**: Administrative access requires both a specific role in the `users` collection AND a verified email address (`email_verified: true`).
-- **Immutable Field Protection**: Critical fields like `createdAt`, `userId`, and `amount` are protected from modification after creation.
-- **Schema Enforcement**: All writes are validated against strict type and size constraints to prevent data corruption or DoS attacks via large payloads.
-
-### 3. User Data Integrity
-- **Profile Synchronization**: User profile updates (like `displayName`) are automatically synchronized between Firebase Authentication and the Firestore `users` collection.
-- **Email Verification**: Users are prompted to verify their email in the dashboard. Verification is a hard requirement for administrative privileges and secure operations.
-
-### 4. Hybrid Search Strategy
-- **Low-Latency Local Search**: Initial searches are performed against the IndexedDB cache for instant results.
-- **Global Firestore Search**: If local results are insufficient, the app automatically performs a global search against Firestore to ensure full catalog coverage.
+- **Database (Remote)**: Firebase Firestore
+- **Authentication**: Firebase Auth (Google OAuth)
+- **Database (Local)**: IndexedDB with [Dexie.js](https://dexie.org/)
+- **Payments**: Razorpay API (with Cloudflare Pages Functions for backend verification)
 
 ## 🏗️ Data Architecture
 
-The application implements a multi-tier data strategy to ensure high performance and minimal remote reads.
+The application implements a multi-tier data strategy to ensure high performance and minimal remote reads:
 
-### 1. Multi-Tier Storage
-- **In-Memory Cache**: React state (Context API) for instant UI updates.
-- **IndexedDB (Dexie.js)**: Persistent client-side storage for large datasets, supporting fast local queries and filtering.
-- **Firestore**: Remote source of truth, only queried when local data is missing or outdated.
+1.  **In-Memory Cache**: React state for instant UI updates.
+2.  **IndexedDB (Dexie.js)**: Persistent client-side storage for large datasets, supporting fast local queries and filtering.
+3.  **Firestore**: Remote source of truth, queried only when local data is missing or outdated.
+4.  **LRU Eviction**: Automatic pruning of old cache entries to maintain optimal device storage.
 
-### 2. Delta Synchronization
-Instead of refetching entire collections, the app uses **Delta Sync**:
-- It tracks `lastSyncTime` locally for each collection (`pets`, `products`).
-- Background checks query Firestore only for documents where `updatedAt > lastSyncTime`.
-- This drastically reduces read costs and bandwidth usage as the catalog grows.
+## 🛡️ Security Implementation
 
-### 3. Split Metadata Strategy
-- Update tracking is handled via separate documents in the `metadata` collection (e.g., `metadata/pets`, `metadata/products`).
-- This avoids write bottlenecks on a single document and allows independent synchronization of different data types.
-- Includes a **versioning system** to force a full cache rebuild across all clients when critical schema changes occur.
+### 1. Payment Security
+- **Server-Side Validation**: Prices are recalculated on the server during order creation.
+- **Signature Verification**: Every Razorpay payment is cryptographically verified before being accepted.
+- **Amount Confirmation**: The backend confirms the paid amount directly with Razorpay's API.
 
-### 4. LRU Cache Eviction
-To prevent unbounded storage growth in IndexedDB:
-- Every document includes a `lastAccessed` timestamp.
-- The app implements a **Least Recently Used (LRU)** eviction strategy.
-- When a collection exceeds a predefined limit (e.g., 100 items), the oldest items are automatically pruned.
+### 2. Firestore Security Rules
+- **Default Deny**: All access is blocked unless explicitly permitted.
+- **RBAC**: Role-Based Access Control ensures only verified admins can modify the catalog.
+- **Data Validation**: Strict schema enforcement for all write operations.
 
-### 5. Resilience & Reliability
-- **Request Deduplication**: Uses `useRef` guards to prevent concurrent duplicate sync requests.
-- **Exponential Backoff**: Failed sync operations are retried with progressively longer delays (up to 5 attempts).
-- **Periodic Sync**: Background checks occur every 5 minutes and whenever the browser tab becomes visible again.
-- **Self-Healing**: If IndexedDB corruption is detected, the app automatically clears and rebuilds the local cache from Firestore.
+## 🛠️ Getting Started
 
-## 🛠️ Key Components
+### Prerequisites
+- Node.js 18+
+- Firebase Project
+- Razorpay Account (for payments)
 
-### `ShopDataContext.tsx`
-The heart of the data layer. Manages the synchronization lifecycle, IndexedDB interactions, and global state for pets and products.
+### Installation
 
-### `shopDb.ts`
-Defines the Dexie database schema with performance-optimized indexes for fast local sorting and filtering.
+1.  **Clone and Install**:
+    ```bash
+    npm install
+    ```
 
-### `metadataHelper.ts`
-Utility for interacting with the split metadata documents in Firestore to track remote updates.
+2.  **Configuration**:
+    The app uses `firebase-applet-config.json` for Firebase client settings. Ensure this file is present in the root directory.
+    For backend functions, set the following environment variables in your deployment platform:
+    - `RAZORPAY_KEY_ID`
+    - `RAZORPAY_KEY_SECRET`
+    - `FIREBASE_SERVICE_ACCOUNT`
+    - `FIREBASE_PROJECT_ID`
 
-### `firestore.rules`
-Production-ready security rules implementing:
-- **Default Deny**: All access is blocked by default.
-- **Public Reads**: Allowed for `pets`, `products`, and `metadata` to support the offline-first flow.
-- **Admin-Only Writes**: Strict validation for data modifications, including immutable field protection and schema enforcement.
-- **RBAC**: Role-based access control for administrative tasks.
+3.  **Development**:
+    ```bash
+    npm run dev
+    ```
 
-## 📦 Getting Started
+4.  **Production Build**:
+    ```bash
+    npm run build
+    ```
 
-1. **Environment Variables**:
-   Ensure your `.env` file contains the necessary Firebase configuration:
-   ```env
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-   ```
+## 📂 Project Structure
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+- `/src/components`: Reusable UI components and section layouts.
+- `/src/context`: Global state management (Auth, Cart, ShopData).
+- `/src/pages`: Main application views (Home, Pets, Products, Details).
+- `/src/db`: IndexedDB schema and database initialization.
+- `/src/utils`: Helper functions for images, slugs, and error handling.
+- `/functions`: Serverless API routes for payment processing.
 
-3. **Run Development Server**:
-   ```bash
-   npm run dev
-   ```
-
-4. **Build for Production**:
-   ```bash
-   npm run build
-   ```
+---
 
 ## 🛡️ Security Note
-The Firestore security rules are designed as a robust prototype. Before a wide public launch, it is recommended to further harden rules based on specific business logic and perform a full security audit.
+The security rules and payment flows are designed for production use. However, always perform a final security audit and penetration test before a wide public launch.
+

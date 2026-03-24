@@ -53,7 +53,7 @@ const ExportServices = () => {
           className="mb-16 aspect-[21/9] rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 shadow-2xl"
         >
           <img 
-            src="https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=1200" 
+            src="/global-transport.jpg" 
             alt="Global Pet Transport" 
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"

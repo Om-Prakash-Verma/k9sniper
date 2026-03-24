@@ -22,7 +22,7 @@ const About = () => {
           
           <div className="space-y-4 text-xl md:text-2xl text-brand-text leading-relaxed max-w-xl mb-10">
             <p className="font-bold text-brand-primary">
-              K9 SNIPERS Dog Shop is a trusted and professionally managed pet store located at New Kondli Market, Mayur Vihar Phase 3, New Delhi.
+              K9 SNIPER Dog Shop is a trusted and professionally managed pet store located at New Kondli Market, Mayur Vihar Phase 3, New Delhi.
             </p>
             <p className="font-serif italic">
               "We specialize in all major dog breeds, various cat breeds, birds, freshwater fishes, premium pet accessories and food, along with pet export assistance services."
@@ -30,13 +30,6 @@ const About = () => {
           </div>
 
           <div className="flex flex-wrap gap-8 items-center">
-            <div className="flex -space-x-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-14 h-14 rounded-full border-4 border-brand-bg bg-brand-bg-secondary overflow-hidden shadow-xl">
-                  <img src={getImageUrl(`https://picsum.photos/seed/pet${i}/100/100`)} alt="User" className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
             <div>
               <div className="text-brand-primary font-bold text-lg">500+ Happy Families</div>
               <div className="text-brand-accent text-sm font-bold uppercase tracking-widest">Trusted across Delhi NCR</div>

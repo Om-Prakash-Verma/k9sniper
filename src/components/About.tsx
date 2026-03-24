@@ -19,7 +19,7 @@ const About: React.FC = () => {
             </h2>
             <div className="space-y-6 text-lg text-white/60 leading-relaxed font-medium">
               <p>
-                K9 Snipers Dog Shop is a trusted and professionally managed pet store located in 
+                K9 Sniper Dog Shop is a trusted and professionally managed pet store located in 
                 New Kondli Market, Mayur Vihar Phase 3, New Delhi.
               </p>
               <p>

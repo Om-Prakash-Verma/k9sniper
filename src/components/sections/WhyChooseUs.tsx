@@ -64,7 +64,7 @@ const WhyChooseUs = () => {
             <div className="micro-label mb-4 text-brand-accent">The K9 Standard</div>
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4 break-words">
               Why <br />
-              <span className="text-brand-accent">K9 Snipers</span>
+              <span className="text-brand-accent">K9 Sniper</span>
             </h2>
             <div className="h-px w-32 bg-brand-accent" />
           </div>

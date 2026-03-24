@@ -12,7 +12,7 @@ const categories = [
     title: "Dogs Collection",
     icon: Dog,
     description: "We deal in all popular and premium dog breeds including Labrador Retriever, German Shepherd, Golden Retriever, Shih Tzu, Pomeranian, Chihuahua, Rottweiler, Doberman, Siberian Husky, Beagle, and many more.",
-    image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1000",
+    image: "dogs-collection.jpg",
     color: "from-orange-500/20 to-brand-accent/20",
     type: 'pet' as const
   },
@@ -21,7 +21,7 @@ const categories = [
     title: "Luxury & Exotic Cats",
     icon: Cat,
     description: "We offer a variety of cat breeds including Persian Cats, Himalayan Cats, Siamese Cats, British Shorthair, Maine Coon, and other exotic cats.",
-    image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=1000",
+    image: "cats-collection.jpg",
     color: "from-blue-500/20 to-indigo-500/20",
     type: 'pet' as const
   },
@@ -30,7 +30,7 @@ const categories = [
     title: "Birds Section",
     icon: Bird,
     description: "Our Birds Section includes a variety of birds such as Budgies, Cockatiels, Lovebirds, Finches, Parrots, and other available exotic birds.",
-    image: "https://images.unsplash.com/photo-1522926193917-29690d230241?auto=format&fit=crop&q=80&w=1000",
+    image: "birds-collection.jpg",
     color: "from-emerald-500/20 to-teal-500/20",
     type: 'pet' as const
   },
@@ -39,7 +39,7 @@ const categories = [
     title: "Aquatic Collection",
     icon: Fish,
     description: "We deal in a wide range of aquatic pets including Goldfish, Koi Fish, Betta Fish, Guppies, Angelfish, and complete aquarium setup solutions.",
-    image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=1000",
+    image: "fish-collection.jpg",
     color: "from-cyan-500/20 to-blue-500/20",
     type: 'pet' as const
   },
@@ -48,7 +48,7 @@ const categories = [
     title: "Cute Rabbits",
     icon: Rabbit,
     description: "We deal in domestic rabbits and fancy rabbits (as per availability). We provide proper feeding guidance and cage setup assistance.",
-    image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&q=80&w=1000",
+    image: "rabbits-collection.jpg",
     color: "from-pink-500/20 to-rose-500/20",
     type: 'pet' as const
   }
