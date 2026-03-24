@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ShoppingBag, ArrowLeft, ShoppingCart, ShieldCheck, Truck, Package } from 'lucide-react';
@@ -93,6 +94,7 @@ const ProductDetailPage = () => {
 
   if (loading) return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+      <SEO title="Loading Product Details..." />
       <div className="w-12 h-12 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
     </div>
   );
@@ -123,6 +125,12 @@ const ProductDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
+      <SEO 
+        title={`${product.name} | Pet Supplies`}
+        description={`Buy ${product.name} at K9 Sniper. High-quality pet supplies for your beloved companions. ${product.description?.slice(0, 150)}...`}
+        image={getImageUrl(product.images?.[0] || product.image)}
+        url={`https://k9sniper.com/product/${product.slug || product.id}`}
+      />
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => navigate(-1)}

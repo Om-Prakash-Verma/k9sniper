@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -11,21 +11,29 @@ import { ShopDataProvider } from './context/ShopDataContext';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import Footer from './components/sections/Footer';
-import AdminPanel from './components/AdminPanel';
-import LoginPage from './components/LoginPage';
-import HomePage from './pages/HomePage';
-import PetsPage from './pages/PetsPage';
-import ProductsPage from './pages/ProductsPage';
-import PetDetailPage from './pages/PetDetailPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import UserDashboard from './pages/UserDashboard';
 import Notification from './components/Notification';
 import { useCart } from './context/CartContext';
 import { AnimatePresence, motion } from 'motion/react';
-import { Navigate } from 'react-router-dom';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { auth } from './firebase';
 import { sendEmailVerification } from 'firebase/auth';
+import { HelmetProvider } from 'react-helmet-async';
+
+// Lazy load pages and heavy components
+const HomePage = lazy(() => import('./pages/HomePage'));
+const PetsPage = lazy(() => import('./pages/PetsPage'));
+const ProductsPage = lazy(() => import('./pages/ProductsPage'));
+const PetDetailPage = lazy(() => import('./pages/PetDetailPage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const LoginPage = lazy(() => import('./components/LoginPage'));
+
+const LoadingFallback = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="w-10 h-10 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
+  </div>
+);
 
 function AppContent() {
   const { user, isAdmin, isUnverifiedAdmin, loading: authLoading } = useAuth();
@@ -90,48 +98,46 @@ function AppContent() {
       <AuthModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
       <main className="relative">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/pets" element={<PetsPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/pet/:slug" element={<PetDetailPage />} />
-          <Route path="/product/:slug" element={<ProductDetailPage />} />
-          <Route path="/user" element={
-            authLoading ? (
-              <div className="min-h-[60vh] flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
-              </div>
-            ) : user ? (
-              <UserDashboard />
-            ) : (
-              <LoginPage 
-                user={user} 
-                isAdmin={isAdmin} 
-                onSuccess={() => {}} 
-                title="User Login"
-                description="Sign in to your dashboard to track your pet orders and manage your profile."
-              />
-            )
-          } />
-          <Route path="/admin" element={
-            authLoading ? (
-              <div className="min-h-[60vh] flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
-              </div>
-            ) : isAdmin ? (
-              <AdminPanel />
-            ) : (
-              <LoginPage 
-                user={user} 
-                isAdmin={isAdmin} 
-                isUnverifiedAdmin={isUnverifiedAdmin}
-                onSuccess={() => {}} 
-                title="Admin Access"
-                description="Please sign in with your administrator credentials to manage the catalog and orders."
-              />
-            )
-          } />
-        </Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/pets" element={<PetsPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/pet/:slug" element={<PetDetailPage />} />
+            <Route path="/product/:slug" element={<ProductDetailPage />} />
+            <Route path="/user" element={
+              authLoading ? (
+                <LoadingFallback />
+              ) : user ? (
+                <UserDashboard />
+              ) : (
+                <LoginPage 
+                  user={user} 
+                  isAdmin={isAdmin} 
+                  onSuccess={() => {}} 
+                  title="User Login"
+                  description="Sign in to your dashboard to track your pet orders and manage your profile."
+                />
+              )
+            } />
+            <Route path="/admin" element={
+              authLoading ? (
+                <LoadingFallback />
+              ) : isAdmin ? (
+                <AdminPanel />
+              ) : (
+                <LoginPage 
+                  user={user} 
+                  isAdmin={isAdmin} 
+                  isUnverifiedAdmin={isUnverifiedAdmin}
+                  onSuccess={() => {}} 
+                  title="Admin Access"
+                  description="Please sign in with your administrator credentials to manage the catalog and orders."
+                />
+              )
+            } />
+          </Routes>
+        </Suspense>
       </main>
       {!isDashboardRoute && <Footer />}
     </div>
@@ -140,15 +146,17 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ShopDataProvider>
-          <CartProvider>
-            <AppContent />
-          </CartProvider>
-        </ShopDataProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <ShopDataProvider>
+            <CartProvider>
+              <AppContent />
+            </CartProvider>
+          </ShopDataProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

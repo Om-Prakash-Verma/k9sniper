@@ -1,6 +1,6 @@
 {
-  "name": "K9 Sniper Dog Shop",
-  "description": "Hyper-premium pet experience for K9 Sniper Dog Shop - Where healthy pets find happy homes.",
+  "name": "K9 Sniper",
+  "description": "Premium pets, quality supplies, and global pet transport services. Your trusted destination for high-quality pet care.",
   "requestFramePermissions": [
     "camera",
     "microphone",

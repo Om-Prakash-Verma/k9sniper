@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Dog, ArrowLeft, ShieldCheck, Truck, Heart, MessageCircle, Instagram } from 'lucide-react';
@@ -99,6 +100,7 @@ const PetDetailPage = () => {
 
   if (loading) return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+      <SEO title="Loading Pet Details..." />
       <div className="w-12 h-12 border-4 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin" />
     </div>
   );
@@ -109,6 +111,12 @@ const PetDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
+      <SEO 
+        title={`${pet.name} | ${pet.breed || 'Pet'} For Sale`}
+        description={`Meet ${pet.name}, a beautiful ${pet.breed || 'pet'} available at K9 Sniper. ${pet.description?.slice(0, 150)}...`}
+        image={getImageUrl(pet.images?.[0] || pet.image)}
+        url={`https://k9sniper.com/pet/${pet.slug || pet.id}`}
+      />
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => navigate(-1)}

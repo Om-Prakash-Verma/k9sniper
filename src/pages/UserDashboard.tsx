@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Package, LogOut, Settings, ChevronRight, ShoppingBag, X, ShoppingCart, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth, db } from '../firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { updateProfile, sendEmailVerification } from 'firebase/auth';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import { useNavigate } from 'react-router-dom';
 import { shopDb } from '../db/shopDb';
@@ -101,9 +103,6 @@ const UserDashboard = () => {
     if (!user) return;
     setUpdating(true);
     try {
-      const { updateProfile } = await import('firebase/auth');
-      const { doc, updateDoc } = await import('firebase/firestore');
-      
       await updateProfile(user, { displayName });
       
       const userRef = doc(db, 'users', user.uid);
@@ -123,7 +122,6 @@ const UserDashboard = () => {
   const handleSendVerification = async () => {
     if (!user) return;
     try {
-      const { sendEmailVerification } = await import('firebase/auth');
       await sendEmailVerification(user);
       setVerificationSent(true);
     } catch (error) {
@@ -159,6 +157,7 @@ const UserDashboard = () => {
       onTabChange={setActiveTab}
       onLogout={handleLogout}
     >
+      <SEO title="User Dashboard | K9 Sniper" />
       <div className="max-w-4xl">
         <div className="mb-12">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">

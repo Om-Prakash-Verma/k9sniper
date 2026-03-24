@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SEO from './SEO';
 import { 
   Dog, 
   Package, 
@@ -90,6 +91,7 @@ const AdminPanel: React.FC = () => {
       onTabChange={setActiveTab}
       onLogout={logout}
     >
+      <SEO title="Admin Panel | K9 Sniper" />
       <motion.div
         key={activeTab}
         initial={{ opacity: 0, y: 20 }}

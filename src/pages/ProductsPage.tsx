@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 import { motion } from 'motion/react';
 import { ShoppingBag, Search, ChevronRight, ShoppingCart } from 'lucide-react';
 import { db } from '../firebase';
@@ -27,6 +28,10 @@ const ProductsPage = () => {
   if (error && products.length === 0) {
     return (
       <div className="min-h-screen bg-brand-bg pt-32 px-4 flex items-center justify-center">
+        <SEO 
+          title="Pet Supplies & Accessories | K9 Sniper"
+          description="Shop high-quality pet food, accessories, and grooming supplies at K9 Sniper. Everything your pet needs for a happy and healthy life."
+        />
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="w-10 h-10 text-red-500" />
@@ -46,6 +51,10 @@ const ProductsPage = () => {
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
+      <SEO 
+        title="Pet Supplies & Accessories | K9 Sniper"
+        description="Shop high-quality pet food, accessories, and grooming supplies at K9 Sniper. Everything your pet needs for a happy and healthy life."
+      />
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:text-left text-center md:mb-16 gap-8">
           <div className="max-w-2xl w-full">
