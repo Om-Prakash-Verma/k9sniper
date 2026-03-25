@@ -41,6 +41,7 @@ const Notification: React.FC<NotificationProps> = ({ message, type, onClose, dur
       <button 
         onClick={onClose}
         className="p-1 hover:bg-black/5 rounded-full transition-colors"
+        aria-label="Close notification"
       >
         <X className="w-4 h-4 text-brand-primary/40" />
       </button>

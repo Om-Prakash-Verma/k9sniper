@@ -89,7 +89,10 @@ const ExportServices = () => {
                   <p className="text-brand-text text-lg leading-relaxed mb-8 group-hover:text-brand-bg-secondary/70 transition-colors duration-500">
                     {service.desc}
                   </p>
-                  <button className="px-8 py-4 border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase text-[10px] tracking-widest group-hover:bg-brand-accent group-hover:border-brand-accent group-hover:text-brand-bg-secondary transition-all duration-500">
+                  <button 
+                    className="px-8 py-4 border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase text-[10px] tracking-widest group-hover:bg-brand-accent group-hover:border-brand-accent group-hover:text-brand-bg-secondary transition-all duration-500"
+                    aria-label={`Learn more about ${service.title}`}
+                  >
                     Learn More
                   </button>
                 </div>

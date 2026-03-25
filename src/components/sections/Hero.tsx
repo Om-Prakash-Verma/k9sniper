@@ -29,6 +29,9 @@ const Hero = () => {
                   alt="Happy Dog" 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
+                  fetchPriority="high"
+                  width="800"
+                  height="500"
                 />
               </div>
               
@@ -117,6 +120,9 @@ const Hero = () => {
                   alt="Happy Dog" 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
+                  fetchPriority="high"
+                  width="800"
+                  height="1000"
                 />
               </div>
 

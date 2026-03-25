@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import SEO from '../components/SEO';
 import Hero from '../components/sections/Hero';
-import About from '../components/sections/About';
-import OurPets from '../components/sections/OurPets';
-import Accessories from '../components/sections/Accessories';
-import ExportServices from '../components/sections/ExportServices';
-import AfterCare from '../components/sections/AfterCare';
-import WhyChooseUs from '../components/sections/WhyChooseUs';
-import ResponsibleOwnership from '../components/sections/ResponsibleOwnership';
-import VisitStore from '../components/sections/VisitStore';
+
+// Lazy load sections below the fold
+const About = lazy(() => import('../components/sections/About'));
+const OurPets = lazy(() => import('../components/sections/OurPets'));
+const Accessories = lazy(() => import('../components/sections/Accessories'));
+const ExportServices = lazy(() => import('../components/sections/ExportServices'));
+const AfterCare = lazy(() => import('../components/sections/AfterCare'));
+const WhyChooseUs = lazy(() => import('../components/sections/WhyChooseUs'));
+const ResponsibleOwnership = lazy(() => import('../components/sections/ResponsibleOwnership'));
+const VisitStore = lazy(() => import('../components/sections/VisitStore'));
+
+const SectionFallback = () => <div className="min-h-[40vh] bg-brand-bg" />;
 
 const HomePage = () => {
   return (
@@ -18,14 +22,16 @@ const HomePage = () => {
         description="Discover premium pets and quality supplies at K9 Sniper. We offer global pet transport, expert care, and a wide selection of birds, dogs, and cats."
       />
       <Hero />
-      <About />
-      <OurPets />
-      <Accessories />
-      <ExportServices />
-      <AfterCare />
-      <WhyChooseUs />
-      <ResponsibleOwnership />
-      <VisitStore />
+      <Suspense fallback={<SectionFallback />}>
+        <About />
+        <OurPets />
+        <Accessories />
+        <ExportServices />
+        <AfterCare />
+        <WhyChooseUs />
+        <ResponsibleOwnership />
+        <VisitStore />
+      </Suspense>
     </>
   );
 };
