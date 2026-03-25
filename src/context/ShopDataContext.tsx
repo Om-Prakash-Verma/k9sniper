@@ -66,11 +66,9 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const isFetchingPets = useRef(false);
   const isFetchingProducts = useRef(false);
   const retryCount = useRef({ pets: 0, products: 0 });
-  const isMounted = useRef(true);
 
   // Load from IndexedDB on mount
   useEffect(() => {
-    isMounted.current = true;
     const initData = async () => {
       let hasInitialData = false;
       try {
@@ -80,8 +78,6 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // 2. Ensure DB is open and load cached data immediately
         const dbReady = await shopDb.safeOpen();
         
-        if (!isMounted.current) return;
-
         if (dbReady) {
           const [cachedPets, cachedProducts, cachedSettings] = await Promise.all([
             shopDb.pets.orderBy('name').toArray(),
@@ -89,8 +85,6 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             shopDb.settings.get('shop')
           ]);
           
-          if (!isMounted.current) return;
-
           if (cachedSettings) {
             const { id, ...settings } = cachedSettings;
             setShopSettings(settings as ShopSettings);
@@ -109,8 +103,6 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           try {
             // Handle settings
             const settingsSnap = await settingsPromise;
-            if (!isMounted.current) return;
-
             if (settingsSnap.exists()) {
               const remoteSettings = settingsSnap.data() as ShopSettings;
               setShopSettings(remoteSettings);
@@ -136,13 +128,9 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } catch (err) {
         console.error('Failed to initialize data:', err);
         // Fallback to direct fetch if IDB fails
-        if (isMounted.current) {
-          await Promise.all([fetchInitialData('pets'), fetchInitialData('products')]);
-        }
+        await Promise.all([fetchInitialData('pets'), fetchInitialData('products')]);
       } finally {
-        if (isMounted.current) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
@@ -150,15 +138,13 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Periodic Background Sync
     const interval = setInterval(() => {
-      if (isMounted.current) {
-        checkUpdates('pets');
-        checkUpdates('products');
-      }
+      checkUpdates('pets');
+      checkUpdates('products');
     }, SYNC_INTERVAL);
 
     // Sync on Tab Visibility Change
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isMounted.current) {
+      if (document.visibilityState === 'visible') {
         checkUpdates('pets');
         checkUpdates('products');
       }
@@ -166,14 +152,12 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      isMounted.current = false;
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
   const checkUpdates = async (type: 'pets' | 'products', force = false) => {
-    if (!isMounted.current) return;
     const isFetching = type === 'pets' ? isFetchingPets : isFetchingProducts;
     if (isFetching.current) return;
     isFetching.current = true;
@@ -184,8 +168,6 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         getMetadata(type),
         shopDb.isAvailable() ? shopDb.metadata.get(type) : Promise.resolve(null)
       ]);
-
-      if (!isMounted.current) return;
 
       if (!remoteMetadata) {
         const currentData = type === 'pets' ? pets : products;
@@ -221,8 +203,6 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           await performDeltaSync(type, localLastUpdated);
         }
 
-        if (!isMounted.current) return;
-
         // Update local metadata
         if (shopDb.isAvailable()) {
           await shopDb.metadata.put({
@@ -238,7 +218,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (err) {
       console.error(`Update check failed for ${type}:`, err);
       // Exponential backoff retry
-      if (retryCount.current[type] < 5 && isMounted.current) {
+      if (retryCount.current[type] < 5) {
         const delay = Math.pow(2, retryCount.current[type]) * 1000;
         retryCount.current[type]++;
         setTimeout(() => checkUpdates(type, force), delay);

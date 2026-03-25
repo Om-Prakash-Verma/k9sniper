@@ -77,7 +77,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2" onClick={() => window.scrollTo(0, 0)} aria-label="K9 Sniper Home">
+          <Link to="/" className="flex items-center gap-2" onClick={() => window.scrollTo(0, 0)}>
             <div className="w-8 h-8 bg-brand-primary rounded-full flex items-center justify-center">
               <Dog className="text-brand-bg-secondary w-5 h-5" />
             </div>
@@ -110,7 +110,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
             <button 
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-brand-primary hover:bg-brand-accent/10 rounded-full transition-colors"
-              aria-label={`Shopping Cart, ${totalItems} items`}
             >
               <ShoppingBag className="w-6 h-6" />
               {totalItems > 0 && (
@@ -122,7 +121,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
 
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/user" className="transition-transform hover:scale-110" aria-label="User Profile">
+                <Link to="/user" className="transition-transform hover:scale-110">
                   {user.photoURL ? (
                     <img src={getImageUrl(user.photoURL)} alt="Profile" className="w-8 h-8 rounded-full border border-brand-accent" />
                   ) : (
@@ -131,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
                     </div>
                   )}
                 </Link>
-                <button onClick={onLogout} className="p-2 text-brand-text hover:text-red-500 transition-colors" aria-label="Logout">
+                <button onClick={onLogout} className="p-2 text-brand-text hover:text-red-500 transition-colors">
                   <LogOut className="w-5 h-5" />
                 </button>
               </div>
@@ -148,7 +147,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
             <button 
               className="md:hidden text-brand-primary p-2"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? "Close Menu" : "Open Menu"}
             >
               {isMobileMenuOpen ? <X /> : <Menu />}
             </button>

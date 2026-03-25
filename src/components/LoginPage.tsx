@@ -225,7 +225,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, isUnverifiedAdmin, user,
           onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full py-4 bg-brand-bg border border-brand-accent-secondary/20 rounded-2xl flex items-center justify-center gap-3 text-brand-primary font-bold uppercase tracking-widest hover:border-brand-accent transition-all disabled:opacity-50"
-          aria-label="Sign in with Google"
         >
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
           Google
