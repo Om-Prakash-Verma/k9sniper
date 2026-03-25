@@ -10,6 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isUnverifiedAdmin: boolean;
   loading: boolean;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isUnverifiedAdmin: false,
   loading: true,
+  logout: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -65,8 +67,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
+  const logout = async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAdmin, isUnverifiedAdmin, loading }}>
+    <AuthContext.Provider value={{ user, isAdmin, isUnverifiedAdmin, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,11 +1,15 @@
 import { db } from '../firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
-export const updateMetadata = async (collectionName: 'pets' | 'products', version = 1) => {
+export const updateMetadata = async (collectionName: 'pets' | 'products') => {
   try {
-    await setDoc(doc(db, 'metadata', collectionName), {
+    const docRef = doc(db, 'metadata', collectionName);
+    const docSnap = await getDoc(docRef);
+    const currentVersion = docSnap.exists() ? (docSnap.data().version || 0) : 0;
+    
+    await setDoc(docRef, {
       lastUpdated: serverTimestamp(),
-      version: version
+      version: currentVersion + 1
     }, { merge: true });
   } catch (error) {
     console.error(`Failed to update metadata for ${collectionName}:`, error);

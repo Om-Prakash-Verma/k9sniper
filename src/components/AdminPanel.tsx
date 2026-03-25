@@ -34,7 +34,7 @@ import DashboardLayout from './DashboardLayout';
 
 const AdminPanel: React.FC = () => {
   const { logout } = useAuth();
-  const { pets, products, metadata } = useShopData();
+  const { pets, products, metadata, refreshData } = useShopData();
   const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings'>('pets');
   const [orders, setOrders] = useState<any[]>([]);
   
@@ -67,6 +67,7 @@ const AdminPanel: React.FC = () => {
     try {
       await deleteDoc(doc(db, type, id));
       await updateMetadata(type);
+      await refreshData(true);
       showNotification('Item deleted successfully!');
       setDeleteConfirm(null);
     } catch (error) {
@@ -103,6 +104,7 @@ const AdminPanel: React.FC = () => {
             pets={pets} 
             onNotification={showNotification} 
             onDeleteConfirm={(id, name) => setDeleteConfirm({ id, name, type: 'pets' })} 
+            onRefresh={refreshData}
           />
         )}
         {activeTab === 'products' && (
@@ -110,6 +112,7 @@ const AdminPanel: React.FC = () => {
             products={products} 
             onNotification={showNotification} 
             onDeleteConfirm={(id, name) => setDeleteConfirm({ id, name, type: 'products' })} 
+            onRefresh={refreshData}
           />
         )}
         {activeTab === 'orders' && <OrderManager orders={orders} />}

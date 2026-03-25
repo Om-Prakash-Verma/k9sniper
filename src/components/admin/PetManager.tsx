@@ -14,9 +14,10 @@ interface PetManagerProps {
   pets: Pet[];
   onNotification: (message: string, type: 'success' | 'error') => void;
   onDeleteConfirm: (id: string, name: string) => void;
+  onRefresh?: (force?: boolean) => Promise<void>;
 }
 
-const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteConfirm }) => {
+const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteConfirm, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,12 +56,18 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
         return;
       }
 
-      const dataToSave: Partial<Pet> = {
+      const dataToSave: any = {
         ...formData,
-        price: formData.price ? Number(formData.price) : undefined,
         updatedAt: new Date().toISOString(),
         slug: slugify(formData.name)
       };
+
+      // Ensure no undefined values are sent to Firestore
+      if (formData.price !== undefined && formData.price !== null && formData.price !== '') {
+        dataToSave.price = Number(formData.price);
+      } else {
+        delete dataToSave.price;
+      }
 
       if (isEditing && editingId) {
         await updateDoc(doc(db, 'pets', editingId), dataToSave);
@@ -74,6 +81,7 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
         onNotification('Pet added successfully!', 'success');
       }
       await updateMetadata('pets');
+      if (onRefresh) await onRefresh(true);
       setIsModalOpen(false);
     } catch (error) {
       onNotification('Failed to save pet.', 'error');
@@ -183,6 +191,15 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
                           className="admin-input" 
                           value={formData.name || ''}
                           onChange={e => setFormData({...formData, name: e.target.value})} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Price (₹) - Leave empty for "Price on Req"</label>
+                        <input 
+                          type="number" 
+                          className="admin-input" 
+                          value={formData.price || ''}
+                          onChange={e => setFormData({...formData, price: e.target.value})} 
                         />
                       </div>
                       <div className="space-y-2">
@@ -323,26 +340,62 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
 
                   {activeTab === 'media' && (
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Main Image URL *</label>
-                          <input 
-                            required 
-                            type="text" 
-                            className="admin-input" 
-                            value={formData.image || ''}
-                            onChange={e => setFormData({...formData, image: e.target.value})} 
-                          />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Main Image URL / Filename *</label>
+                            <input 
+                              required 
+                              type="text" 
+                              className="admin-input" 
+                              value={formData.image || ''}
+                              onChange={e => setFormData({...formData, image: e.target.value})} 
+                            />
+                          </div>
+                          {formData.image && (
+                            <div className="space-y-2">
+                              <label className="text-[8px] font-bold text-brand-text/40 uppercase tracking-widest">Preview</label>
+                              <div className="aspect-video rounded-2xl overflow-hidden border border-brand-accent-secondary/10 bg-brand-bg-secondary">
+                                <img 
+                                  src={getImageUrl(formData.image)} 
+                                  alt="Preview" 
+                                  className="w-full h-full object-cover" 
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => (e.currentTarget.src = 'https://picsum.photos/seed/error/800/600')}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Additional Images (comma separated URLs)</label>
-                          <input 
-                            type="text" 
-                            className="admin-input" 
-                            placeholder="url1, url2, url3"
-                            value={formData.images?.join(', ') || ''}
-                            onChange={e => setFormData({...formData, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
-                          />
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Additional Images (comma separated)</label>
+                            <input 
+                              type="text" 
+                              className="admin-input" 
+                              placeholder="url1, url2, url3"
+                              value={formData.images?.join(', ') || ''}
+                              onChange={e => setFormData({...formData, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
+                            />
+                          </div>
+                          {formData.images && formData.images.length > 0 && (
+                            <div className="space-y-2">
+                              <label className="text-[8px] font-bold text-brand-text/40 uppercase tracking-widest">Gallery Preview</label>
+                              <div className="flex gap-2 overflow-x-auto pb-2">
+                                {formData.images.map((img, idx) => (
+                                  <div key={idx} className="w-24 aspect-square rounded-xl overflow-hidden border border-brand-accent-secondary/10 bg-brand-bg-secondary shrink-0">
+                                    <img 
+                                      src={getImageUrl(img)} 
+                                      alt={`Preview ${idx + 1}`} 
+                                      className="w-full h-full object-cover" 
+                                      referrerPolicy="no-referrer"
+                                      onError={(e) => (e.currentTarget.src = 'https://picsum.photos/seed/error/800/600')}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="space-y-2">
