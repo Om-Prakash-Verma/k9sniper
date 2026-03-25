@@ -3,216 +3,175 @@ import { motion } from 'motion/react';
 import { MapPin, Phone, Clock, Navigation, Instagram, Mail, MessageSquare } from 'lucide-react';
 
 const VisitStore = () => {
+  const address = "Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096";
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("K9 Sniper Pet Shop Mayur Vihar Phase 3 New Delhi")}`;
+  const phone = "+919643797801";
+  const email = "info@k9sniper.com";
+
   return (
     <section id="contact" className="relative py-16 lg:py-32 bg-brand-bg overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col lg:flex-row justify-between items-end mb-12 lg:mb-16 gap-8">
-          <div className="max-w-2xl">
-            <div className="micro-label mb-4 text-brand-accent">Get In Touch</div>
-            <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.85] text-brand-primary break-words">
-              Connect <br />
-              <span className="text-brand-accent">With Us</span>
-            </h2>
-          </div>
-          <div className="lg:max-w-xs">
-            <p className="text-brand-text text-lg leading-relaxed">
-              Whether you're looking for a new companion or professional advice, our team is here to help you every step of the way.
-            </p>
-          </div>
+        {/* Editorial Header */}
+        <div className="mb-16 lg:mb-24">
+          <div className="micro-label mb-4 text-brand-primary">Visit Our Flagship</div>
+          <h2 className="editorial-title mb-8">
+            The <span className="text-brand-accent italic font-serif normal-case tracking-normal">Experience</span> <br />
+            Center
+          </h2>
+          <div className="h-px w-full bg-brand-primary/10" />
         </div>
 
-        {/* Store Front Visual */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-12 aspect-[21/7] rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 shadow-2xl relative group"
-        >
-          <img 
-            src="/store-front.jpg" 
-            alt="K9 Sniper Store" 
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-brand-primary/20 group-hover:bg-transparent transition-colors duration-700" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="px-8 py-4 bg-brand-bg-secondary/90 backdrop-blur-md rounded-2xl border border-brand-accent/20 shadow-2xl">
-              <span className="text-brand-primary font-display font-bold text-2xl sm:text-3xl md:text-5xl uppercase tracking-tighter break-words text-center px-4">Visit Our Store</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* New Connect Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left Column: Contact Info & Socials */}
-          <div className="lg:col-span-4 space-y-4">
-            {/* Contact Cards */}
-            <div className="grid grid-cols-1 gap-4">
-              <motion.a 
-                href="tel:+919643797801"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="group p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[2rem] flex items-center gap-6 hover:bg-brand-primary transition-all duration-500"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-brand-bg flex items-center justify-center text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-bg-secondary transition-all">
-                  <Phone className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent group-hover:text-brand-bg-secondary/50 transition-colors">Call Support</div>
-                  <div className="text-brand-primary font-bold text-xl group-hover:text-brand-bg-secondary transition-colors">+91 96437 97801</div>
-                </div>
-              </motion.a>
-
-              <motion.a 
-                href="mailto:info@k9sniper.com"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="group p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[2rem] flex items-center gap-6 hover:bg-brand-primary transition-all duration-500"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-brand-bg flex items-center justify-center text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-bg-secondary transition-all">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent group-hover:text-brand-bg-secondary/50 transition-colors">Email Us</div>
-                  <div className="text-brand-primary font-bold text-xl group-hover:text-brand-bg-secondary transition-colors">info@k9sniper.com</div>
-                </div>
-              </motion.a>
-            </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+          {/* Left: Interactive Map & Visual */}
+          <div className="lg:col-span-7 space-y-8">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[2rem]"
-            >
-              <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-4">Store Management</div>
-              <div className="mb-6">
-                <div className="text-brand-primary font-bold text-xl">Ankit Singh Chauhan</div>
-                <div className="text-[10px] font-medium uppercase tracking-widest text-brand-text/60">Proprietor</div>
-              </div>
-              <div className="p-4 bg-brand-accent/10 rounded-xl border border-brand-accent/20">
-                <div className="text-brand-accent font-bold text-sm uppercase tracking-tighter">Home Delivery Available</div>
-                <div className="text-[10px] text-brand-text/80">Across Delhi NCR & Major Cities</div>
-              </div>
-            </motion.div>
-
-            {/* Social Links */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[2rem]"
-            >
-              <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-4">Follow Our Journey</div>
-              <div className="flex gap-4">
-                <a 
-                  href="https://www.instagram.com/k9_snipers_petshop/" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-xl bg-brand-bg border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-300"
-                >
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-12 h-12 rounded-xl bg-brand-bg border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-300">
-                  <MessageSquare className="w-5 h-5" />
-                </a>
-              </div>
-            </motion.div>
-
-            {/* Hours */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="p-8 bg-brand-primary rounded-[2rem] text-brand-bg-secondary"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <Clock className="w-5 h-5 text-brand-accent" />
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Store Hours</span>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Monday – Sunday</span>
-                  <span className="font-bold">10 AM – 7 PM</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right Column: Map & Address */}
-          <div className="lg:col-span-8 space-y-4">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.98 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative h-[500px] rounded-[3rem] overflow-hidden border border-brand-accent-secondary/10 group shadow-2xl"
+              className="relative aspect-[16/10] rounded-[3rem] overflow-hidden hardware-border shadow-2xl group"
             >
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.562306721665!2d77.3243!3d28.6129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDM2JzQ2LjQiTiA3N8KwMTknMjcuNSJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.562306721665!2d77.3243!3d28.6129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce50000000000%3A0x0!2zMjjCsDM2JzQ2LjQiTiA3N8KwMTknMjcuNSJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0, filter: 'grayscale(1) contrast(1.1) brightness(0.9)' }} 
                 allowFullScreen={true} 
                 loading="lazy"
                 title="K9 Sniper Location"
+                className="group-hover:grayscale-0 transition-all duration-700"
               ></iframe>
-              <div className="absolute inset-0 bg-brand-primary/10 pointer-events-none group-hover:bg-transparent transition-all duration-700" />
+              <div className="absolute inset-0 bg-brand-primary/5 pointer-events-none group-hover:bg-transparent transition-all duration-700" />
               
-              <div className="absolute bottom-8 left-8 right-8 p-8 bg-brand-bg-secondary/90 backdrop-blur-xl rounded-[2rem] border border-brand-accent-secondary/20 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-brand-accent flex items-center justify-center text-brand-bg-secondary shadow-lg">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent">Flagship Store</div>
-                    <div className="text-brand-primary font-bold text-lg leading-tight">Mayur Vihar Phase 3, New Delhi</div>
-                  </div>
-                </div>
+              {/* Overlay Button */}
+              <div className="absolute bottom-8 right-8">
                 <a 
-                  href="https://maps.app.goo.gl/YourActualMapLink" 
-                  target="_blank" 
+                  href={googleMapsUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full md:w-auto px-10 py-5 bg-brand-primary text-brand-bg-secondary rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-brand-accent transition-all duration-300"
+                  className="px-8 py-4 bg-brand-primary text-brand-bg-secondary rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-brand-accent transition-all duration-300 shadow-2xl"
                 >
                   <Navigation className="w-4 h-4" />
-                  Get Directions
+                  Open in Maps
                 </a>
               </div>
             </motion.div>
 
-            {/* Address Details */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="p-8 bg-brand-bg-secondary border border-brand-accent-secondary/10 rounded-[3rem] flex flex-col md:flex-row justify-between items-center gap-8"
-            >
-              <a 
-                href="https://maps.app.goo.gl/YourActualMapLink" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="max-w-md group"
-              >
-                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-4">Full Address (Click to View Map)</div>
-                <p className="text-brand-primary text-xl font-medium leading-relaxed group-hover:text-brand-accent transition-colors">
-                  Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096
-                </p>
-              </a>
-              <div className="flex gap-4 w-full md:w-auto">
-                <button 
-                  onClick={() => navigator.clipboard.writeText("Opposite Punjabi Dhaba, New Kondli Market, Mayur Vihar Phase 3, New Delhi – 110096")}
-                  className="flex-1 md:flex-none px-10 py-5 bg-brand-bg border border-brand-accent-secondary/20 rounded-2xl text-brand-primary font-bold uppercase tracking-widest text-[10px] hover:bg-brand-primary hover:text-brand-bg-secondary transition-all"
-                >
-                  Copy Address
-                </button>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="p-8 bg-brand-bg-secondary/50 rounded-[2rem] border border-brand-accent-secondary/10">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="micro-label">Store Status</div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Live Now</span>
+                  </div>
+                </div>
+                <div className="text-brand-primary font-bold text-lg">10:00 AM – 07:00 PM</div>
+                <div className="text-brand-text/60 text-sm uppercase tracking-widest">Open Every Day</div>
               </div>
-            </motion.div>
+              <div className="p-8 bg-brand-bg-secondary/50 rounded-[2rem] border border-brand-accent-secondary/10">
+                <div className="micro-label mb-4">Service Area</div>
+                <div className="text-brand-primary font-bold text-lg">Delhi NCR</div>
+                <div className="text-brand-text/60 text-sm uppercase tracking-widest">Pan-India Shipping</div>
+              </div>
+            </div>
           </div>
 
+          {/* Right: Contact Details (Technical Dashboard Style) */}
+          <div className="lg:col-span-5 flex flex-col justify-between">
+            <div className="space-y-px bg-brand-primary/10 border border-brand-primary/10 rounded-[3rem] overflow-hidden shadow-xl">
+              {/* Address Row */}
+              <a 
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block p-10 bg-brand-bg-secondary hover:bg-brand-primary transition-all duration-500"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-bg flex items-center justify-center text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-bg-secondary transition-all">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div className="text-[10px] font-mono text-brand-accent group-hover:text-brand-bg-secondary/40 tracking-widest">LOC_001</div>
+                </div>
+                <h3 className="text-brand-primary font-display font-bold text-2xl uppercase tracking-tighter mb-4 group-hover:text-brand-bg-secondary transition-colors">
+                  Our Location
+                </h3>
+                <p className="text-brand-text text-lg leading-relaxed group-hover:text-brand-bg-secondary/70 transition-colors">
+                  {address}
+                </p>
+              </a>
+
+              {/* Phone Row */}
+              <a 
+                href={`tel:${phone}`}
+                className="group block p-10 bg-brand-bg-secondary hover:bg-brand-primary transition-all duration-500"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-bg flex items-center justify-center text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-bg-secondary transition-all">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <div className="text-[10px] font-mono text-brand-accent group-hover:text-brand-bg-secondary/40 tracking-widest">TEL_001</div>
+                </div>
+                <h3 className="text-brand-primary font-display font-bold text-2xl uppercase tracking-tighter mb-4 group-hover:text-brand-bg-secondary transition-colors">
+                  Call Support
+                </h3>
+                <p className="text-brand-primary font-bold text-3xl group-hover:text-brand-bg-secondary transition-colors">
+                  +91 96437 97801
+                </p>
+              </a>
+
+              {/* Email Row */}
+              <a 
+                href={`mailto:${email}`}
+                className="group block p-10 bg-brand-bg-secondary hover:bg-brand-primary transition-all duration-500"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-bg flex items-center justify-center text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-bg-secondary transition-all">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div className="text-[10px] font-mono text-brand-accent group-hover:text-brand-bg-secondary/40 tracking-widest">MAIL_001</div>
+                </div>
+                <h3 className="text-brand-primary font-display font-bold text-2xl uppercase tracking-tighter mb-4 group-hover:text-brand-bg-secondary transition-colors">
+                  Email Us
+                </h3>
+                <p className="text-brand-primary font-bold text-2xl group-hover:text-brand-bg-secondary transition-colors">
+                  {email}
+                </p>
+              </a>
+            </div>
+
+            {/* Social & Directions Footer */}
+            <div className="mt-12 flex flex-col sm:flex-row gap-6">
+              <a 
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 btn-premium flex items-center justify-center gap-3"
+              >
+                <Navigation className="w-5 h-5" />
+                Get Directions
+              </a>
+              <div className="flex gap-4">
+                <a 
+                  href={`https://wa.me/919643797801`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-16 h-16 rounded-2xl bg-brand-bg-secondary border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-500 shadow-lg"
+                  aria-label="Chat with us on WhatsApp"
+                >
+                  <MessageSquare className="w-6 h-6" />
+                </a>
+                <a 
+                  href="https://www.instagram.com/k9_snipers_petshop/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-16 h-16 rounded-2xl bg-brand-bg-secondary border border-brand-accent-secondary/20 flex items-center justify-center text-brand-primary hover:bg-brand-accent hover:text-brand-bg-secondary transition-all duration-500 shadow-lg"
+                  aria-label="Follow us on Instagram"
+                >
+                  <Instagram className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
