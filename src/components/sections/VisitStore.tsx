@@ -65,8 +65,8 @@ const VisitStore = () => {
                     <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Live Now</span>
                   </div>
                 </div>
-                <div className="text-brand-primary font-bold text-lg">Mon-Sat: 10AM – 10PM</div>
-                <div className="text-brand-text/60 text-sm uppercase tracking-widest">Sun: 1PM – 5PM</div>
+                <div className="text-brand-primary font-bold text-lg">10:00 AM – 07:00 PM</div>
+                <div className="text-brand-text/60 text-sm uppercase tracking-widest">Open Every Day</div>
               </div>
               <div className="p-8 bg-brand-bg-secondary/50 rounded-[2rem] border border-brand-accent-secondary/10">
                 <div className="micro-label mb-4">Service Area</div>
