@@ -23,7 +23,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'basic' | 'media' | 'variations' | 'specs' | 'usage'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'media' | 'variations' | 'specs' | 'usage' | 'discounts'>('basic');
 
   const openAddModal = () => {
     setFormData({});
@@ -39,7 +39,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
       ...item,
       specifications: Array.isArray(item.specifications) ? item.specifications : [],
       variations: Array.isArray(item.variations) ? item.variations : [],
-      images: Array.isArray(item.images) ? item.images : []
+      images: Array.isArray(item.images) ? item.images : [],
+      productCoupons: Array.isArray(item.productCoupons) ? item.productCoupons : []
     };
     setFormData(normalizedItem);
     setIsEditing(true);
@@ -62,6 +63,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
         ...formData,
         slug,
         price: Number(formData.price),
+        discountLabel: formData.discountLabel || null,
+        productCoupons: formData.productCoupons || [],
         updatedAt: new Date().toISOString()
       };
 
@@ -126,6 +129,23 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
     const vars = [...(formData.variations || [])];
     vars[index] = { ...vars[index], [field]: field === 'price' ? Number(value) : value };
     setFormData({ ...formData, variations: vars });
+  };
+
+  const addProductCoupon = () => {
+    const coupons = formData.productCoupons || [];
+    setFormData({ ...formData, productCoupons: [...coupons, { code: '', discount: 0, type: 'percentage' }] });
+  };
+
+  const removeProductCoupon = (index: number) => {
+    const coupons = [...(formData.productCoupons || [])];
+    coupons.splice(index, 1);
+    setFormData({ ...formData, productCoupons: coupons });
+  };
+
+  const updateProductCoupon = (index: number, field: 'code' | 'discount' | 'type', value: string | number) => {
+    const coupons = [...(formData.productCoupons || [])];
+    coupons[index] = { ...coupons[index], [field]: field === 'discount' ? Number(value) : value };
+    setFormData({ ...formData, productCoupons: coupons });
   };
 
   return (
@@ -197,7 +217,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
                   { id: 'media', label: 'Media & Desc' },
                   { id: 'variations', label: 'Variations' },
                   { id: 'specs', label: 'Specifications' },
-                  { id: 'usage', label: 'Usage & Ingredients' }
+                  { id: 'usage', label: 'Usage & Ingredients' },
+                  { id: 'discounts', label: 'Discounts & Coupons' }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -482,11 +503,108 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
                       </div>
                     </motion.div>
                   )}
+
+                  {activeTab === 'discounts' && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Direct Discounts */}
+                        <div className="space-y-6 p-6 bg-brand-bg-secondary/30 rounded-3xl border border-brand-accent-secondary/10">
+                          <h3 className="text-xs font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
+                            <Package className="w-4 h-4" />
+                            Direct Discount (Sale)
+                          </h3>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-brand-text/60 uppercase tracking-widest">Discount Label</label>
+                              <input 
+                                type="text" 
+                                className="admin-input" 
+                                placeholder="e.g. Festive Sale"
+                                value={formData.discountLabel || ''}
+                                onChange={e => setFormData({...formData, discountLabel: e.target.value})} 
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Product Specific Coupons */}
+                        <div className="space-y-6 p-6 bg-brand-bg-secondary/30 rounded-3xl border border-brand-accent-secondary/10">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
+                              <Package className="w-4 h-4" />
+                              Product-Specific Coupons
+                            </h3>
+                            <button 
+                              type="button"
+                              onClick={addProductCoupon}
+                              className="px-3 py-1 bg-brand-accent/10 text-brand-accent rounded-lg text-[8px] font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-bg-secondary transition-all"
+                            >
+                              + Add Coupon
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {formData.productCoupons?.map((coupon, idx) => (
+                              <div key={idx} className="p-4 bg-brand-bg rounded-2xl border border-brand-accent-secondary/10 space-y-4 relative">
+                                <button 
+                                  type="button"
+                                  onClick={() => removeProductCoupon(idx)}
+                                  className="absolute top-2 right-2 p-1 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                                
+                                <div className="space-y-2">
+                                  <label className="text-[8px] font-bold text-brand-text/40 uppercase tracking-widest">Coupon Code</label>
+                                  <input 
+                                    type="text" 
+                                    className="admin-input text-xs" 
+                                    placeholder="e.g. DOGFOOD10"
+                                    value={coupon.code}
+                                    onChange={e => updateProductCoupon(idx, 'code', e.target.value.toUpperCase())} 
+                                  />
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[8px] font-bold text-brand-text/40 uppercase tracking-widest">Type</label>
+                                    <select 
+                                      className="admin-input text-xs py-2" 
+                                      value={coupon.type}
+                                      onChange={e => updateProductCoupon(idx, 'type', e.target.value as any)}
+                                    >
+                                      <option value="percentage">Percentage (%)</option>
+                                      <option value="fixed">Fixed (₹)</option>
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[8px] font-bold text-brand-text/40 uppercase tracking-widest">Value</label>
+                                    <input 
+                                      type="number" 
+                                      className="admin-input text-xs py-2" 
+                                      value={coupon.discount}
+                                      onChange={e => updateProductCoupon(idx, 'discount', e.target.value)} 
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {(!formData.productCoupons || formData.productCoupons.length === 0) && (
+                              <div className="text-center py-8 border-2 border-dashed border-brand-accent-secondary/10 rounded-2xl">
+                                <p className="text-brand-text/40 text-[8px] font-bold uppercase tracking-widest">No product-specific coupons</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center gap-4 pt-8 mt-8 border-t border-brand-accent-secondary/10">
                   <div className="flex gap-2">
-                    {['basic', 'media', 'variations', 'specs', 'usage'].map((tabId, idx) => (
+                    {['basic', 'media', 'variations', 'specs', 'usage', 'discounts'].map((tabId, idx) => (
                       <div 
                         key={tabId} 
                         className={`w-2 h-2 rounded-full transition-all ${
