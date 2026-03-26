@@ -52,12 +52,12 @@ const Accessories = () => {
         <div className="mb-12 lg:mb-16">
           <div className="micro-label mb-4 text-brand-accent">Premium Catalog</div>
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.9] text-brand-primary mb-8 break-words">
-            The <span className="text-brand-accent italic">Essentials</span> <br />
-            Collection
+            Pet <span className="text-brand-accent italic">Accessories</span> & <br />
+            Nutrition
           </h2>
           <div className="flex flex-col md:flex-row justify-between items-end gap-8">
             <p className="text-brand-text text-xl max-w-xl leading-relaxed">
-              Elevate your pet's lifestyle with our curated selection of high-quality food, toys, and grooming essentials.
+              Proper nutrition and comfort are essential for every pet. At K9SNIPERS Pet Shop, we offer a complete range of pet products.
             </p>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full border border-brand-accent-secondary/20 flex items-center justify-center text-brand-accent">

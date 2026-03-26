@@ -4,22 +4,22 @@ import { FileText, ShieldCheck, Search, Truck, Globe } from 'lucide-react';
 
 const services = [
   {
+    title: "Global Transport",
+    icon: Globe,
+    desc: "We specialize in the safe and professional transport of pets across borders, ensuring a stress-free journey."
+  },
+  {
     title: "Health Certification",
     icon: ShieldCheck,
     desc: "Expert guidance on health certification requirements subject to government regulations."
   },
   {
-    title: "Documentation Assistance",
+    title: "Documentation",
     icon: FileText,
     desc: "Complete assistance with mandatory documentation and cross-border paperwork requirements."
   },
   {
-    title: "Breed Consultation",
-    icon: Search,
-    desc: "Professional breed selection consultation tailored for international relocation and adaptation."
-  },
-  {
-    title: "Transport Coordination",
+    title: "Compliance",
     icon: Truck,
     desc: "Seamless transport coordination ensuring safe and compliant pet mobility across borders."
   }
@@ -33,14 +33,14 @@ const ExportServices = () => {
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">Global Logistics</div>
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4 break-words">
-              Global <br />
-              <span className="text-brand-accent">Pet Mobility</span>
+              Pet <br />
+              <span className="text-brand-accent">Export Services</span>
             </h2>
             <div className="h-px w-32 bg-brand-accent" />
           </div>
           <div className="lg:max-w-xs pt-4">
             <p className="text-brand-text text-xl leading-relaxed">
-              We specialize in the safe and professional transport of pets across borders, ensuring a stress-free journey.
+              We provide complete assistance for pet export, ensuring compliance with international regulations.
             </p>
           </div>
         </div>

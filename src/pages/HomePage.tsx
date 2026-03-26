@@ -2,6 +2,7 @@ import React from 'react';
 import SEO from '../components/SEO';
 import Hero from '../components/sections/Hero';
 import About from '../components/sections/About';
+import MissionVision from '../components/sections/MissionVision';
 import OurPets from '../components/sections/OurPets';
 import Accessories from '../components/sections/Accessories';
 import ExportServices from '../components/sections/ExportServices';
@@ -19,6 +20,7 @@ const HomePage = () => {
       />
       <Hero />
       <About />
+      <MissionVision />
       <OurPets />
       <Accessories />
       <ExportServices />
