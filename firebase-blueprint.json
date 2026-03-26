@@ -43,6 +43,18 @@
         "category": { "type": "string", "enum": ["Food", "Accessories", "Grooming", "Health", "Toys", "Beds", "Other"] },
         "brand": { "type": "string" },
         "price": { "type": "number" },
+        "discountLabel": { "type": "string", "description": "e.g. 'Sale', 'Limited'" },
+        "productCoupons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "discount": { "type": "number" },
+              "type": { "type": "string", "enum": ["percentage", "fixed"] }
+            }
+          }
+        },
         "description": { "type": "string" },
         "image": { "type": "string" },
         "images": { "type": "array", "items": { "type": "string" } },
@@ -73,13 +85,32 @@
         "id": { "type": "string" },
         "userId": { "type": "string" },
         "items": { "type": "array" },
-        "totalAmount": { "type": "number" },
+        "amount": { "type": "number" },
         "status": { "type": "string", "enum": ["pending", "paid", "shipped", "delivered"] },
         "razorpayOrderId": { "type": "string" },
         "razorpayPaymentId": { "type": "string" },
+        "couponCode": { "type": "string", "description": "Applied coupon code" },
+        "discountAmount": { "type": "number", "description": "Total discount applied" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "items", "totalAmount", "status"]
+      "required": ["userId", "items", "amount", "status"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Universal discount coupon",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "type": { "type": "string", "enum": ["percentage", "fixed"] },
+        "value": { "type": "number" },
+        "minOrderValue": { "type": "number" },
+        "expiryDate": { "type": "string", "format": "date-time" },
+        "isActive": { "type": "boolean" },
+        "usageCount": { "type": "number" },
+        "maxUsage": { "type": "number" }
+      },
+      "required": ["code", "type", "value", "isActive"]
     },
     "ShopSettings": {
       "title": "Shop Settings",
@@ -104,6 +135,10 @@
     "/orders": {
       "schema": "Order",
       "description": "Collection of customer orders"
+    },
+    "/coupons": {
+      "schema": "Coupon",
+      "description": "Collection of universal discount coupons"
     },
     "/settings": {
       "schema": "ShopSettings",
