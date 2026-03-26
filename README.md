@@ -10,7 +10,10 @@ A sophisticated, production-grade pet shop application built with **React 19**, 
 - **🛡️ Multi-Layer Security**: Robust Firestore Security Rules combined with server-side payment verification via **Razorpay**.
 - **📊 Advanced Admin Panel**: Comprehensive management suite for pets, products, orders, and global shop settings.
 - **📱 Fully Responsive**: Optimized for everything from ultra-wide desktops to mobile touch devices.
-- **🛒 Seamless Checkout**: Integrated cart system with real-time stock validation and secure payment processing.
+- **🛒 Seamless Checkout**: Integrated cart system with real-time stock validation, secure payment processing, and an intuitive multi-step checkout flow.
+- **🏷️ Advanced Coupon System**: Support for both **Universal Coupons** (store-wide) and **Product-Specific Coupons**, with automated usage tracking and limits.
+- **📂 Organized Discovery**: Dedicated category pages for Food, Accessories, Grooming, Toys, and Health for a streamlined shopping experience.
+- **💰 Simplified Pricing**: Direct base-price management with flexible discount labels, removing unnecessary complexity from the pricing model.
 
 ## 🚀 Tech Stack
 
@@ -106,6 +109,15 @@ The application implements a multi-tier data strategy to ensure high performance
 - `/src/db`: IndexedDB schema and database initialization.
 - `/src/utils`: Helper functions for images, slugs, and error handling.
 - `/functions`: Serverless API routes for payment processing.
+
+---
+
+## 🆕 Recent Updates
+
+- **Category Navigation**: Added dedicated pages for **Food**, **Accessories**, **Grooming**, **Toys**, and **Health**.
+- **Cart Flow Improvement**: Users can now navigate back to the cart from the delivery address form to review their products.
+- **Pricing Refactor**: Removed `originalPrice` field; discounts are now applied directly to the base price using labels and coupons.
+- **Coupon Management**: Enhanced the admin panel with a **Universal Coupon Manager** supporting usage limits and expiry dates.
 
 ---
 
