@@ -49,8 +49,11 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && 
              request.auth.token.email_verified == true && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+             (
+               request.auth.token.email == "webapp1.in@gmail.com" ||
+               (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+             );
     }
 
     function isOwner(userId) {
@@ -97,6 +100,11 @@ service cloud.firestore {
 
     match /metadata/{metadataId} {
       allow read: if true; // Publicly viewable for cache checks
+      allow write: if isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if isAuthenticated() && (resource.data.isActive == true || isAdmin());
       allow write: if isAdmin();
     }
   }
