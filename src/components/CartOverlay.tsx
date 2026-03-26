@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShoppingBag, Plus, Minus, Trash2, CreditCard, User } from 'lucide-react';
+import { X, ShoppingBag, Plus, Minus, Trash2, CreditCard, User, Ticket, Tag, ChevronLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/imageHelper';
@@ -16,10 +16,25 @@ interface CartOverlayProps {
 import Notification, { NotificationType } from './Notification';
 
 const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
-  const { cart, removeFromCart, updateQuantity, totalPrice, deliveryFee, finalTotal, totalItems, clearCart } = useCart();
+  const { 
+    cart, 
+    removeFromCart, 
+    updateQuantity, 
+    totalPrice, 
+    deliveryFee, 
+    discountAmount,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    finalTotal, 
+    totalItems, 
+    clearCart 
+  } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [couponInput, setCouponInput] = useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState(() => {
@@ -82,6 +97,7 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
           items: cart.map(item => ({ id: item.id, quantity: item.quantity, type: item.type })),
           currency: 'INR',
           receipt: `receipt_${Date.now()}`,
+          couponCode: appliedCoupon?.code || null,
           notes: {
             ...deliveryInfo,
           }
@@ -159,6 +175,14 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponInput) return;
+    setIsApplyingCoupon(true);
+    const success = await applyCoupon(couponInput);
+    if (success) setCouponInput('');
+    setIsApplyingCoupon(false);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -192,19 +216,28 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
             <div className="p-4 md:p-6 border-b border-brand-accent-secondary/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {showDeliveryForm ? (
-                  <button onClick={() => setShowDeliveryForm(false)} className="p-1 hover:bg-brand-accent/10 rounded-full transition-colors">
-                    <Minus className="w-5 h-5 text-brand-accent rotate-90" />
+                  <button 
+                    onClick={() => setShowDeliveryForm(false)} 
+                    className="flex items-center gap-2 px-2 py-1 -ml-2 hover:bg-brand-accent/10 rounded-full transition-colors group"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-brand-accent group-hover:-translate-x-0.5 transition-transform" />
+                    <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest">Back to Cart</span>
                   </button>
                 ) : (
-                  <ShoppingBag className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
+                  <>
+                    <ShoppingBag className="text-brand-accent w-5 h-5 md:w-6 md:h-6" />
+                    <h2 className="text-xl md:text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">
+                      Your Cart
+                    </h2>
+                    <span className="bg-brand-accent text-brand-bg-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {totalItems}
+                    </span>
+                  </>
                 )}
-                <h2 className="text-xl md:text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">
-                  {showDeliveryForm ? 'Delivery Details' : 'Your Cart'}
-                </h2>
-                {!showDeliveryForm && (
-                  <span className="bg-brand-accent text-brand-bg-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {totalItems}
-                  </span>
+                {showDeliveryForm && (
+                  <h2 className="text-xl md:text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter ml-2">
+                    Delivery
+                  </h2>
                 )}
               </div>
               <button onClick={onClose} className="p-2 hover:bg-brand-accent/10 rounded-full transition-colors">
@@ -355,12 +388,57 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
 
             {/* Footer */}
             {cart.length > 0 && (
-              <div className="p-4 md:p-6 border-t border-brand-accent-secondary/10 bg-brand-bg-secondary/50 space-y-3">
+              <div className="p-4 md:p-6 border-t border-brand-accent-secondary/10 bg-brand-bg-secondary/50 space-y-4">
+                {/* Coupon Section */}
+                {!showDeliveryForm && (
+                  <div className="space-y-3">
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-3 bg-brand-accent/10 border border-brand-accent/20 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-brand-accent" />
+                          <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest">
+                            Coupon <span className="text-brand-accent">{appliedCoupon.code}</span> Applied
+                          </span>
+                        </div>
+                        <button 
+                          onClick={removeCoupon}
+                          className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Coupon Code"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                          className="flex-1 bg-brand-bg border border-brand-accent-secondary/20 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-brand-accent transition-colors"
+                        />
+                        <button
+                          onClick={handleApplyCoupon}
+                          disabled={isApplyingCoupon || !couponInput}
+                          className="px-4 py-2 bg-brand-primary text-brand-bg-secondary rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-brand-accent transition-all disabled:opacity-50"
+                        >
+                          {isApplyingCoupon ? '...' : 'Apply'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-xs md:text-sm">
                     <span className="text-brand-text/60">Subtotal</span>
                     <span className="text-brand-primary font-bold">₹{totalPrice.toLocaleString()}</span>
                   </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-xs md:text-sm">
+                      <span className="text-brand-accent font-bold">Discount</span>
+                      <span className="text-brand-accent font-bold">-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center text-xs md:text-sm">
                     <span className="text-brand-text/60">Delivery Fee</span>
                     <span className={`font-bold ${deliveryFee === 0 ? 'text-emerald-500' : 'text-brand-primary'}`}>
