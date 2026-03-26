@@ -103,6 +103,41 @@ function AppContent() {
             <Route path="/" element={<HomePage />} />
             <Route path="/pets" element={<PetsPage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/food" element={
+              <ProductsPage 
+                category="Food" 
+                title="Premium Nutrition" 
+                description="The best food and treats to keep your pets healthy, active, and happy."
+              />
+            } />
+            <Route path="/accessories" element={
+              <ProductsPage 
+                category="Accessories" 
+                title="Pet Accessories" 
+                description="Collars, leashes, beds, and toys to make your pet's life more comfortable and fun."
+              />
+            } />
+            <Route path="/grooming" element={
+              <ProductsPage 
+                category="Grooming" 
+                title="Pet Grooming" 
+                description="Keep your pets looking and feeling their best with our professional grooming supplies."
+              />
+            } />
+            <Route path="/toys" element={
+              <ProductsPage 
+                category="Toys" 
+                title="Playful Toys" 
+                description="Engaging and durable toys to keep your pets entertained and active for hours."
+              />
+            } />
+            <Route path="/health" element={
+              <ProductsPage 
+                category="Health" 
+                title="Health & Wellness" 
+                description="Vitamins, supplements, and health care products for your pet's long-term well-being."
+              />
+            } />
             <Route path="/pet/:slug" element={<PetDetailPage />} />
             <Route path="/product/:slug" element={<ProductDetailPage />} />
             <Route path="/user" element={
