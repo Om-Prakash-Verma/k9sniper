@@ -46,7 +46,9 @@ export const onRequestPost: PagesFunction<{
     
     const razorpayOrder = await razorpayOrderRes.json() as any;
     const paidAmount = razorpayOrder.amount / 100; // Razorpay amount is in paise
-    const calculatedTotal = Number(razorpayOrder.notes.calculatedTotal);
+    const calculatedTotal = Number(razorpayOrder.notes.finalTotal || razorpayOrder.notes.calculatedTotal);
+    const discountAmount = Number(razorpayOrder.notes.discountAmount || 0);
+    const couponCode = razorpayOrder.notes.couponCode || '';
     
     // 2. Validate that the paid amount matches our calculated total
     if (Math.abs(paidAmount - calculatedTotal) > 0.01) {
@@ -61,6 +63,57 @@ export const onRequestPost: PagesFunction<{
     
     const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
     const accessToken = await getGoogleAccessToken(serviceAccount);
+
+    // If a universal coupon was used, increment its usage count
+    if (couponCode) {
+      const couponQueryUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
+      const couponQueryBody = {
+        structuredQuery: {
+          from: [{ collectionId: "coupons" }],
+          where: {
+            fieldFilter: {
+              field: { fieldPath: "code" },
+              op: "EQUAL",
+              value: { stringValue: couponCode.toUpperCase() }
+            }
+          },
+          limit: 1
+        }
+      };
+
+      const couponRes = await fetch(couponQueryUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(couponQueryBody),
+      });
+
+      if (couponRes.ok) {
+        const couponResults = await couponRes.json() as any[];
+        if (couponResults.length > 0 && couponResults[0].document) {
+          const doc = couponResults[0].document;
+          const currentUsage = Number(doc.fields.usageCount?.integerValue || 0);
+          const couponId = doc.name.split('/').pop();
+          
+          // Update usage count
+          const updateUrl = `https://firestore.googleapis.com/v1/${doc.name}?updateMask.fieldPaths=usageCount`;
+          await fetch(updateUrl, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              fields: {
+                usageCount: { integerValue: currentUsage + 1 }
+              }
+            }),
+          });
+        }
+      }
+    }
 
     const orderData = {
       fields: {
@@ -81,6 +134,8 @@ export const onRequestPost: PagesFunction<{
           }
         },
         amount: { doubleValue: paidAmount },
+        discountAmount: { doubleValue: discountAmount },
+        couponCode: { stringValue: couponCode },
         deliveryInfo: {
           mapValue: {
             fields: {
