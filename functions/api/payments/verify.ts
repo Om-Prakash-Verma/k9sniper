@@ -19,12 +19,13 @@ export const onRequestPost: PagesFunction<{
   RAZORPAY_KEY_SECRET: string;
   FIREBASE_SERVICE_ACCOUNT: string;
   FIREBASE_PROJECT_ID: string;
+  FIREBASE_FIRESTORE_DATABASE_ID: string;
 }> = async (context) => {
   const { request, env } = context;
   
   try {
     // Validate environment variables
-    const requiredEnv = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT"];
+    const requiredEnv = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT", "FIREBASE_FIRESTORE_DATABASE_ID"];
     const missingEnv = requiredEnv.filter(key => !env[key as keyof typeof env]);
     if (missingEnv.length > 0) {
       return new Response(JSON.stringify({ 
@@ -77,10 +78,11 @@ export const onRequestPost: PagesFunction<{
 
     const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
     const accessToken = await getGoogleAccessToken(serviceAccount);
+    const dbId = env.FIREBASE_FIRESTORE_DATABASE_ID;
 
     // If a universal coupon was used, increment its usage count
     if (couponCode) {
-      const couponQueryUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
+      const couponQueryUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/${dbId}/documents:runQuery`;
       const couponQueryBody = {
         structuredQuery: {
           from: [{ collectionId: "coupons" }],
@@ -169,7 +171,7 @@ export const onRequestPost: PagesFunction<{
       }
     };
 
-    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/orders`;
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/${dbId}/documents/orders`;
     
     const firestoreRes = await fetch(firestoreUrl, {
       method: "POST",
