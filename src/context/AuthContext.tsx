@@ -36,14 +36,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
           let role: 'admin' | 'client' = 'client';
+          const isBootstrapAdmin = currentUser.email === 'webapp1.in@gmail.com';
+
           if (userDoc.exists()) {
             role = userDoc.data().role as 'admin' | 'client';
+            // If it's the bootstrap admin but role is not admin, update it
+            if (isBootstrapAdmin && role !== 'admin') {
+              role = 'admin';
+              await setDoc(doc(db, 'users', currentUser.uid), { role: 'admin' }, { merge: true });
+            }
           } else {
+            role = isBootstrapAdmin ? 'admin' : 'client';
             const userData: Omit<UserProfile, 'uid'> = {
               email: currentUser.email,
               displayName: currentUser.displayName,
               photoURL: currentUser.photoURL,
-              role: 'client',
+              role: role,
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             };
