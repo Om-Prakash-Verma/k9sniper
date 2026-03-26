@@ -195,8 +195,15 @@ const ProductDetailPage = () => {
               {product.name}
             </h1>
             
-            <div className="text-3xl md:text-4xl font-display font-bold text-brand-accent mb-8 md:mb-12">
-              ₹{currentPrice?.toLocaleString()}
+            <div className="flex items-baseline gap-4 mb-8 md:mb-12">
+              <div className="text-3xl md:text-5xl font-display font-bold text-brand-accent">
+                ₹{currentPrice?.toLocaleString()}
+              </div>
+              {product.discountLabel && (
+                <div className="bg-brand-accent text-brand-bg-secondary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
+                  {product.discountLabel}
+                </div>
+              )}
             </div>
 
             {/* Variations Selector */}
