@@ -36,6 +36,12 @@ export interface Product {
   image: string;
   images?: string[];
   price: number;
+  discountLabel?: string;
+  productCoupons?: {
+    code: string;
+    discount: number;
+    type: 'percentage' | 'fixed';
+  }[];
   category: string;
   brand?: string;
   stock?: number;
@@ -65,6 +71,8 @@ export interface Order {
   userId: string;
   items: Omit<CartItem, 'image'>[];
   amount: number;
+  discountAmount?: number;
+  couponCode?: string;
   deliveryInfo: {
     name: string;
     email: string;
@@ -100,4 +108,16 @@ export interface ShopSettings {
   fixedDeliveryFee: number;
   whatsapp?: string;
   instagram?: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  minOrderValue?: number;
+  expiryDate?: string;
+  isActive: boolean;
+  usageCount: number;
+  maxUsage?: number;
 }
