@@ -10,12 +10,11 @@ import {
 } from 'lucide-react';
 
 const features = [
-  { title: "Feeding Guidelines", icon: Heart, desc: "Complete feeding guidelines and nutritional plans for your pet's growth." },
-  { title: "Vaccination Guidance", icon: Syringe, desc: "Professional vaccination schedule guidance and long-term health monitoring." },
-  { title: "Grooming & Hygiene", icon: Sparkles, desc: "Expert grooming recommendations and hygiene maintenance advice." },
-  { title: "Training & Social", icon: GraduationCap, desc: "Basic training advice and guidance on social behavior and bonding." },
-  { title: "Breed Care", icon: ShieldCheck, desc: "Detailed breed-specific care instructions tailored to your new companion." },
-  { title: "Owner Consultation", icon: Users, desc: "Dedicated consultation for first-time pet owners to ensure proper care." }
+  { title: "Feeding Guidelines", icon: Heart, desc: "Customized nutritional plans focusing on proper nutrition and exercise for your pet's growth." },
+  { title: "Vaccination Guidance", icon: Syringe, desc: "Professional schedule guidance for essential immunizations and long-term health monitoring." },
+  { title: "Training & Social", icon: GraduationCap, desc: "Basic training advice and social behavior guidance for a well-adjusted companion." },
+  { title: "Grooming & Hygiene", icon: Sparkles, desc: "Breed-specific care instructions and grooming recommendations for optimal hygiene." },
+  { title: "Owner Consultation", icon: Users, desc: "Dedicated consultation for first-time pet owners to ensure a smooth transition and well-being." }
 ];
 
 const AfterCare = () => {
@@ -26,14 +25,14 @@ const AfterCare = () => {
           <div className="max-w-2xl">
             <div className="micro-label mb-4 text-brand-accent">Lifelong Support</div>
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-4 break-words">
-              After-Care <br />
-              <span className="text-brand-accent italic">Guidance</span>
+              Beyond the <br />
+              <span className="text-brand-accent italic">First Day</span>
             </h2>
             <div className="h-px w-32 bg-brand-accent" />
           </div>
           <div className="lg:max-w-xs pt-4">
             <p className="text-brand-text text-xl leading-relaxed">
-              Our responsibility does not end once a pet is adopted. We provide complete after-care support.
+              Our commitment to your pet doesn't end at the store. We provide continuous care and professional guidance.
             </p>
           </div>
         </div>
