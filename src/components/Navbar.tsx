@@ -32,7 +32,11 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
   const navLinks = [
     { name: 'Overview', id: 'overview', path: '/#overview' },
     { name: 'Pets', id: 'pets', path: '/pets' },
-    { name: 'Accessories', id: 'accessories', path: '/products' },
+    { name: 'Food', id: 'food', path: '/food' },
+    { name: 'Accessories', id: 'accessories', path: '/accessories' },
+    { name: 'Grooming', id: 'grooming', path: '/grooming' },
+    { name: 'Toys', id: 'toys', path: '/toys' },
+    { name: 'Health', id: 'health', path: '/health' },
     { name: 'Services', id: 'services', path: '/#services' },
     { name: 'Contact', id: 'contact', path: '/#contact' }
   ];
