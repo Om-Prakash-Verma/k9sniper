@@ -23,6 +23,16 @@ export const onRequestPost: PagesFunction<{
   const { request, env } = context;
   
   try {
+    // Validate environment variables
+    const requiredEnv = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT"];
+    const missingEnv = requiredEnv.filter(key => !env[key as keyof typeof env]);
+    if (missingEnv.length > 0) {
+      return new Response(JSON.stringify({ 
+        error: "Server configuration error", 
+        details: `Missing environment variables: ${missingEnv.join(", ")}` 
+      }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, deliveryInfo, items, userId } = await request.json() as any;
     
     const isValid = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, env.RAZORPAY_KEY_SECRET);
@@ -61,6 +71,10 @@ export const onRequestPost: PagesFunction<{
     // Payment verified, now save order to Firestore securely
     // We'll use the Firestore REST API with a Service Account
     
+    if (!env.FIREBASE_SERVICE_ACCOUNT) {
+      throw new Error("FIREBASE_SERVICE_ACCOUNT environment variable is missing");
+    }
+
     const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
     const accessToken = await getGoogleAccessToken(serviceAccount);
 
@@ -181,9 +195,12 @@ export const onRequestPost: PagesFunction<{
     }), {
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Razorpay Verification/Save Error:", error);
-    return new Response(JSON.stringify({ error: "Payment verification failed" }), {
+    return new Response(JSON.stringify({ 
+      error: "Payment verification failed",
+      details: error.message
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

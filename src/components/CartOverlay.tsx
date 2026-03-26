@@ -106,7 +106,10 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown server error' })) as any;
-        throw new Error(errorData.error || `Server responded with ${response.status}`);
+        const errorMessage = errorData.details 
+          ? `${errorData.error}: ${errorData.details}` 
+          : (errorData.error || `Server responded with ${response.status}`);
+        throw new Error(errorMessage);
       }
 
       const order = await response.json() as any;

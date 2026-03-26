@@ -7,18 +7,39 @@ export const onRequestPost: PagesFunction<{
   const { request, env } = context;
   
   try {
+    // Validate environment variables
+    const requiredEnv = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT"];
+    const missingEnv = requiredEnv.filter(key => !env[key as keyof typeof env]);
+    if (missingEnv.length > 0) {
+      return new Response(JSON.stringify({ 
+        error: "Server configuration error", 
+        details: `Missing environment variables: ${missingEnv.join(", ")}` 
+      }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
     const { items, currency = "INR", receipt, notes, couponCode } = await request.json() as any;
     
-    const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
-    const accessToken = await getGoogleAccessToken(serviceAccount);
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return new Response(JSON.stringify({ error: "Cart is empty" }), { status: 400 });
+    }
+
+    let accessToken: string | null = null;
+    if (couponCode && env.FIREBASE_SERVICE_ACCOUNT) {
+      try {
+        const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+        accessToken = await getGoogleAccessToken(serviceAccount);
+      } catch (e) {
+        console.error("Failed to get access token:", e);
+      }
+    }
 
     // 1. Calculate total amount server-side by fetching prices from Firestore
     let subtotal = 0;
     let totalDiscount = 0;
     let appliedCouponData: any = null;
 
-    // Fetch universal coupon if provided
-    if (couponCode) {
+    // Fetch universal coupon if provided and we have an access token
+    if (couponCode && accessToken) {
       const couponQueryUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
       const couponQueryBody = {
         structuredQuery: {
@@ -91,8 +112,10 @@ export const onRequestPost: PagesFunction<{
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Failed to fetch item ${item.id}`);
       const data = await res.json() as any;
+      if (!data.fields) throw new Error(`Invalid data for item ${item.id}`);
+      
       const fields = data.fields;
-      const price = Number(fields.price.doubleValue || fields.price.integerValue);
+      const price = Number(fields.price?.doubleValue || fields.price?.integerValue || 0);
       const itemTotal = price * item.quantity;
       subtotal += itemTotal;
 
@@ -138,8 +161,14 @@ export const onRequestPost: PagesFunction<{
     
     if (settingsRes.ok) {
       const settingsData = await settingsRes.json() as any;
-      deliveryFee = Number(settingsData.fields.fixedDeliveryFee.integerValue || settingsData.fields.fixedDeliveryFee.doubleValue);
-      threshold = Number(settingsData.fields.deliveryFeeThreshold.integerValue || settingsData.fields.deliveryFeeThreshold.doubleValue);
+      if (settingsData.fields) {
+        if (settingsData.fields.fixedDeliveryFee) {
+          deliveryFee = Number(settingsData.fields.fixedDeliveryFee.integerValue || settingsData.fields.fixedDeliveryFee.doubleValue || 100);
+        }
+        if (settingsData.fields.deliveryFeeThreshold) {
+          threshold = Number(settingsData.fields.deliveryFeeThreshold.integerValue || settingsData.fields.deliveryFeeThreshold.doubleValue || 1000);
+        }
+      }
     }
 
     const finalDeliveryFee = subtotal >= threshold ? 0 : deliveryFee;
@@ -177,9 +206,12 @@ export const onRequestPost: PagesFunction<{
     return new Response(JSON.stringify(order), {
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Order Creation Error:", error);
-    return new Response(JSON.stringify({ error: "Failed to create payment order" }), {
+    return new Response(JSON.stringify({ 
+      error: "Failed to create payment order",
+      details: error.message
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
