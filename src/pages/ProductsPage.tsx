@@ -11,7 +11,17 @@ import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
 import { Product } from '../types';
 
-const ProductsPage = () => {
+interface ProductsPageProps {
+  category?: string;
+  title?: string;
+  description?: string;
+}
+
+const ProductsPage: React.FC<ProductsPageProps> = ({ 
+  category, 
+  title = "Pet Essentials", 
+  description = "High-quality food, accessories, and grooming supplies for your beloved companions." 
+}) => {
   const { products, loading, error, loadingMore, hasMoreProducts, loadMoreProducts, searchProducts } = useShopData();
   const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
@@ -19,18 +29,24 @@ const ProductsPage = () => {
 
   useEffect(() => {
     const performSearch = async () => {
-      const results = await searchProducts(searchTerm);
+      let results = await searchProducts(searchTerm);
+      
+      // Apply category filter if provided
+      if (category) {
+        results = results.filter(p => p.category === category);
+      }
+      
       setFilteredProducts(results);
     };
     performSearch();
-  }, [searchTerm, products, searchProducts]);
+  }, [searchTerm, products, searchProducts, category]);
 
   if (error && products.length === 0) {
     return (
       <div className="min-h-screen bg-brand-bg pt-32 px-4 flex items-center justify-center">
         <SEO 
-          title="Pet Supplies & Accessories | K9 Sniper"
-          description="Shop high-quality pet food, accessories, and grooming supplies at K9 Sniper. Everything your pet needs for a happy and healthy life."
+          title={`${category ? category + ' | ' : ''}Pet Supplies & Accessories | K9 Sniper`}
+          description={description}
         />
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -52,18 +68,18 @@ const ProductsPage = () => {
   return (
     <div className="min-h-screen bg-brand-bg pt-24 md:pt-32 pb-20 px-4 md:px-6">
       <SEO 
-        title="Pet Supplies & Accessories | K9 Sniper"
-        description="Shop high-quality pet food, accessories, and grooming supplies at K9 Sniper. Everything your pet needs for a happy and healthy life."
+        title={`${category ? category + ' | ' : ''}Pet Supplies & Accessories | K9 Sniper`}
+        description={description}
       />
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:text-left text-center md:mb-16 gap-8">
           <div className="max-w-2xl w-full">
-            <div className="micro-label mb-4 text-brand-accent">Premium Catalog</div>
+            <div className="micro-label mb-4 text-brand-accent">{category || 'Premium Catalog'}</div>
             <h1 className="text-5xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.8] text-brand-primary mb-6">
-              Pet <span className="text-brand-accent">Essentials</span>
+              {title.split(' ')[0]} <span className="text-brand-accent">{title.split(' ').slice(1).join(' ')}</span>
             </h1>
             <p className="text-brand-text text-lg md:text-xl leading-relaxed">
-              High-quality food, accessories, and grooming supplies for your beloved companions.
+              {description}
             </p>
           </div>
           
@@ -71,7 +87,7 @@ const ProductsPage = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-accent w-5 h-5" />
             <input 
               type="text"
-              placeholder="Search products..."
+              placeholder={`Search ${category ? category.toLowerCase() : 'products'}...`}
               className="w-full bg-brand-bg-secondary border border-brand-accent-secondary/20 rounded-2xl py-3 md:py-4 pl-12 pr-6 text-brand-primary outline-none focus:border-brand-accent transition-all text-sm md:text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -92,8 +108,17 @@ const ProductsPage = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="group bg-brand-bg-secondary rounded-[2.5rem] overflow-hidden border border-brand-accent-secondary/10 shadow-xl hover:shadow-2xl transition-all duration-500"
+                  className="group bg-brand-bg-secondary rounded-[2.5rem] overflow-hidden border border-brand-accent-secondary/10 shadow-xl hover:shadow-2xl transition-all duration-500 relative"
                 >
+                  {/* Discount Badge */}
+                  {product.discountLabel && (
+                    <div className="absolute top-6 left-6 z-10">
+                      <div className="bg-brand-accent text-brand-bg-secondary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
+                        {product.discountLabel}
+                      </div>
+                    </div>
+                  )}
+
                   <Link to={`/product/${product.slug || product.id}`} className="block aspect-square overflow-hidden">
                     <img 
                       src={getImageUrl(product.image)} 
@@ -107,7 +132,9 @@ const ProductsPage = () => {
                       <h3 className="text-lg md:text-xl font-display font-bold text-brand-primary uppercase tracking-tighter leading-tight">
                         <Link to={`/product/${product.slug || product.id}`}>{product.name}</Link>
                       </h3>
-                      <div className="text-brand-accent font-bold text-base md:text-lg whitespace-nowrap">₹{product.price?.toLocaleString()}</div>
+                      <div className="flex flex-col items-end">
+                        <div className="text-brand-accent font-bold text-base md:text-lg whitespace-nowrap">₹{product.price?.toLocaleString()}</div>
+                      </div>
                     </div>
                     <p className="text-brand-text/60 text-xs md:text-sm mb-6 md:mb-8 line-clamp-2 flex-1">
                       {product.description}
