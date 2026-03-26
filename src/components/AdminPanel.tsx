@@ -5,7 +5,8 @@ import {
   Package, 
   ShoppingCart, 
   Settings,
-  LogOut
+  LogOut,
+  Ticket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -27,6 +28,7 @@ import PetManager from './admin/PetManager';
 import ProductManager from './admin/ProductManager';
 import OrderManager from './admin/OrderManager';
 import SettingsManager from './admin/SettingsManager';
+import CouponManager from './admin/CouponManager';
 import Notification, { NotificationType } from './Notification';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -35,7 +37,7 @@ import DashboardLayout from './DashboardLayout';
 const AdminPanel: React.FC = () => {
   const { logout } = useAuth();
   const { pets, products, metadata, refreshData } = useShopData();
-  const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings'>('pets');
+  const [activeTab, setActiveTab] = useState<'pets' | 'products' | 'orders' | 'settings' | 'coupons'>('pets');
   const [orders, setOrders] = useState<any[]>([]);
   
   // Notification state
@@ -80,6 +82,7 @@ const AdminPanel: React.FC = () => {
     { id: 'pets', label: 'Pets', icon: Dog },
     { id: 'products', label: 'Products', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingCart },
+    { id: 'coupons', label: 'Coupons', icon: Ticket },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
 
@@ -116,6 +119,7 @@ const AdminPanel: React.FC = () => {
           />
         )}
         {activeTab === 'orders' && <OrderManager orders={orders} />}
+        {activeTab === 'coupons' && <CouponManager onNotification={showNotification} />}
         {activeTab === 'settings' && <SettingsManager metadata={metadata} />}
       </motion.div>
 
