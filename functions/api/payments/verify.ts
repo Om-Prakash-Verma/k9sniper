@@ -28,7 +28,7 @@ export const onRequestPost: PagesFunction<{
   // Basic Rate Limiting
   const ip = request.headers.get("cf-connecting-ip") || "unknown";
   const now = Date.now();
-  const limit = 10; // 10 requests per minute
+  const limit = 60; // 60 requests per minute
   const windowMs = 60 * 1000;
 
   const currentLimit = rateLimitMap.get(ip);
