@@ -17,7 +17,7 @@ const UserDashboard = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'profile' | 'settings' | 'loyalty'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'profile' | 'settings'>('overview');
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [updating, setUpdating] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
@@ -31,12 +31,6 @@ const UserDashboard = () => {
     localStorage.setItem('k9_marketing_settings', JSON.stringify(marketingSettings));
   }, [marketingSettings]);
 
-  const loyaltyPoints = orders.reduce((sum, order) => {
-    if (order.status === 'paid') {
-      return sum + Math.floor((order.amount || 0) / 10);
-    }
-    return sum;
-  }, 0);
 
   useEffect(() => {
     if (user?.displayName) setDisplayName(user.displayName);
@@ -143,7 +137,6 @@ const UserDashboard = () => {
   const navItems = [
     { id: 'overview', label: 'Overview', icon: User },
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
-    { id: 'loyalty', label: 'Loyalty', icon: Package },
     { id: 'profile', label: 'Profile', icon: Settings },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -181,7 +174,6 @@ const UserDashboard = () => {
           <p className="text-brand-text text-lg leading-relaxed">
             {activeTab === 'overview' && "Here's what's happening with your account."}
             {activeTab === 'orders' && "Track and manage your recent purchases."}
-            {activeTab === 'loyalty' && "Check your points and unlock exclusive rewards."}
             {activeTab === 'profile' && "Update your personal information."}
             {activeTab === 'settings' && "Manage your account preferences."}
           </p>
@@ -196,8 +188,8 @@ const UserDashboard = () => {
             transition={{ duration: 0.2 }}
           >
             {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-brand-bg-secondary rounded-[2.5rem] p-8 border border-brand-accent-secondary/10 shadow-xl">
+              <div className="grid grid-cols-1 gap-8">
+                <div className="bg-brand-bg-secondary rounded-[2.5rem] p-8 border border-brand-accent-secondary/10 shadow-xl max-w-2xl">
                   <div className="flex items-center gap-6 mb-8">
                     <div className="w-20 h-20 rounded-3xl bg-brand-accent flex items-center justify-center text-brand-bg-secondary shadow-lg overflow-hidden">
                       {user.photoURL ? (
@@ -218,32 +210,9 @@ const UserDashboard = () => {
                       <span className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Total Orders</span>
                       <span className="text-brand-primary font-bold">{orders.length}</span>
                     </div>
-                    <div className="p-4 bg-brand-bg rounded-2xl border border-brand-accent-secondary/5 flex justify-between items-center">
-                      <span className="text-[10px] font-bold text-brand-text/40 uppercase tracking-widest">Loyalty Points</span>
-                      <span className="text-brand-accent font-bold">{loyaltyPoints}</span>
-                    </div>
                   </div>
                 </div>
 
-                <div className="bg-brand-accent rounded-[2.5rem] p-8 text-brand-bg-secondary shadow-xl relative overflow-hidden group">
-                  <div className="relative z-10">
-                    <h3 className="text-3xl font-display font-bold uppercase tracking-tighter leading-none mb-4">
-                      Loyalty <br />
-                      <span className="text-brand-primary">Balance</span>
-                    </h3>
-                    <div className="text-5xl font-display font-bold mb-4">{loyaltyPoints}</div>
-                    <p className="text-brand-bg-secondary/80 text-sm mb-8">
-                      You're doing great! Keep shopping to unlock more rewards.
-                    </p>
-                    <button 
-                      onClick={() => setActiveTab('loyalty')}
-                      className="px-6 py-3 bg-brand-primary text-brand-bg-secondary rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-brand-bg-secondary hover:text-brand-primary transition-all"
-                    >
-                      View Rewards
-                    </button>
-                  </div>
-                  <ShoppingBag className="absolute -bottom-4 -right-4 w-32 h-32 text-brand-primary/10 rotate-12 group-hover:scale-110 transition-transform duration-700" />
-                </div>
               </div>
             )}
 
@@ -317,32 +286,6 @@ const UserDashboard = () => {
               </div>
             )}
 
-            {activeTab === 'loyalty' && (
-              <div className="bg-brand-bg-secondary rounded-[2.5rem] p-8 border border-brand-accent-secondary/10 shadow-xl">
-                <div className="flex items-center gap-6 p-8 bg-brand-accent/10 rounded-[2rem] border border-brand-accent/20 mb-10">
-                  <div className="w-20 h-20 bg-brand-accent rounded-3xl flex items-center justify-center text-brand-bg-secondary shadow-lg">
-                    <ShoppingBag className="w-10 h-10" />
-                  </div>
-                  <div>
-                    <div className="text-4xl font-display font-bold text-brand-primary">{loyaltyPoints} Points</div>
-                    <div className="text-sm text-brand-accent font-bold uppercase tracking-widest">Current Balance</div>
-                  </div>
-                </div>
-                <div className="space-y-8">
-                  <h3 className="text-2xl font-display font-bold text-brand-primary uppercase tracking-tighter">Rewards Program</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 bg-brand-bg rounded-3xl border border-brand-accent-secondary/10">
-                      <div className="text-brand-accent font-bold mb-2">Earn Points</div>
-                      <p className="text-sm text-brand-text/70 leading-relaxed">Get 10 points for every ₹100 spent on our store. Points are credited automatically after successful payment.</p>
-                    </div>
-                    <div className="p-6 bg-brand-bg rounded-3xl border border-brand-accent-secondary/10">
-                      <div className="text-brand-accent font-bold mb-2">Redeem Rewards</div>
-                      <p className="text-sm text-brand-text/70 leading-relaxed">Use your points to get exclusive discounts on your next purchase. 100 points = ₹10 discount.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {activeTab === 'profile' && (
               <div className="bg-brand-bg-secondary rounded-[2.5rem] p-8 border border-brand-accent-secondary/10 shadow-xl">

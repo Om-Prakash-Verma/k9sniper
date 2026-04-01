@@ -30,6 +30,11 @@ export default defineConfig(({mode}) => {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      headers: {
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' https://checkout.razorpay.com https://www.gstatic.com https://apis.google.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://picsum.photos https://*.googleusercontent.com https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://api.razorpay.com; frame-src 'self' https://api.razorpay.com https://*.firebaseapp.com https://*.google.com; base-uri 'self'; form-action 'self';",
+        'Permissions-Policy': 'accelerometer=(self), camera=(self), microphone=(self), geolocation=(self)',
+        'Access-Control-Expose-Headers': 'x-rtb-fingerprint-id, request-id',
+      },
     },
   };
 });
