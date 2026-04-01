@@ -5,12 +5,13 @@ export const onRequest: PagesFunction = async ({ next }) => {
 
   // Security Headers
   response.headers.set("Content-Security-Policy", csp);
-  response.headers.set("Permissions-Policy", "accelerometer=(self), camera=(self), microphone=(self), geolocation=(self)");
+  response.headers.set("Permissions-Policy", "accelerometer=*, camera=(self), microphone=(self), geolocation=(self)");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   response.headers.set("Access-Control-Expose-Headers", "x-rtb-fingerprint-id, request-id");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-rtb-fingerprint-id, request-id");
   
   return response;
 };
