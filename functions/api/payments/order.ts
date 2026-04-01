@@ -1,3 +1,5 @@
+const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
+
 export const onRequestPost: PagesFunction<{
   RAZORPAY_KEY_ID: string;
   RAZORPAY_KEY_SECRET: string;
@@ -7,6 +9,32 @@ export const onRequestPost: PagesFunction<{
 }> = async (context) => {
   const { request, env } = context;
   
+  // Basic Rate Limiting
+  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  const now = Date.now();
+  const limit = 10; // 10 requests per minute
+  const windowMs = 60 * 1000;
+
+  const currentLimit = rateLimitMap.get(ip);
+  if (currentLimit && now < currentLimit.resetTime) {
+    if (currentLimit.count >= limit) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), { 
+        status: 429, 
+        headers: { "Content-Type": "application/json" } 
+      });
+    }
+    currentLimit.count++;
+  } else {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+  }
+
+  // Cleanup old entries occasionally
+  if (rateLimitMap.size > 1000) {
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (now > value.resetTime) rateLimitMap.delete(key);
+    }
+  }
+
   try {
     // Validate environment variables
     const requiredEnv = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT", "FIREBASE_FIRESTORE_DATABASE_ID"];

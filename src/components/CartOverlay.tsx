@@ -143,6 +143,15 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
         order_id: order.id,
         handler: async (rzpResponse: any) => {
           // 3. Verify Payment on Backend
+          let idToken = null;
+          if (user) {
+            try {
+              idToken = await user.getIdToken();
+            } catch (e) {
+              console.error("Failed to get ID token", e);
+            }
+          }
+
           const verifyRes = await fetch('/api/payments/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -151,6 +160,7 @@ const CartOverlay: React.FC<CartOverlayProps> = ({ isOpen, onClose }) => {
               deliveryInfo,
               items: cart,
               userId: user?.uid,
+              idToken,
               amount: finalTotal
             })
           });

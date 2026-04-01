@@ -46,10 +46,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, isUnverifiedAdmin, user,
       onSuccess();
     } catch (err: any) {
       let message = "Authentication failed";
-      if (err.code === 'auth/user-not-found') message = "User not found";
-      if (err.code === 'auth/wrong-password') message = "Incorrect password";
-      if (err.code === 'auth/email-already-in-use') message = "Email already in use";
-      if (err.code === 'auth/weak-password') message = "Password is too weak";
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        message = "Invalid email or password";
+      } else if (err.code === 'auth/email-already-in-use') {
+        message = "Email already in use";
+      } else if (err.code === 'auth/weak-password') {
+        message = "Password is too weak";
+      }
       setError(message);
     } finally {
       setLoading(false);
