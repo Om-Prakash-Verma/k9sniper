@@ -24,9 +24,13 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'media' | 'variations' | 'specs' | 'usage' | 'discounts'>('basic');
+  const [imagesInput, setImagesInput] = useState('');
+
+  const parseCommaSeparated = (value: string) => value.split(',').map(s => s.trim()).filter(Boolean);
 
   const openAddModal = () => {
     setFormData({});
+    setImagesInput('');
     setIsEditing(false);
     setEditingId(null);
     setIsModalOpen(true);
@@ -43,6 +47,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
       productCoupons: Array.isArray(item.productCoupons) ? item.productCoupons : []
     };
     setFormData(normalizedItem);
+    setImagesInput(normalizedItem.images.join(', '));
     setIsEditing(true);
     setEditingId(item.id);
     setIsModalOpen(true);
@@ -343,8 +348,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ products, onNotificatio
                               type="text" 
                               className="admin-input" 
                               placeholder="url1, url2, url3"
-                              value={formData.images?.join(', ') || ''}
-                              onChange={e => setFormData({...formData, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
+                              value={imagesInput}
+                              onChange={e => {
+                                const value = e.target.value;
+                                setImagesInput(value);
+                                setFormData({...formData, images: parseCommaSeparated(value)});
+                              }} 
                             />
                           </div>
                           {formData.images && formData.images.length > 0 && (

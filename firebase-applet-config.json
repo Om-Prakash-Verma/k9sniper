@@ -1,10 +1,10 @@
 {
-  "projectId": "gen-lang-client-0390092921",
-  "appId": "1:108182523304:web:d7f41a2efb40c8a28e219d",
-  "apiKey": "AIzaSyAzulCsvEQxWYO8mZEguGXnTe1fYb4rPQQ",
-  "authDomain": "gen-lang-client-0390092921.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-50ffa0ea-f46b-4902-a8b3-d39daf0c818a",
-  "storageBucket": "gen-lang-client-0390092921.firebasestorage.app",
-  "messagingSenderId": "108182523304",
-  "measurementId": ""
+  "projectId": "k9-sniper",
+  "appId": "1:557887747188:web:5f24546d28386206b84d21",
+  "apiKey": "AIzaSyBMl2dw1-Ukfb3ROSw7RqZHhmkfZJlK0IQ",
+  "authDomain": "k9-sniper.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "k9-sniper.firebasestorage.app",
+  "messagingSenderId": "557887747188",
+  "measurementId": "G-0HR5BM5N7E"
 }

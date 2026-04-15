@@ -24,9 +24,15 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
   const [formData, setFormData] = useState<Partial<Pet>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'health' | 'media' | 'extra'>('basic');
+  const [imagesInput, setImagesInput] = useState('');
+  const [featuresInput, setFeaturesInput] = useState('');
+
+  const parseCommaSeparated = (value: string) => value.split(',').map(s => s.trim()).filter(Boolean);
 
   const openAddModal = () => {
     setFormData({});
+    setImagesInput('');
+    setFeaturesInput('');
     setIsEditing(false);
     setEditingId(null);
     setIsModalOpen(true);
@@ -41,6 +47,8 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
       images: Array.isArray(item.images) ? item.images : []
     };
     setFormData(normalizedItem);
+    setImagesInput(normalizedItem.images.join(', '));
+    setFeaturesInput(normalizedItem.features.join(', '));
     setIsEditing(true);
     setEditingId(item.id);
     setIsModalOpen(true);
@@ -374,8 +382,12 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
                               type="text" 
                               className="admin-input" 
                               placeholder="url1, url2, url3"
-                              value={formData.images?.join(', ') || ''}
-                              onChange={e => setFormData({...formData, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
+                              value={imagesInput}
+                              onChange={e => {
+                                const value = e.target.value;
+                                setImagesInput(value);
+                                setFormData({...formData, images: parseCommaSeparated(value)});
+                              }} 
                             />
                           </div>
                           {formData.images && formData.images.length > 0 && (
@@ -419,8 +431,12 @@ const PetManager: React.FC<PetManagerProps> = ({ pets, onNotification, onDeleteC
                             type="text" 
                             className="admin-input" 
                             placeholder="Vaccinated, Friendly, Trained"
-                            value={formData.features?.join(', ') || ''}
-                            onChange={e => setFormData({...formData, features: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} 
+                            value={featuresInput}
+                            onChange={e => {
+                              const value = e.target.value;
+                              setFeaturesInput(value);
+                              setFormData({...formData, features: parseCommaSeparated(value)});
+                            }} 
                           />
                         </div>
                         <div className="space-y-2">

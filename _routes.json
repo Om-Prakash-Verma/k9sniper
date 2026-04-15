@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "description": "Run Workers only on dynamic routes",
+  "include": [
+    "/api/*"
+  ],
+  "exclude": [
+    "/*"
+  ]
+}

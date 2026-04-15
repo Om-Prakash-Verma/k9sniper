@@ -178,7 +178,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, isUnverifiedAdmin, user,
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-left">
+        {/* <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-brand-accent uppercase tracking-widest ml-2">Email Address</label>
             <input 
@@ -222,7 +222,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ isAdmin, isUnverifiedAdmin, user,
           <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
             <span className="bg-brand-bg-secondary px-4 text-brand-text/40">Or Continue With</span>
           </div>
-        </div>
+        </div> */}
 
         <button
           onClick={handleGoogleLogin}

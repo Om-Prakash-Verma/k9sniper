@@ -51,7 +51,7 @@ service cloud.firestore {
              (
                (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
                 get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-               (request.auth.token.email == "webapp1.in@gmail.com" && request.auth.token.email_verified == true)
+               (request.auth.token.email == "k9sniper.com@gmail.com" && request.auth.token.email_verified == true)
              );
     }
 
